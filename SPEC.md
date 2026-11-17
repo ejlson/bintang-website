@@ -6,7 +6,7 @@ Broader direction: `DESIGN-PLAN.md` (§3 tokens) as revised by the v2 canvas (on
 ## Scope
 
 **In:** the Home page, built for real; shared layout (fonts, metadata); placeholder routes for every nav link; media pipeline for the hero.
-**Out:** About, Journal, Gallery and Contact content (placeholders only; Menu was added in phase 1b, below); CMS; booking integration; forms; Baybayin lettering; sakuga effects anywhere except the Home subtitles.
+**Out:** Journal, Gallery and Contact content (placeholders only; Menu was added in phase 1b and About in phase 1c, below); CMS; booking integration; forms; Baybayin lettering; sakuga effects anywhere except the Home subtitles.
 
 ## Decisions (from interview, 17 Nov 2026)
 
@@ -25,7 +25,8 @@ web/
   app/layout.tsx          Typekit kit pev2vne (Aquavit), metadata, JSON-LD
   app/page.tsx            Home
   app/menu/page.tsx       Menu (phase 1b) — components/MenuPage, KaraokeVideo; data in lib/menu.ts
-  app/[...]/page.tsx      placeholders: /about /gallery /journal
+  app/about/page.tsx      About (phase 1c) — components/AboutPage, AboutFilm; media in public/media/about/
+  app/[...]/page.tsx      placeholders: /gallery /journal
                           /contact /contact/groups /contact/karaoke /contact/private-hire
   components/SiteHeader   bilingual split nav + centred lion head + mobile overlay
   components/Hero         video, warm overlay, pause control, thumbnail, reduced-motion poster
@@ -37,7 +38,7 @@ web/
 
 ## Home page — behaviour
 
-1. **Full-screen hero (100svh, min 640px), no scroll.** Background is `hero-loop.mp4` (trimmed 4.5–33.5s, 1920×1080 H.264 CRF 23 ~8.3 MB; portrait screens get a 608×1080 crop ~3.4 MB; no audio), autoplay, muted, loop, playsinline, with a poster. A warm overlay (soft dark fades at top (to 30%) and bottom (to 38%) over an 18% warm wash) sits over it.
+1. **Full-screen hero (100svh, min 640px)**, with the site footer below it on ink. Background is `hero-loop.mp4` (trimmed 4.5–33.5s, 1920×1080 H.264 CRF 23 ~8.3 MB; portrait screens get a 608×1080 crop ~3.4 MB; no audio), autoplay, muted, loop, playsinline, with a poster. A warm overlay (soft dark fades at top (to 30%) and bottom (to 38%) over an 18% warm wash) sits over it.
 2. **Header** (absolute, paper `#EDE9E9` text, 14px Helvetica, line-height 1.2):
    - Left: About/Tungkol, Menu/Mga Ulam, Gallery/Larawan, Journal/Balita.
    - Centre: lion head in the same paper colour as the links (52px tall), links to `/`, `aria-label="Bintang home"`.
@@ -81,14 +82,36 @@ Designed on the Claude Design canvas "Bintang Website" (Menu artboard); options 
 
 **Open:** Uber Eats / Deliveroo links (URLs needed) · real karaoke footage · karaoke pricing/capacity · Tagalog labels need a native-speaker check · brunch hours (cards say both Sat 11–3 and 11–4; site uses 11–3) · Barbera d’Alba is listed under white wine · "Merlo Basco" spelling.
 
+## About (phase 1c, from the "About" board in the Claude Design canvas)
+
+1. **Colour:** deep red flood (`--red-deep`), paper text, paper lion head in the header.
+2. **Title:** none visible (the statement leads, as on the board); a visually hidden H1 "About" stays.
+3. **Statement + film:** the large Aquavit paragraph (34→68px) sits 24px under the navbar, with the then-and-now film to its right at the golden ratio (statement : film = 1.618 : 1). Below 900px they stack, statement first.
+4. **Film:** portrait 9:16 with square corners. It is muted, looping and inline, with a bottom-left pause control (WCAG 2.2.2). Reduced-motion and data-saver visitors start paused, with `preload="none"`, like the Home hero and the Karaoke video.
+5. **Chapters:** three columns (1987, The kitchen, Today), each an English/Tagalog label over a 22px paragraph, under a hairline.
+6. **Not built from the board:** the fixed bottom-right video thumbnail. The navbar Book button replaced it.
+
+**Open:** the founding story (who opened it, and why) for the 1987 chapter · the Tagalog lines need a native-speaker check.
+
+## Site footer (17 Nov 2026)
+
+`components/SiteFooter`, after Mala Project's footer, is the last child of every page's `<main>` (Home, Menu, About, Journal and posts, every placeholder). On Menu, the sticky tab bar is wrapped with the sheets so it lets go before the footer.
+1. **No colour of its own:** it takes the page's background and text colour, so it follows the Menu tab fades too. On Home it sits on ink with paper text.
+2. **Left:** one column of links, English only, in the nav type (16/20px): Reserve on OpenTable · Group bookings · Private hire · email address (mailto:) · phone (tel:). It lines up with the page column (`--max`, `--gutter`).
+3. **Right (right-aligned):** Find us (address, links to Google Maps) and Opening hours. The details live in `lib/site.ts`, which the JSON-LD also uses.
+4. **Sign-off:** "© Bintang · Kentish Town, London" and "Since 1987", 13.6px. No Tagalog lines in the footer.
+5. **< 768px:** everything stacks on the left.
+
+**Open:** Instagram/Facebook links (handles needed) · it sits inside `<main>` like the header, so it isn't a top-level contentinfo landmark.
+
 ## Placeholder pages
 
-Each one uses its page's v2 colour (About deep red, Menu green, Journal pink, Gallery ink, Contact yellow). They show the shared header, a big Aquavit title, "Coming soon / Malapit na", and a link back home.
+Each one uses its page's v2 colour ( Menu green, Journal pink, Gallery ink, Contact yellow). They show the shared header, a big Aquavit title, "Coming soon / Malapit na", and a link back home.
 
 ## Done means
 
 - `npm run build`, `npm run typecheck` and `npm run lint` pass.
-- Unit tests pass (Vitest + Testing Library): header links and targets, mobile overlay open/close/Esc/aria-expanded, karaoke timing (syllables, schedule) and the subtitle line sequence, still state and pause, reduced-motion behaviour, and the pause control.
+- Unit tests pass (Vitest + Testing Library): header links and targets, mobile overlay open/close/Esc/aria-expanded, karaoke timing (syllables, schedule) and the subtitle line sequence, still state and pause, reduced-motion behaviour, and the pause control; the About film's autoplay, pause, reduced-motion and data-saver start.
 - Seen running in the browser at 1440×900 and 375×812: the video plays, the font loads, and there's no horizontal scroll.
 - Nothing committed or deployed without asking.
 

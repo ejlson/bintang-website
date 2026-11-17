@@ -1,0 +1,147 @@
+/* About page. Deep red flood, paper text — the About colour from the v2 design.
+   Same 1600px content column and gutters as the Menu and Journal.
+   Spacing follows the 8px scale: 4 8 12 16 24 32 48 64 96. */
+
+.page {
+  --gutter: clamp(12px, 3vw, 40px);
+  --max: 1600px;
+  --rule: color-mix(in srgb, var(--paper) 35%, transparent);
+
+  min-height: 100vh;
+  min-height: 100svh;
+  background: var(--red-deep);
+  color: var(--paper);
+  font-family: var(--font-serif);
+}
+
+.intro,
+.chapters {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding-left: var(--gutter);
+  padding-right: var(--gutter);
+}
+
+/* ---------- Statement + film ---------- */
+
+/* Statement and film side by side at the golden ratio (1.618 : 1).
+   The statement sits 24px under the navbar, like the other pages' titles.
+   Below 900px they stack: statement, then the film. */
+.intro {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: start;
+  gap: 48px clamp(24px, 4vw, 64px);
+  padding-top: 24px;
+  padding-bottom: clamp(96px, 10vw, 160px);
+}
+
+@media (width >= 900px) {
+  .intro {
+    grid-template-columns: 1.618fr 1fr;
+  }
+}
+
+.statement {
+  margin: 0;
+  font-size: clamp(34px, 4.6vw, 68px);
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  text-wrap: pretty;
+}
+
+.film {
+  max-width: 400px;
+  margin: 0;
+}
+
+@media (width >= 900px) {
+  .film {
+    max-width: none;
+  }
+}
+
+/* Square corners on the film. */
+.filmFrame {
+  position: relative;
+  aspect-ratio: 9 / 16;
+  overflow: hidden;
+  background: var(--ink);
+}
+
+.filmFrame video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Icon only, no outline, 44px tap area — same as the Home and Karaoke video controls. */
+.filmPause {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: none;
+  color: var(--paper);
+  cursor: pointer;
+  filter: drop-shadow(0 1px 4px rgb(0 0 0 / 0.5));
+}
+
+.filmPause:focus-visible {
+  outline: 2px solid var(--paper);
+  outline-offset: -4px;
+}
+
+.caption {
+  margin-top: 10px;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+/* English over Tagalog: block lines (not <br>) so the accessible name keeps its space. */
+.line {
+  display: block;
+}
+
+.line[lang="tl"] {
+  opacity: 0.92;
+}
+
+/* ---------- Chapters ---------- */
+
+.chapters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 48px 32px;
+  padding-bottom: clamp(120px, 12vw, 200px);
+}
+
+/* The hairline sits inside the gutters, not edge to edge. */
+.chapters::before {
+  content: "";
+  grid-column: 1 / -1;
+  height: 1px;
+  margin-bottom: -8px;
+  background: var(--rule);
+}
+
+.label {
+  margin: 0 0 14px;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.body {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.4;
+}

@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { Placeholder } from "@/components/Placeholder";
-import About from "@/app/about/page";
 import Gallery from "@/app/gallery/page";
 import Contact from "@/app/contact/page";
 import Groups from "@/app/contact/groups/page";
@@ -35,7 +34,6 @@ describe("Placeholder", () => {
   });
 
   it.each([
-    [About, "/about"],
     [Gallery, "/gallery"],
     [Karaoke, "/contact/karaoke"],
     [Contact, "/contact"],

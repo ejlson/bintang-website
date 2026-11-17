@@ -378,80 +378,6 @@
   margin: 0;
 }
 
-/* ---------- Karaoke video ---------- */
-
-.video {
-  position: relative;
-  margin: 0;
-  aspect-ratio: 16 / 9;
-  overflow: hidden;
-  background: var(--ink) url("/media/hero-poster.jpg") center / cover no-repeat;
-}
-
-.video video {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.videoScrim {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgb(45 45 45 / 0) 55%, rgb(45 45 45 / 0.55) 100%);
-}
-
-.videoSubs {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 16px;
-  padding: 0 64px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  align-items: center;
-  color: var(--yellow);
-  font-weight: 500;
-  line-height: 1.15;
-  text-align: center;
-  text-shadow:
-    0 0 3px var(--ink),
-    0 2px 0 var(--ink),
-    2px 0 0 var(--ink),
-    -2px 0 0 var(--ink),
-    0 -2px 0 var(--ink);
-}
-
-.videoSubs span:first-child {
-  font-size: clamp(20px, 2.8vw, 40px);
-}
-
-.videoSubs span:last-child {
-  font-size: clamp(16px, 2vw, 30px);
-}
-
-.videoPause {
-  position: absolute;
-  left: 8px;
-  bottom: 8px;
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 0;
-  background: none;
-  color: var(--paper);
-  cursor: pointer;
-}
-
-.videoPause:focus-visible {
-  outline: 2px solid var(--paper);
-  outline-offset: -4px;
-}
-
 /* ---------- Bottom CTA ---------- */
 
 .cta {
@@ -500,9 +426,5 @@
 
   .heading {
     font-size: 34px;
-  }
-
-  .videoSubs {
-    padding: 0 48px;
   }
 }

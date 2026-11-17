@@ -1,37 +1,20 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { MenuPage } from "@/components/MenuPage";
-import { KARAOKE_VIDEO } from "@/components/KaraokeVideo";
 import MenuRoute, { metadata } from "@/app/menu/page";
 import { menus } from "@/lib/menu";
-import { motion } from "../vitest.setup";
-
-const play = HTMLMediaElement.prototype.play as unknown as ReturnType<typeof vi.fn>;
-const pause = HTMLMediaElement.prototype.pause as unknown as ReturnType<typeof vi.fn>;
 
 const tabs = () => screen.getAllByRole("tab");
 const tab = (name: string) => screen.getByRole("tab", { name });
 const selectedTab = () => tabs().find((t) => t.getAttribute("aria-selected") === "true")!;
 const main = () => screen.getByRole("main");
-const pauseButton = () => screen.getByRole("button", { name: "Pause karaoke video" });
 const flush = () => act(async () => {});
-
-/** Stub navigator.connection (Network Information API) with the given saveData flag. */
-function stubConnection(saveData: boolean) {
-  Object.defineProperty(navigator, "connection", {
-    configurable: true,
-    value: Object.assign(new EventTarget(), { saveData }),
-  });
-}
 
 beforeEach(() => {
   window.history.replaceState(null, "", "/menu");
-  play.mockClear();
-  pause.mockClear();
 });
 afterEach(() => {
   window.history.replaceState(null, "", "/menu");
-  delete (navigator as Navigator & { connection?: unknown }).connection;
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
@@ -51,7 +34,6 @@ describe("MenuPage", () => {
     expect(panel).toHaveAttribute("aria-labelledby", "tab-carte");
     expect(screen.getByRole("heading", { level: 2, name: "À la carte · Food" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 2, name: "À la carte · Drinks" })).toBeInTheDocument();
-    expect(screen.queryByTestId("karaoke-video")).not.toBeInTheDocument();
   });
 
   it("app/menu/page renders MenuPage with title metadata", () => {
@@ -173,16 +155,20 @@ describe("MenuPage", () => {
     }
   });
 
-  it("uses the ink lion mark on every menu, red Karaoke included", () => {
+  it("uses the ink lion mark on every menu except red Karaoke, which is white like About", () => {
     render(<MenuPage />);
     const markSrc = () => screen.getByRole("link", { name: "Bintang home" }).querySelector("img")!.getAttribute("src");
     for (const m of menus) {
       fireEvent.click(tab(m.label));
-      expect(markSrc()).toBe("/brand/lion-head-ink.svg");
+      expect(markSrc()).toBe(m.id === "karaoke" ? "/brand/lion-head-paper.svg" : "/brand/lion-head-ink.svg");
     }
   });
 
-  it("shows legal notes on drinks/dessert sheets that ask for them, not on others", () => {
+  it("writes the Karaoke menu in white (paper), like the About page", () => {
+    expect(menus.find((m) => m.id === "karaoke")!.accent.toLowerCase()).toBe("#ede9e9");
+  });
+
+  it("shows legal notes on the sheets that ask for them, not on others", () => {
     render(<MenuPage />);
     const drinks = screen.getByRole("article", { name: "À la carte · Drinks" });
     const food = screen.getByRole("article", { name: "À la carte · Food" });
@@ -196,7 +182,20 @@ describe("MenuPage", () => {
     ).toBeInTheDocument();
 
     fireEvent.click(tab("Karaoke"));
-    expect(screen.queryByText("All meat is halal certified")).not.toBeInTheDocument();
+    const set = screen.getByRole("article", { name: "Karaoke · Sharing set menu" });
+    expect(within(set).getByText("All meat is halal certified")).toBeInTheDocument();
+  });
+
+  it("shows the karaoke sharing set menu from the printed card, with no video", () => {
+    render(<MenuPage />);
+    fireEvent.click(tab("Karaoke"));
+    expect(document.querySelector("video")).toBeNull();
+    const set = screen.getByRole("article", { name: "Karaoke · Sharing set menu" });
+    for (const h of ["Starters", "Mains", "Bintang special main", "Dessert", "Sides", "Group dining info"]) {
+      expect(within(set).getByRole("heading", { name: h })).toBeInTheDocument();
+    }
+    expect(within(set).getByText("38 pp")).toBeInTheDocument();
+    expect(within(set).getByText(/Complimentary karaoke for all private hires/)).toBeInTheDocument();
   });
 
   it("renders the karaoke banner link and the Book a table link", () => {
@@ -242,78 +241,6 @@ describe("MenuPage", () => {
   });
 });
 
-describe("KaraokeVideo on the Karaoke tab", () => {
-  it("shows a muted looping decorative video with aria-hidden subtitles and a pause toggle", async () => {
-    window.history.replaceState(null, "", "/menu#karaoke");
-    render(<MenuPage />);
-    await flush();
-    const v = screen.getByTestId("karaoke-video") as HTMLVideoElement;
-    expect(v).toHaveAttribute("src", KARAOKE_VIDEO);
-    expect(KARAOKE_VIDEO).toBe("/media/hero-loop.mp4");
-    expect(v.muted).toBe(true);
-    expect(v.loop).toBe(true);
-    expect(v).toHaveAttribute("aria-hidden", "true");
-    expect(screen.getByText("♪ Let’s sing! ♪").closest("figcaption")).toHaveAttribute("aria-hidden", "true");
-
-    expect(pauseButton()).toHaveAttribute("aria-pressed", "false");
-    expect(play).toHaveBeenCalled();
-    expect(v).toHaveAttribute("preload", "metadata");
-
-    fireEvent.click(pauseButton());
-    expect(pauseButton()).toHaveAttribute("aria-pressed", "true");
-    expect(pause).toHaveBeenCalled();
-
-    play.mockClear();
-    fireEvent.click(pauseButton());
-    await flush();
-    expect(pauseButton()).toHaveAttribute("aria-pressed", "false");
-    expect(play).toHaveBeenCalledTimes(1);
-  });
-
-  it("is not rendered on other tabs", () => {
-    render(<MenuPage />);
-    for (const label of ["À la carte", "Brunch", "Desserts"]) {
-      fireEvent.click(tab(label));
-      expect(screen.queryByTestId("karaoke-video")).not.toBeInTheDocument();
-      expect(screen.queryByRole("button", { name: "Pause karaoke video" })).not.toBeInTheDocument();
-    }
-    fireEvent.click(tab("Karaoke"));
-    expect(screen.getByTestId("karaoke-video")).toBeInTheDocument();
-  });
-
-  it("starts paused for reduced motion and never calls play until the visitor presses it", async () => {
-    motion.reduce = true;
-    window.history.replaceState(null, "", "/menu#karaoke");
-    render(<MenuPage />);
-    await flush();
-    expect(pauseButton()).toHaveAttribute("aria-pressed", "true");
-    expect(play).not.toHaveBeenCalled();
-    expect(screen.getByTestId("karaoke-video")).toHaveAttribute("preload", "none");
-
-    fireEvent.click(pauseButton());
-    await flush();
-    expect(pauseButton()).toHaveAttribute("aria-pressed", "false");
-    expect(play).toHaveBeenCalledTimes(1);
-  });
-
-  it("starts paused with data-saver on", async () => {
-    stubConnection(true);
-    window.history.replaceState(null, "", "/menu#karaoke");
-    render(<MenuPage />);
-    await flush();
-    expect(pauseButton()).toHaveAttribute("aria-pressed", "true");
-    expect(play).not.toHaveBeenCalled();
-  });
-
-  it("shows the paused state if autoplay is refused", async () => {
-    play.mockImplementationOnce(() => Promise.reject(new DOMException("blocked", "NotAllowedError")));
-    window.history.replaceState(null, "", "/menu#karaoke");
-    render(<MenuPage />);
-    await flush();
-    expect(pauseButton()).toHaveAttribute("aria-pressed", "true");
-  });
-});
-
 describe("lib/menu data", () => {
   const allStrings = (v: unknown): string[] =>
     typeof v === "string" ? [v] : v && typeof v === "object" ? Object.values(v).flatMap(allStrings) : [];
@@ -356,11 +283,6 @@ describe("lib/menu data", () => {
     expect(strings.filter((s) => s.includes("[") || s.includes("]"))).toEqual([]);
     expect(strings.filter((s) => s.trim() === "")).toEqual([]);
   });
-
-  it("only the Karaoke menu shows the video", () => {
-    const withVideo = menus.filter((m) => m.sheets.some((s) => s.video)).map((m) => m.id);
-    expect(withVideo).toEqual(["karaoke"]);
-  });
 });
 
 describe("review fixes", () => {
@@ -377,22 +299,6 @@ describe("review fixes", () => {
   it("makes the tab panel focusable so Tab reaches the menu content", () => {
     render(<MenuPage />);
     expect(screen.getByRole("tabpanel")).toHaveAttribute("tabindex", "0");
-  });
-
-  it("keeps the visitor's karaoke pause across tab switches", async () => {
-    render(<MenuPage />);
-    fireEvent.click(tab("Karaoke"));
-    await flush();
-    fireEvent.click(pauseButton());
-    await flush();
-    expect(pauseButton()).toHaveAttribute("aria-pressed", "true");
-    fireEvent.click(tab("Brunch"));
-    await flush();
-    play.mockClear();
-    fireEvent.click(tab("Karaoke"));
-    await flush();
-    expect(pauseButton()).toHaveAttribute("aria-pressed", "true");
-    expect(play).not.toHaveBeenCalled();
   });
 
   it("scrolls to the top of the new menu when switching tabs from further down", () => {

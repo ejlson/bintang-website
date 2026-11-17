@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
-import { Placeholder } from "@/components/Placeholder";
+import { AboutPage } from "@/components/AboutPage";
 
-export const metadata: Metadata = { title: "About" };
+export const metadata: Metadata = {
+  title: "About",
+  description:
+    "Bintang is London’s oldest Filipino restaurant: the same kitchen on Kentish Town Road since 1987, Filipino favourites made to be shared.",
+};
 
 export default function Page() {
-  return <Placeholder title="About" tl="Tungkol" href="/about" background="var(--red-deep)" tone="paper" />;
+  return <AboutPage />;
 }

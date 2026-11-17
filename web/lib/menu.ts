@@ -1,5 +1,5 @@
 /**
- * Bintang menus, transcribed from the printed À la carte and Brunch cards
+ * Bintang menus, transcribed from the printed À la carte, Brunch and Sharing Set cards
  * (Nov 2026). Prices are in pounds; the page shows bare numbers like the cards.
  * Dietary marks live in the dish name: V vegetarian, VE vegan, PN peanuts, GF gluten free.
  */
@@ -45,8 +45,6 @@ export type MenuSheet = {
   karaoke?: string;
   /** Show the halal / allergen / service-charge notes. */
   legal?: boolean;
-  /** Show the karaoke video above the sections. */
-  video?: boolean;
 };
 
 export type MenuId = "carte" | "brunch" | "desserts" | "karaoke";
@@ -778,49 +776,92 @@ export const menus: Menu[] = [
   {
     "id": "karaoke",
     "label": "Karaoke",
-    "accent": "#2D2D2D",
+    "accent": "#EDE9E9",
     "background": "#D92E36",
     "sheets": [
       {
-        "label": "Karaoke · Kantahan",
-        "video": true,
+        "label": "Karaoke · Sharing set menu",
         "sections": [
           {
-            "title": "Open mic",
+            "title": "Starters",
             "items": [
-              {
-                "name": "Saturday open mic",
-                "desc": "Every Saturday, 5pm – 11pm. Pick a song, grab the mic."
-              }
+              { "name": "Bintang Chicken Wings", "desc": "Carabao / calamansi honey or BBQ adobo" },
+              { "name": "Okoy Fritters", "desc": "Shredded root vegetables, Bintang pinakurat" },
+              { "name": "Lumpiang Shanghai", "desc": "Beef mince spring rolls, sweet and spicy sauce" },
+              { "name": "Papaya Salad", "desc": "Papaya, green beans, dried shrimp, peanuts, fish sauce" },
+              { "name": "Tofu Bites", "desc": "Crispy tofu, sweet adobo glaze" }
             ]
           },
           {
-            "title": "Private karaoke",
+            "title": "Mains",
+            "items": [
+              { "name": "Beef Sisig", "desc": "Brined beef brisket, chilli, egg, served on a sizzling plate" },
+              {
+                "name": "Oak Smoked Chicken Inasal",
+                "desc": "½ hen on the bone & boneless thigh, marinated with lemongrass, ginger and soy, and chargrilled"
+              },
+              {
+                "name": "Oxtail Kare-Kare",
+                "desc": "Braised in a peanut and fermented shrimp stew with pak choi, green beans, aubergine"
+              },
+              { "name": "Filipino Lamb Rendang", "desc": "Slow-cooked lamb, coconut lemongrass curry" },
+              { "name": "Ulek Curry", "desc": "Ulek red curry, aubergine, scotch bonnet, mangosteen, coconut milk" }
+            ]
+          },
+          {
+            "title": "Bintang special main",
             "boxed": true,
             "items": [
               {
-                "name": "Book the karaoke space",
-                "desc": "Large space available for groups and parties.",
-                "note": "Ask us about capacity and minimum spend."
+                "name": "Pancit Guisado",
+                "desc": "Filipino rice noodle dish with stir-fried vegetables",
+                "note": "Can be made gluten free and vegan · £3 per person supplement"
               }
             ]
           },
           {
-            "title": "Drinks",
+            "title": "Dessert",
             "items": [
               {
-                "name": "Cocktails & soft drinks",
-                "desc": "The full À la carte drinks list is served all night."
+                "name": "Buko Pandan",
+                "desc": "Pandan jelly, nata de coco in a pandan cream & 1 scoop of ice cream (ube or mango)"
+              }
+            ]
+          },
+          {
+            "title": "Sides",
+            "items": [{ "name": "Jasmine Rice", "desc": "Included with the set menu" }]
+          },
+          {
+            "title": "Group dining info",
+            "boxed": true,
+            "foot": "Please ask our team if you have any questions.",
+            "items": [
+              {
+                "name": "3 starters & 3 mains",
+                "desc": "Choose three of each, all served in sharing portions. Jasmine rice included."
               },
               {
-                "name": "Bottomless (brunch only)",
-                "price": "23 pp",
-                "desc": "Unlimited cocktails or bubbles · 1.5 hours"
+                "name": "Buko Pandan & a scoop of ice cream",
+                "desc": "For every guest. Our dessert includes dairy; please ask about sorbets."
+              },
+              {
+                "name": "Add Pancit Guisado",
+                "desc": "Our Bintang main, as an extra sharing dish for the table",
+                "note": "£3 per person supplement"
               }
             ]
           }
         ],
-        "karaoke": "Book the room · Open mic Saturdays 5–11pm"
+        "wide": [
+          {
+            "title": "Sharing set menu",
+            "lead": "All dishes are served as platters.",
+            "items": [{ "name": "10 or more guests", "price": "38 pp" }]
+          }
+        ],
+        "karaoke": "Complimentary karaoke for all private hires of our lower ground floor. Email us for room hire prices and time slots.",
+        "legal": true
       }
     ]
   }

@@ -25,7 +25,7 @@ export async function generateMetadata(props: PageProps<"/journal/[slug]">): Pro
       title: post.title,
       description: post.excerpt,
       publishedTime: post.date,
-      images: [{ url: post.image.src, width: 960, height: 1200, alt: post.image.alt }],
+      images: [{ url: post.image.src, width: post.image.width, height: post.image.height, alt: post.image.alt }],
     },
   };
 }

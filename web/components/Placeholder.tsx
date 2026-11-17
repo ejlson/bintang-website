@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SiteFooter } from "./SiteFooter";
 import { SiteHeader } from "./SiteHeader";
 import { FitTitle } from "./FitTitle";
 import styles from "./Placeholder.module.css";
@@ -34,6 +35,7 @@ export function Placeholder({ title, tl, href, background, tone }: Props) {
           ← Back home
         </Link>
       </section>
+      <SiteFooter />
     </main>
   );
 }

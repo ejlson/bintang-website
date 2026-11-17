@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type KeyboardEvent } from "react";
 import { menus, type MenuId, type MenuItem, type MenuSheet } from "@/lib/menu";
+import { SiteFooter } from "./SiteFooter";
 import { SiteHeader } from "./SiteHeader";
-import { KaraokeVideo } from "./KaraokeVideo";
 import { jumpTo } from "./SmoothScroll";
 import styles from "./MenuPage.module.css";
 
@@ -27,14 +27,10 @@ function Item({ item }: { item: MenuItem }) {
   );
 }
 
-type VideoState = { userPaused: boolean | null; onUserPausedChange: (paused: boolean) => void };
-
-function Sheet({ sheet, video }: { sheet: MenuSheet; video: VideoState }) {
+function Sheet({ sheet }: { sheet: MenuSheet }) {
   return (
     <article className={styles.sheet} aria-label={sheet.label}>
       <h2 className={styles.band}>{sheet.label}</h2>
-
-      {sheet.video && <KaraokeVideo {...video} />}
 
       <div className={styles.columns}>
         {sheet.sections.map((s) => (
@@ -114,9 +110,6 @@ function MenuTitle() {
 export function MenuPage() {
   const [active, setActive] = useState<MenuId>("carte");
   const menu = menus.find((m) => m.id === active) ?? menus[0];
-
-  // The visitor's karaoke play/pause choice, kept here so it survives switching tabs.
-  const [videoPaused, setVideoPaused] = useState<boolean | null>(null);
 
   // Colour fades are switched on only after the first paint (see .page[data-ready]).
   const [ready, setReady] = useState(false);
@@ -219,8 +212,8 @@ export function MenuPage() {
         } as CSSProperties
       }
     >
-      {/* Text colour comes from --acc (see .page > header); only the lion swaps for the dark Karaoke page. */}
-      <SiteHeader variant="page" tone="ink" mark="ink" currentHref="/menu" />
+      {/* Text colour comes from --acc (see .page > header); only the lion swaps, to white on red Karaoke like About. */}
+      <SiteHeader variant="page" tone="ink" mark={menu.id === "karaoke" ? "paper" : "ink"} currentHref="/menu" />
 
       <div className={styles.titleWrap}>
         <h1 className={styles.title}>
@@ -230,54 +223,59 @@ export function MenuPage() {
         </h1>
       </div>
 
-      <div ref={tabBarRef} className={styles.tabBar}>
+      {/* Bounds the sticky tab bar, so it lets go before the footer. */}
+      <div>
+        <div ref={tabBarRef} className={styles.tabBar}>
+          <div
+            role="tablist"
+            aria-label="Choose a menu"
+            className={styles.tabs}
+            style={titleWidth ? { width: titleWidth } : undefined}
+          >
+            {menus.map((m) => (
+              <button
+                key={m.id}
+                ref={(el) => {
+                  tabRefs.current[m.id] = el;
+                }}
+                type="button"
+                role="tab"
+                id={`tab-${m.id}`}
+                aria-selected={m.id === active}
+                aria-controls="menu-panel"
+                tabIndex={m.id === active ? 0 : -1}
+                className={styles.tab}
+                onClick={() => select(m.id)}
+                onKeyDown={onTabKey}
+              >
+                {m.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Focusable: the panel starts with no focusable element, so Tab from the tabs lands here. */}
         <div
-          role="tablist"
-          aria-label="Choose a menu"
-          className={styles.tabs}
-          style={titleWidth ? { width: titleWidth } : undefined}
+          ref={panelRef}
+          id="menu-panel"
+          role="tabpanel"
+          aria-labelledby={`tab-${menu.id}`}
+          tabIndex={0}
+          className={styles.panel}
         >
-          {menus.map((m) => (
-            <button
-              key={m.id}
-              ref={(el) => {
-                tabRefs.current[m.id] = el;
-              }}
-              type="button"
-              role="tab"
-              id={`tab-${m.id}`}
-              aria-selected={m.id === active}
-              aria-controls="menu-panel"
-              tabIndex={m.id === active ? 0 : -1}
-              className={styles.tab}
-              onClick={() => select(m.id)}
-              onKeyDown={onTabKey}
-            >
-              {m.label}
-            </button>
+          {menu.sheets.map((sh) => (
+            <Sheet key={sh.label} sheet={sh} />
           ))}
+        </div>
+
+        <div className={styles.cta}>
+          <Link href="/contact" className={styles.book}>
+            Book a table
+          </Link>
         </div>
       </div>
 
-      {/* Focusable: the panel starts with no focusable element, so Tab from the tabs lands here. */}
-      <div
-        ref={panelRef}
-        id="menu-panel"
-        role="tabpanel"
-        aria-labelledby={`tab-${menu.id}`}
-        tabIndex={0}
-        className={styles.panel}
-      >
-        {menu.sheets.map((sh) => (
-          <Sheet key={sh.label} sheet={sh} video={{ userPaused: videoPaused, onUserPausedChange: setVideoPaused }} />
-        ))}
-      </div>
-
-      <div className={styles.cta}>
-        <Link href="/contact" className={styles.book}>
-          Book a table
-        </Link>
-      </div>
+      <SiteFooter />
     </main>
   );
 }

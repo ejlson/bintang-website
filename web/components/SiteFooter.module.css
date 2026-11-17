@@ -1,0 +1,116 @@
+/* Site footer (components/SiteFooter). After Mala Project's: transparent, so it
+   wears whatever colour the page is, with the same type as the header nav. */
+
+.footer {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 48px 32px;
+  /* Same column as the page content (--max/--gutter, set by Menu, About and
+     Journal); pages already leave room at the bottom, so the footer adds only 48px. */
+  max-width: var(--max, none);
+  margin: 0 auto;
+  padding: 48px var(--gutter, 20px) 20px;
+  color: inherit;
+  font-family: var(--font-ui);
+  font-size: 16px;
+  line-height: 20px;
+  text-align: left;
+}
+
+/* Left: a single column of links, like Mala's. */
+.links {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.link:hover,
+.link:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Right: how to find us, right-aligned like the header's right list. */
+.visit {
+  display: flex;
+  gap: 48px;
+  text-align: right;
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.heading {
+  margin: 0;
+  font: inherit;
+  font-weight: 700;
+}
+
+.address {
+  font-style: normal;
+}
+
+.hours {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 0 16px;
+  margin: 0;
+}
+
+.row {
+  display: contents;
+}
+
+.row dt {
+  text-align: left;
+}
+
+.row dd {
+  margin: 0;
+}
+
+/* Sign-off: small print across the bottom. */
+.signoff {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 24px;
+  margin: 0;
+  font-size: 13.6px;
+  line-height: 18px;
+}
+
+/* Phones: everything stacks on the left. */
+@media (width < 768px) {
+  .footer {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding: 40px var(--gutter, 16px) 20px;
+  }
+
+  .visit {
+    flex-direction: column;
+    gap: 32px;
+    text-align: left;
+  }
+
+  .block {
+    align-items: flex-start;
+  }
+
+  .signoff {
+    flex-direction: column;
+  }
+}

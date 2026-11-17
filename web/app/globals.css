@@ -125,16 +125,6 @@ video {
   }
 }
 
-/* The browser already animated this back/forward swipe itself: plain cut. */
-:root[data-ua-transition]::view-transition-old(*),
-:root[data-ua-transition]::view-transition-new(*),
-:root[data-ua-transition]::view-transition-group(*) {
-  animation: none;
-}
-:root[data-ua-transition]::view-transition-old(*) {
-  display: none;
-}
-
 /* Reduced motion: a straight cut. (The blanket rule above doesn't reach
    ::view-transition-* pseudo-elements, so this block is what does it.) */
 @media (prefers-reduced-motion: reduce) {

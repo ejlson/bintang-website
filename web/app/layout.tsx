@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import { SwipeBackGuard } from "@/components/PageTransition";
+import { HistoryWipe } from "@/components/PageTransition";
 import { SmoothScroll } from "@/components/SmoothScroll";
+import { hours, site } from "@/lib/site";
 import "lenis/dist/lenis.css";
 import "./globals.css";
 
@@ -35,21 +36,19 @@ const restaurantJsonLd = {
   description,
   url: "https://www.bintangrestaurant.co.uk",
   telephone: "+44 20 7267 2197",
-  email: "bintangnw1@gmail.com",
+  email: site.email,
   servesCuisine: ["Filipino", "Asian"],
   foundingDate: "1987",
   address: {
     "@type": "PostalAddress",
-    streetAddress: "93 Kentish Town Road",
-    addressLocality: "London",
-    postalCode: "NW1 8NY",
+    streetAddress: site.street,
+    addressLocality: site.locality,
+    postalCode: site.postcode,
     addressCountry: "GB",
   },
-  openingHoursSpecification: [
-    { "@type": "OpeningHoursSpecification", dayOfWeek: ["Tuesday", "Wednesday", "Thursday"], opens: "17:00", closes: "21:30" },
-    { "@type": "OpeningHoursSpecification", dayOfWeek: ["Friday", "Saturday"], opens: "11:00", closes: "22:00" },
-    { "@type": "OpeningHoursSpecification", dayOfWeek: "Sunday", opens: "11:00", closes: "18:00" },
-  ],
+  openingHoursSpecification: hours
+    .filter((h) => h.opens)
+    .map((h) => ({ "@type": "OpeningHoursSpecification", dayOfWeek: h.days, opens: h.opens, closes: h.closes })),
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -64,7 +63,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <link rel="stylesheet" href="https://use.typekit.net/pev2vne.css" />
       </head>
       <body>
-        <SwipeBackGuard />
+        <HistoryWipe />
         <SmoothScroll />
         {children}
         <script

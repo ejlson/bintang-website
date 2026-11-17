@@ -4,7 +4,7 @@ import { useEffect, useState, type ComponentProps } from "react";
 import {
   OPEN_POST,
   PageTransition,
-  SwipeBackGuard,
+  HistoryWipe,
   alignWipeToScreen,
   exitWipeFor,
   translateYOf,
@@ -202,37 +202,193 @@ describe("translateYOf", () => {
   });
 });
 
-describe("SwipeBackGuard", () => {
-  const root = document.documentElement;
-  afterEach(() => {
-    delete root.dataset.uaTransition;
-  });
-  const pop = (hasUAVisualTransition: boolean) => {
-    const e = new PopStateEvent("popstate");
-    Object.defineProperty(e, "hasUAVisualTransition", { value: hasUAVisualTransition });
+describe("HistoryWipe (Back/Forward wipes)", () => {
+  type Listener = (e: Event & { navigationType?: string }) => void;
+  let entryKey = "a";
+  let entryListeners: Listener[] = [];
+  const fakeNavigation = {
+    get currentEntry() {
+      return { key: entryKey };
+    },
+    addEventListener: (_: string, fn: Listener) => entryListeners.push(fn),
+    removeEventListener: (_: string, fn: Listener) => (entryListeners = entryListeners.filter((f) => f !== fn)),
+  };
+  const setPath = (path: string) => {
+    window.history.replaceState(window.history.state, "", path);
+    nav.pathname = path;
+  };
+  const entryChange = (key: string, navigationType: string) => {
+    entryKey = key;
+    const e = Object.assign(new Event("currententrychange"), { navigationType });
+    entryListeners.forEach((fn) => fn(e));
+  };
+  const pop = (init: { hasUAVisualTransition?: boolean } = {}) => {
+    const e = new PopStateEvent("popstate", { state: { __NA: true } });
+    if (init.hasUAVisualTransition) Object.defineProperty(e, "hasUAVisualTransition", { value: true });
     window.dispatchEvent(e);
   };
+  // Stand-in for Next's own (bubble-phase) popstate listener.
+  let nextSaw: PopStateEvent[] = [];
+  const nextListener = (e: PopStateEvent) => nextSaw.push(e);
+  let scrollTo: ReturnType<typeof vi.fn>;
 
-  it("flags back/forward swipes the browser already animated, and clears on the next click", () => {
-    render(<SwipeBackGuard />);
-    pop(true);
-    expect(root.dataset.uaTransition).toBe("");
-    document.body.click();
-    expect(root.dataset.uaTransition).toBeUndefined();
+  const setup = () => {
+    Object.defineProperty(window, "navigation", { value: fakeNavigation, configurable: true });
+    scrollTo = vi.fn();
+    vi.stubGlobal("scrollTo", scrollTo);
+    vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => (cb(0), 1));
+    sessionStorage.clear();
+    history.scrollRestoration = "auto";
+    entryKey = "a";
+    entryListeners = [];
+    nextSaw = [];
+    window.addEventListener("popstate", nextListener);
+    setPath("/journal");
+  };
+  afterEach(() => {
+    window.removeEventListener("popstate", nextListener);
+    delete (window as { navigation?: unknown }).navigation;
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
+    setPath("/");
+  });
+  const recordScroll = (y: number) => {
+    Object.defineProperty(window, "scrollY", { value: y, configurable: true });
+    window.dispatchEvent(new Event("scroll"));
+  };
+
+  it("does nothing without the Navigation API", () => {
+    setup();
+    delete (window as { navigation?: unknown }).navigation;
+    render(<HistoryWipe />);
+    expect(history.scrollRestoration).toBe("auto");
+    setPath("/menu");
+    pop();
+    expect(nextSaw).toHaveLength(1);
   });
 
-  it("leaves button-press back/forward to wipe normally", () => {
-    render(<SwipeBackGuard />);
-    pop(true);
-    pop(false);
-    expect(root.dataset.uaTransition).toBeUndefined();
-  });
-
-  it("removes its listeners on unmount", () => {
-    const { unmount } = render(<SwipeBackGuard />);
+  it("takes over scroll restoration, and hands it back on unmount", () => {
+    setup();
+    const { unmount } = render(<HistoryWipe />);
+    expect(history.scrollRestoration).toBe("manual");
     unmount();
-    pop(true);
-    expect(root.dataset.uaTransition).toBeUndefined();
+    expect(history.scrollRestoration).toBe("auto");
+  });
+
+  it("holds Back to another page and replays it to Next on the next task", () => {
+    vi.useFakeTimers();
+    setup();
+    render(<HistoryWipe />);
+    entryKey = "b";
+    setPath("/journal/the-garden");
+    pop();
+    expect(nextSaw).toHaveLength(0); // not during the popstate event itself
+    vi.runAllTimers();
+    expect(nextSaw).toHaveLength(1);
+    expect(nextSaw[0].state).toEqual({ __NA: true });
+  });
+
+  it("lets the browser's own swipe animation through untouched (plain cut)", () => {
+    setup();
+    render(<HistoryWipe />);
+    setPath("/menu");
+    pop({ hasUAVisualTransition: true });
+    expect(nextSaw).toHaveLength(1);
+  });
+
+  it("restores the saved scroll in the commit that shows the page", () => {
+    vi.useFakeTimers();
+    setup();
+    const { rerender } = render(<HistoryWipe />);
+    recordScroll(1192); // on /journal (entry a)
+
+    entryChange("b", "push"); // click into a post
+    setPath("/journal/the-garden");
+    rerender(<HistoryWipe />);
+    recordScroll(0);
+    scrollTo.mockClear();
+
+    entryKey = "a"; // Back
+    setPath("/journal");
+    pop();
+    expect(scrollTo).not.toHaveBeenCalled(); // nothing moves before the commit
+    vi.runAllTimers();
+    rerender(<HistoryWipe />); // Next commits /journal
+    expect(scrollTo).toHaveBeenCalledWith({ top: 1192 });
+  });
+
+  it("does not move scroll on link navigations (Next scrolls those itself)", () => {
+    setup();
+    const { rerender } = render(<HistoryWipe />);
+    scrollTo.mockClear();
+    entryChange("b", "push");
+    setPath("/menu");
+    rerender(<HistoryWipe />);
+    expect(scrollTo).not.toHaveBeenCalled();
+  });
+
+  it("hash-only steps on the same page restore scroll without a wipe", () => {
+    setup();
+    render(<HistoryWipe />);
+    recordScroll(400);
+    entryChange("b", "push"); // e.g. a menu tab written to the hash
+    recordScroll(50);
+    scrollTo.mockClear();
+    entryKey = "a";
+    pop();
+    expect(nextSaw).toHaveLength(1);
+    expect(scrollTo).toHaveBeenCalledWith({ top: 400 });
+  });
+
+  it("a link that overtakes a slow Back keeps Next's scroll, and later scroll is saved to the right entry", () => {
+    vi.useFakeTimers();
+    setup();
+    const { rerender } = render(<HistoryWipe />);
+    recordScroll(1192); // /journal, entry a
+    entryChange("b", "push");
+    setPath("/about");
+    rerender(<HistoryWipe />);
+
+    entryKey = "a"; // Back towards /journal…
+    setPath("/journal");
+    pop();
+    vi.runAllTimers();
+    entryChange("c", "push"); // …but a link to /menu commits first
+    setPath("/menu");
+    scrollTo.mockClear();
+    rerender(<HistoryWipe />);
+    expect(scrollTo).not.toHaveBeenCalled();
+
+    recordScroll(250); // scrolling /menu must not overwrite /journal's spot
+    entryKey = "a";
+    setPath("/journal");
+    pop();
+    vi.runAllTimers();
+    rerender(<HistoryWipe />);
+    expect(scrollTo).toHaveBeenCalledWith({ top: 1192 });
+  });
+
+  it("a second quick Back replaces the first one's pending replay", () => {
+    vi.useFakeTimers();
+    setup();
+    render(<HistoryWipe />);
+    setPath("/about");
+    pop();
+    setPath("/menu");
+    pop();
+    vi.runAllTimers();
+    expect(nextSaw).toHaveLength(1);
+  });
+
+  it("keeps positions across a reload via sessionStorage", () => {
+    setup();
+    const { unmount } = render(<HistoryWipe />);
+    recordScroll(321);
+    window.dispatchEvent(new Event("pagehide"));
+    unmount();
+    scrollTo.mockClear();
+    render(<HistoryWipe />);
+    expect(scrollTo).toHaveBeenCalledWith({ top: 321 });
   });
 });
 

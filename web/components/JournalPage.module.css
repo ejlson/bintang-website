@@ -1,194 +1,129 @@
-/* Journal index and post pages. Pink page (the Journal's v2 colour), ink text.
-   Cards follow a printed-card pattern: 4:5 photo with the date on it, serif title, hairline, short excerpt, and a ruled Read more bar that
-   fills with ink on hover.
+/* Journal index and post pages, set like an old newspaper after the printed
+   brunch card: maroon ink on cream newsprint, 2px rules between sections. --ink is redefined here so the shared header, its Book
+   button and the mobile menu print in the same maroon.
    Spacing follows the 8px scale: 4 8 12 16 24 32 48 64 96. */
 
 .page {
+  --ink: #6e2129;
+  --newsprint: #f7f1ea;
+  /* Same measure as About and Menu, so the title sits at the same width. */
   --gutter: clamp(12px, 3vw, 40px);
   --max: 1600px;
-  --rule: color-mix(in srgb, var(--ink) 30%, transparent);
-  --muted: color-mix(in srgb, var(--ink) 82%, var(--pink));
   --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --rule: 2px solid var(--ink);
 
   min-height: 100vh;
   min-height: 100svh;
-  background: var(--pink);
+  background: var(--newsprint);
   color: var(--ink);
   font-family: var(--sans);
 }
 
-/* ---------- Title ---------- */
-
-/* No max-width: the title runs edge to edge between the page gutters.
-   It's a size container so the title can scale to its width (cqi). */
-.intro {
-  container-type: inline-size;
-  margin: 0 auto;
-  padding: clamp(32px, 6vw, 64px) var(--gutter) 0;
-  text-align: center;
-}
-
-.title {
-  margin: 0;
-  font-family: var(--font-display);
-  font-weight: 700;
-  /* JOURNAL is about 4.3 em wide in Aquavit Black: fill the width, capped
-     on very wide screens. */
-  font-size: min(100cqi / 4.4, 380px);
-  white-space: nowrap;
-  line-height: 0.8;
-  text-transform: uppercase;
-  /* Wide and squished vertically, matching the Menu title. */
-  transform: scaleY(0.85);
-  transform-origin: 50% 100%;
-}
-
-.lede {
-  margin: 24px 0 0;
-  font-family: var(--font-serif);
-  font-size: clamp(18px, 2vw, 24px);
-  line-height: 1.3;
-}
-
-.lede span {
-  font-style: italic;
-}
-
-/* ---------- Grid ---------- */
-
-.grid {
-  list-style: none;
+.wrap {
   max-width: var(--max);
   margin: 0 auto;
-  padding: clamp(48px, 6vw, 64px) var(--gutter) 0;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 48px 20px;
+  padding: 0 var(--gutter);
 }
 
-@media (max-width: 1199px) {
-  .grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
+/* ---------- Masthead ---------- */
+
+/* Spans the full content width (FitTitle), squished vertically, 24px under
+   the header: the same title as About and Menu. */
+.title {
+  margin: 0;
+  padding: 24px 0 clamp(20px, 2.4vw, 32px);
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 0;
 }
 
-@media (max-width: 899px) {
-  .grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 40px 16px;
-  }
-}
+/* ---------- Shared story parts ---------- */
 
-@media (max-width: 559px) {
-  .grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-.card {
-  min-width: 0;
-}
-
-.cardInner {
-  position: relative;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-/* ---------- Cover ---------- */
-
-.media {
-  position: relative;
-  aspect-ratio: 4 / 5;
-  overflow: hidden;
-  background: var(--ink);
-}
-
-/* A scrim at the foot keeps the date legible on bright photos. */
-.media::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(to top, rgb(45 45 45 / 0.5), rgb(45 45 45 / 0) 24%);
-}
-
-.img {
-  object-fit: cover;
-  transition: transform 0.8s var(--ease);
-}
-
-.date {
-  position: absolute;
-  z-index: 1;
-  right: 16px;
-  bottom: 14px;
-  color: var(--paper);
-  font-size: 13px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  font-variant-numeric: tabular-nums;
-}
-
-/* ---------- Card text ---------- */
-
-.cardTitle {
-  margin: 14px 0 0;
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--rule);
-  font-family: var(--font-serif);
-  font-weight: 400;
-  font-size: clamp(22px, 1.9vw, 27px);
-  line-height: 1.15;
-  text-wrap: balance;
-  transition: color 0.3s var(--ease);
-}
-
-.cardLink {
+/* The headline link is stretched over its story so the whole block is one tap target. */
+.storyLink {
   color: inherit;
   text-decoration: none;
 }
 
-.cardLink::after {
+.storyLink::after {
   content: "";
   position: absolute;
   inset: 0;
-  z-index: 2;
+  z-index: 1;
 }
 
-.cardLink:focus-visible {
+.storyLink:focus-visible {
   outline: none;
 }
 
-.cardLink:focus-visible::after {
+.storyLink:focus-visible::after {
   outline: 2px solid var(--ink);
-  outline-offset: 6px;
+  outline-offset: 4px;
 }
 
-.excerpt {
-  flex: 1;
-  margin: 12px 0 16px;
-  color: var(--muted);
-  font-size: 15px;
-  line-height: 1.55;
+.label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
 }
 
-.more {
+.kicker {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
   justify-content: space-between;
-  gap: 16px;
-  min-height: 44px;
-  padding: 0 16px;
+  gap: 4px 24px;
+  margin: 0;
+  padding: 8px 0;
   border-top: 1px solid var(--ink);
   border-bottom: 1px solid var(--ink);
-  font-size: 14px;
-  letter-spacing: 0.14em;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  transition:
-    background-color 0.3s var(--ease),
-    color 0.3s var(--ease);
+}
+
+/* Photos in their original colour. The ink background shows while one loads. */
+.photo {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  background: var(--ink);
+}
+
+.img {
+  object-fit: cover;
+  transition: transform 0.9s var(--ease);
+}
+
+.framed {
+  aspect-ratio: 3 / 2;
+  border: 6px solid var(--ink);
+}
+
+.read,
+.line {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  color: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.line:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.line:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 4px;
 }
 
 .arrow {
@@ -197,27 +132,345 @@
 }
 
 @media (hover: hover) {
-  .cardInner:hover .img {
-    transform: scale(1.04);
+  .front:hover .storyLink,
+  .story:hover .storyLink {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.12em;
   }
 
-  .cardInner:hover .cardTitle {
-    color: var(--red-deep);
+  .front:hover .img,
+  .story:hover .img {
+    transform: scale(1.03);
   }
 
-  .cardInner:hover .arrow {
+  .front:hover .read .arrow,
+  .story:hover .readMore .arrow,
+  .line:hover .arrow {
     transform: translateX(4px);
-  }
-
-  .cardInner:hover .more {
-    background: var(--ink);
-    color: var(--pink);
   }
 }
 
-.cardInner:focus-within .more {
+/* ---------- Lead story ---------- */
+
+/* Headline left, photo right with the summary under it; stacked on phones. */
+.front {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 32px clamp(32px, 4vw, 64px);
+  align-items: start;
+  padding: clamp(32px, 4vw, 56px) 0 48px;
+  /* The rule between the JOURNAL title and the latest story. */
+  border-top: var(--rule);
+}
+
+.leadTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(36px, 4vw, 64px);
+  line-height: 0.92;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.leadMedia {
+  justify-self: end;
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.standfirst {
+  margin: 4px 0 0;
+  font-family: var(--font-serif);
+  font-size: clamp(17px, 1.4vw, 20px);
+  line-height: 1.4;
+}
+
+.read {
+  align-self: flex-start;
+}
+
+@media (max-width: 899px) {
+  .front {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ---------- Older entries ---------- */
+
+/* "Older entries" on the left and the search box on the right, between two rules. */
+.dividerBar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px 32px;
+  padding: 10px 0;
+  border-top: var(--rule);
+  border-bottom: var(--rule);
+}
+
+.divider {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(24px, 2.6vw, 36px);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+/* Show, Sort and Search, right of the heading; they wrap under it on phones. */
+.tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 20px;
+}
+
+.selectWrap {
+  position: relative;
+}
+
+/* A chevron drawn in ink, since the native one ignores the page colour. */
+.selectWrap::after {
+  content: "";
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  border-right: 1.6px solid var(--ink);
+  border-bottom: 1.6px solid var(--ink);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+
+.select {
+  min-height: 44px;
+  padding: 8px 24px 8px 0;
+  border: 0;
+  border-bottom: 1px solid var(--ink);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  appearance: none;
+  cursor: pointer;
+}
+
+.select:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 4px;
+}
+
+.search {
+  position: relative;
+  flex: none;
+  width: clamp(180px, 20vw, 280px);
+}
+
+.searchInput {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 32px 8px 0;
+  border: 0;
+  border-bottom: 1px solid var(--ink);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px;
+  appearance: none;
+}
+
+.searchInput::placeholder {
+  color: var(--ink);
+  opacity: 0.7;
+}
+
+.searchInput:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 4px;
+}
+
+/* The native clear button would sit under the icon. */
+.searchInput::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+.searchIcon {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.noResults {
+  margin: 0;
+  padding: 48px 0 64px;
+  font-family: var(--font-serif);
+  font-size: 20px;
+  text-align: center;
+}
+
+.clear {
+  min-height: 44px;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+
+.clear:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+/* Four to a row. Each entry spans five rows of a shared subgrid, so the
+   titles, labels, photos and text of a row start on the same lines. */
+.older {
+  list-style: none;
+  margin: 0;
+  padding: 32px 0 56px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0 24px;
+}
+
+.story {
+  position: relative;
+  display: grid;
+  grid-row: span 5;
+  grid-template-rows: subgrid;
+  row-gap: 12px;
+  align-content: start;
+  padding-bottom: 48px;
+}
+
+.storyTitle {
+  align-self: end;
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(24px, 2vw, 30px);
+  line-height: 1;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.story .photo {
+  margin-top: 4px;
+}
+
+.excerpt {
+  margin: 4px 0 0;
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+/* Read more sits on the last shared row, so every card's button lines up. */
+.readMore {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 44px;
+  margin-top: 4px;
+  padding: 0 4px;
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  transition:
+    background-color 0.3s var(--ease),
+    color 0.3s var(--ease);
+}
+
+/* Fills with ink when the card is hovered or its link has focus. */
+.story:focus-within .readMore {
   background: var(--ink);
-  color: var(--pink);
+  color: var(--newsprint);
+}
+
+@media (hover: hover) {
+  .story:hover .readMore {
+    background: var(--ink);
+    color: var(--newsprint);
+  }
+}
+
+@media (max-width: 1099px) {
+  .older {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 599px) {
+  .older {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ---------- Back-page advert ---------- */
+
+.advert {
+  padding: 40px 0 36px;
+  border-top: var(--rule);
+  text-align: center;
+}
+
+.advertTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  /* One line from tablet up: the phrase is about 13em wide in Aquavit. */
+  font-size: clamp(40px, 6.6vw, 96px);
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
+.advertLine {
+  margin: 22px 0 0;
+  font-size: clamp(14px, 2vw, 28px);
+  font-weight: 700;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+}
+
+.advertLinks {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 16px 32px;
+  margin-top: 36px;
+}
+
+.colophon {
+  margin: 0;
+  padding: 16px 0 48px;
+  border-top: var(--rule);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.5;
+  text-align: center;
 }
 
 /* ---------- Book CTA ---------- */
@@ -235,11 +488,12 @@
   align-items: center;
   justify-content: center;
   min-height: 52px;
-  padding: 0 48px;
+  padding: 0 44px;
   border-radius: 999px;
   background: var(--ink);
-  color: var(--pink);
+  color: var(--newsprint);
   font-size: 15px;
+  font-weight: 700;
   letter-spacing: 0.06em;
   text-decoration: none;
   text-transform: uppercase;
@@ -268,8 +522,10 @@
   align-items: center;
   gap: 8px;
   min-height: 44px;
+  margin-bottom: 16px;
   color: inherit;
   font-size: 14px;
+  font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   text-decoration: none;
@@ -285,32 +541,29 @@
   min-height: 80svh;
 }
 
-.post .media {
-  margin-top: 16px;
-  aspect-ratio: 4 / 5;
-  max-height: 80svh;
-}
-
 .postTitle {
-  margin: 32px 0 0;
-  padding-bottom: 24px;
-  border-bottom: 1px solid var(--rule);
-  font-family: var(--font-serif);
-  font-weight: 400;
-  font-size: clamp(32px, 5vw, 56px);
-  line-height: 1.05;
+  margin: 24px 0 28px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(40px, 6vw, 72px);
+  line-height: 0.92;
+  text-transform: uppercase;
   text-wrap: balance;
 }
 
+.postPhoto {
+  max-height: 70svh;
+}
+
 .postLede {
-  margin: 24px 0 0;
-  font-size: 18px;
-  line-height: 1.6;
+  margin: 24px 0 16px;
+  font-family: var(--font-serif);
+  font-size: clamp(20px, 2vw, 24px);
+  line-height: 1.4;
 }
 
 .postNote {
   margin: 24px 0 0;
-  color: var(--muted);
   font-family: var(--font-serif);
   font-size: 20px;
   font-style: italic;
@@ -322,46 +575,6 @@
   padding-top: 16px;
 }
 
-/* Same ruled bar as a card's Read more, but a real link. */
-.missingLink {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  max-width: 360px;
-  min-height: 44px;
-  margin-top: 48px;
-  padding: 0 16px;
-  border-top: 1px solid var(--ink);
-  border-bottom: 1px solid var(--ink);
-  color: inherit;
-  font-size: 14px;
-  letter-spacing: 0.14em;
-  text-decoration: none;
-  text-transform: uppercase;
-  transition:
-    background-color 0.3s var(--ease),
-    color 0.3s var(--ease);
-}
-
-.missingLink:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 4px;
-}
-
-.missingLink:focus-visible,
-.missingLink:active {
-  background: var(--ink);
-  color: var(--pink);
-}
-
-@media (hover: hover) {
-  .missingLink:hover {
-    background: var(--ink);
-    color: var(--pink);
-  }
-
-  .missingLink:hover .arrow {
-    transform: translateX(4px);
-  }
+.missing .line {
+  margin-top: 32px;
 }

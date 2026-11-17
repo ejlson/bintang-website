@@ -1,73 +1,100 @@
-import Image from "next/image";
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { formatDate, posts, type JournalPost } from "@/lib/journal";
-import { OPEN_POST } from "./PageTransition";
+import { formatLongDate, front, type JournalPost } from "@/lib/journal";
+import { FitTitle } from "./FitTitle";
+import { Arrow, Headline, Photo } from "./JournalParts";
+import { OlderEntries } from "./OlderEntries";
+import { SiteFooter } from "./SiteFooter";
 import { SiteHeader } from "./SiteHeader";
 import styles from "./JournalPage.module.css";
 
-/** Long thin arrow for the Read more bar. */
-export function Arrow() {
-  return (
-    <svg className={styles.arrow} viewBox="0 0 36 12" width="36" height="12" aria-hidden="true" focusable="false">
-      <path d="M0 6h34M29 1l5 5-5 5" fill="none" stroke="currentColor" strokeWidth="1.25" />
-    </svg>
-  );
-}
+/* The Journal is set like an old newspaper, after the printed brunch card:
+   maroon ink on cream, ruled columns, photos. Every story has exactly
+   one link (its headline), stretched over its block so the block is one tap
+   target. Headline links carry OPEN_POST for the iris transition.
+   Older entries (with its search box) is a client component. */
 
-/** Cover photo with the date bottom-right, like a printed card. */
-/** `eager` marks the above-the-fold cover: loaded straight away at high priority. */
-export function Cover({ post, sizes, eager }: { post: JournalPost; sizes: string; eager?: boolean }) {
+/** The latest story: headline on the left, photo on the right with the summary under it. */
+function Lead({ post }: { post: JournalPost }) {
   return (
-    <div className={styles.media}>
-      <Image src={post.image.src} alt={post.image.alt} fill
-        sizes={sizes}
-        loading={eager ? "eager" : undefined}
-        fetchPriority={eager ? "high" : undefined}
-        className={styles.img}
-      />
-      <time dateTime={post.date} className={styles.date}>
-        {formatDate(post.date)}
-      </time>
-    </div>
-  );
-}
-
-function Card({ post, index }: { post: JournalPost; index: number }) {
-  return (
-    <li className={styles.card}>
-      <article className={styles.cardInner}>
-        <Cover
-          post={post}
-          eager={index === 0}
-          sizes="(min-width: 1200px) 300px, (min-width: 900px) 33vw, (min-width: 560px) 50vw, 100vw"
-        />
-        <h2 className={styles.cardTitle}>
-          {/* The link's ::after covers the whole card, so the card is one tap target. */}
-          <Link href={`/journal/${post.slug}`} className={styles.cardLink} transitionTypes={[OPEN_POST]}>
-            {post.title}
-          </Link>
-        </h2>
-        <p className={styles.excerpt}>{post.excerpt}</p>
-        <span className={styles.more} aria-hidden="true">
-          Read more
+    <section className={styles.front} aria-label="Top story">
+      <h2 className={styles.leadTitle}>
+        <Headline post={post} />
+      </h2>
+      <div className={styles.leadMedia}>
+        <Photo post={post} framed eager sizes="(min-width: 1200px) 560px, (min-width: 900px) 48vw, 100vw" />
+        <p className={styles.standfirst}>{post.excerpt}</p>
+        <span className={styles.read} aria-hidden="true">
+          Read the story
           <Arrow />
         </span>
-      </article>
-    </li>
+      </div>
+    </section>
   );
 }
 
-/** A single post. Until full stories are written it shows the cover, title and excerpt. */
+/** The Journal index, set as a newspaper front page. */
+export function JournalPage() {
+  const { lead, older } = front;
+  return (
+    <main className={styles.page}>
+      <SiteHeader variant="page" tone="ink" mark="ink" currentHref="/journal" />
+
+      <div className={styles.wrap}>
+        <h1 className={styles.title}>
+          <FitTitle text="Journal" />
+        </h1>
+
+        {lead && <Lead post={lead} />}
+
+        {older.length > 0 && <OlderEntries posts={older} />}
+
+        <section className={styles.advert} aria-labelledby="karaoke-ad">
+          <h2 id="karaoke-ad" className={styles.advertTitle}>
+            Karaoke at Bintang
+          </h2>
+          <p className={styles.advertLine}>Open-mic: Saturday 5pm – 11pm</p>
+          <div className={styles.advertLinks}>
+            <Link href="/contact" className={styles.book}>
+              Book a table
+            </Link>
+            <Link href="/contact/karaoke" className={styles.line}>
+              Karaoke enquiries
+              <Arrow />
+            </Link>
+          </div>
+        </section>
+
+        <p className={styles.colophon}>Bintang · Kentish Town, London · London’s oldest Filipino restaurant, open since 1987</p>
+      </div>
+
+      <SiteFooter />
+    </main>
+  );
+}
+
+/** A single post: its photo, headline and summary, and a link to the full story where it lives. */
 export function JournalPostArticle({ post }: { post: JournalPost }) {
   return (
     <article className={styles.postBody}>
-      <Cover post={post} sizes="(min-width: 760px) 680px, 100vw" eager />
-      <h1 className={styles.postTitle}>{post.title}</h1>
-      <p className={styles.postLede}>{post.excerpt}</p>
-      <p className={styles.postNote}>
-        Full story coming soon · <span lang="tl">Malapit na</span>
+      <p className={styles.kicker}>
+        <span>{post.label}</span>
+        <time dateTime={post.date}>{formatLongDate(post.date)}</time>
       </p>
+      <h1 className={styles.postTitle}>{post.title}</h1>
+      <Photo post={post} framed eager sizes="(min-width: 860px) 760px, 100vw" className={styles.postPhoto} />
+      <p className={styles.postLede}>{post.excerpt}</p>
+      {post.readMore ? (
+        <a href={post.readMore.href} className={styles.line} target="_blank" rel="noopener">
+          {post.readMore.text}
+          <span className="sr-only"> (opens in a new tab)</span>
+          <Arrow />
+        </a>
+      ) : (
+        <p className={styles.postNote}>
+          Full story coming soon · <span lang="tl">Malapit na</span>
+        </p>
+      )}
     </article>
   );
 }
@@ -90,6 +117,8 @@ export function JournalPostShell({ children }: { children: ReactNode }) {
           Book a table
         </Link>
       </div>
+
+      <SiteFooter />
     </main>
   );
 }
@@ -106,39 +135,11 @@ export function JournalNotFound() {
         <p className={styles.postNote} lang="tl">
           Wala rito ang hinahanap mo
         </p>
-        <Link href="/journal" className={styles.missingLink}>
+        <Link href="/journal" className={styles.line}>
           See all stories
           <Arrow />
         </Link>
       </section>
     </JournalPostShell>
-  );
-}
-
-/** The Journal index: big title, then every post as a card in a 4/3/2/1-column grid. */
-export function JournalPage() {
-  return (
-    <main className={styles.page}>
-      <SiteHeader variant="page" tone="ink" mark="ink" currentHref="/journal" />
-
-      <header className={styles.intro}>
-        <h1 className={styles.title}>Journal</h1>
-        <p className={styles.lede}>
-          <span lang="tl">Balita</span> · News, stories and the family album from Kentish Town Road
-        </p>
-      </header>
-
-      <ul className={styles.grid}>
-        {posts.map((p, i) => (
-          <Card key={p.slug} post={p} index={i} />
-        ))}
-      </ul>
-
-      <div className={styles.cta}>
-        <Link href="/contact" className={styles.book}>
-          Book a table
-        </Link>
-      </div>
-    </main>
   );
 }

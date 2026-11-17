@@ -1,0 +1,13 @@
+{
+  "project": "xts9qlfm",
+  "dataset": "production",
+  "apiVersion": "2025-02-19",
+  "query": "*[_type == \"post\" && defined(slug.current) && defined(image.asset) && (\"bintang\" in restaurants || title match \"bintang\" || summary match \"bintang\" || pt::text(body) match \"bintang\")] | order(date desc, _createdAt desc) { kind, \"slug\": slug.current, title, date, summary, restaurants, category, url, \"outlet\": outlet->name, \"image\": image{ alt, \"asset\": asset->{ _id, url, \"w\": metadata.dimensions.width, \"h\": metadata.dimensions.height } } }",
+  "snapshot": "lib/journal.snapshot.json",
+  "imageDir": "public/cms",
+  "imagePath": "/cms",
+  "postHomes": {
+    "bunso": { "name": "BUNSO", "url": "https://www.bybunso.com" },
+    "cafemama": { "name": "Café Mama & Sons", "url": "https://cafemamasons.com" }
+  }
+}
