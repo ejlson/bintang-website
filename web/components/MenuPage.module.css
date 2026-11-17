@@ -1,0 +1,499 @@
+/* Menu page. Each menu has two colours, set inline on <main>: --bg (page) and
+   --acc (all text, headings and rules). Switching tabs fades between them,
+   like Mala Project's menu.
+   Spacing follows the 8px scale: 4 8 12 16 24 32 48 64 96.
+   Every block shares one container so left and right edges line up. */
+
+/* Registered colours: animating the variables themselves means everything that
+   uses them (text, headings, rules, the tab-bar fade) changes together. */
+@property --acc {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #2d2d2d;
+}
+
+@property --bg {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #ede9e9;
+}
+
+.page {
+  --title-size: clamp(88px, 22vw, 340px);
+  --gutter: clamp(16px, 5vw, 80px);
+  --max: 1280px;
+  --rule: color-mix(in srgb, var(--acc) 22%, transparent);
+  --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+  min-height: 100vh;
+  min-height: 100svh;
+  background: var(--bg);
+  color: var(--acc);
+  font-family: var(--sans);
+}
+
+/* Fades switch on only after the first paint, so a deep link (/menu#karaoke)
+   opens in its own colours instead of fading in from À la carte. */
+.page[data-ready] {
+  transition:
+    --acc 0.6s var(--ease),
+    --bg 0.6s var(--ease);
+}
+
+/* The shared header follows the page's text colour so it fades with it. */
+.page > header {
+  color: inherit;
+}
+
+/* ---------- Title + tabs ---------- */
+
+.titleWrap {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: clamp(32px, 6vw, 64px) var(--gutter) 0;
+  text-align: center;
+}
+
+.title {
+  margin: 0;
+  color: var(--acc);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--title-size);
+  line-height: 0.8;
+  text-transform: uppercase;
+  /* Wide and squished vertically, per the design. */
+  transform: scaleY(0.85);
+  transform-origin: 50% 100%;
+}
+
+.titleText {
+  display: inline-block;
+}
+
+/* Sticky tabs sit on a fade rather than a solid block: solid page colour
+   behind the tab labels, dissolving (with a soft backdrop blur) into the
+   menu as it scrolls underneath. The extra bottom padding is the fade zone;
+   the negative margin keeps the layout where it was. */
+.tabBar {
+  --fade: 40px;
+
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  isolation: isolate;
+  padding: 0 var(--gutter) var(--fade);
+  margin-bottom: calc(-1 * var(--fade));
+  pointer-events: none;
+}
+
+.tabBar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    to bottom,
+    var(--bg) 0%,
+    color-mix(in srgb, var(--bg) 92%, transparent) calc(100% - var(--fade) - 8px),
+    color-mix(in srgb, var(--bg) 0%, transparent) 100%
+  );
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - var(--fade)), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - var(--fade)), transparent);
+}
+
+/* Only the tabs themselves take clicks; the fade zone lets clicks through. */
+.tabBar > * {
+  pointer-events: auto;
+}
+
+@supports not (background: color-mix(in srgb, red 50%, transparent)) {
+  .tabBar::before {
+    background: var(--bg);
+  }
+}
+
+.tabs {
+  /* First paint approximates the title (MENU is ~2.72em wide in Aquavit Black);
+     MenuPage then sets the measured width, so the row doesn't jump. */
+  width: calc(2.72 * var(--title-size));
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 16px 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 24px;
+}
+
+.tab {
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(22px, 3.6vw, 56px);
+  line-height: 1.1;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.14em;
+}
+
+.tab:hover {
+  text-decoration-line: underline;
+  text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
+}
+
+.tab[aria-selected="true"] {
+  font-style: italic;
+  text-decoration-line: underline;
+  text-decoration-color: var(--acc);
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--acc);
+  outline-offset: 4px;
+}
+
+/* ---------- Sheets ---------- */
+
+.panel:focus-visible {
+  outline: 2px solid var(--acc);
+  outline-offset: 8px;
+}
+
+.panel {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 32px var(--gutter) 0;
+  display: flex;
+  flex-direction: column;
+  gap: 64px;
+}
+
+.sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.band {
+  margin: 0;
+  padding: 12px 0;
+  border-top: 1px solid var(--acc);
+  border-bottom: 1px solid var(--acc);
+  color: var(--acc);
+  font-weight: 700;
+  font-size: clamp(14px, 1.6vw, 20px);
+  line-height: 1.4;
+  letter-spacing: 0.4em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+/* Sections flow into balanced columns; the browser evens out their heights. */
+.columns {
+  columns: 3 280px;
+  column-gap: 48px;
+  column-rule: 1px solid var(--rule);
+}
+
+.section {
+  display: inline-block;
+  width: 100%;
+  margin: 0 0 48px;
+  break-inside: avoid;
+}
+
+.boxed {
+  padding: 16px 16px 24px;
+  border: 1px solid currentColor;
+}
+
+.heading {
+  margin: 0;
+  color: var(--acc);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 40px;
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.sub {
+  margin: 4px 0 0;
+  color: var(--acc);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.intro {
+  margin: 8px 0 0;
+  font-size: 13px;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.colHead {
+  margin: 8px 0 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-align: right;
+}
+
+.list {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.item {
+  min-width: 0;
+}
+
+.itemHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.name {
+  font-family: var(--font-serif);
+  font-size: 19px;
+  line-height: 1.15;
+}
+
+.price {
+  flex: none;
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.desc,
+.note {
+  margin: 4px 0 0;
+  font-size: 13.5px;
+  line-height: 1.4;
+}
+
+.note {
+  font-weight: 700;
+}
+
+/* Full-width block, e.g. Bottomless drinks; its grid matches the columns above. */
+.feature {
+  padding-top: 24px;
+  border-top: 1px solid currentColor;
+}
+
+.featureHeading {
+  font-size: clamp(40px, 5vw, 64px);
+}
+
+.lead {
+  margin: 12px 0 0;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.featureList {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px 48px;
+}
+
+.karaoke {
+  display: block;
+  padding-top: 24px;
+  border-top: 1px solid currentColor;
+  color: inherit;
+  text-align: center;
+  text-decoration: none;
+}
+
+.karaokeTitle {
+  display: block;
+  color: var(--acc);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(48px, 8.4vw, 120px);
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
+.karaoke:hover .karaokeTitle {
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 0.08em;
+}
+
+.karaokeLine {
+  display: block;
+  margin-top: 16px;
+  font-size: clamp(12px, 1.4vw, 18px);
+  font-weight: 700;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+}
+
+.legal {
+  padding: 12px 0;
+  border-top: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.legal p {
+  margin: 0;
+}
+
+/* ---------- Karaoke video ---------- */
+
+.video {
+  position: relative;
+  margin: 0;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--ink) url("/media/hero-poster.jpg") center / cover no-repeat;
+}
+
+.video video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.videoScrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgb(45 45 45 / 0) 55%, rgb(45 45 45 / 0.55) 100%);
+}
+
+.videoSubs {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 16px;
+  padding: 0 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  color: var(--yellow);
+  font-weight: 500;
+  line-height: 1.15;
+  text-align: center;
+  text-shadow:
+    0 0 3px var(--ink),
+    0 2px 0 var(--ink),
+    2px 0 0 var(--ink),
+    -2px 0 0 var(--ink),
+    0 -2px 0 var(--ink);
+}
+
+.videoSubs span:first-child {
+  font-size: clamp(20px, 2.8vw, 40px);
+}
+
+.videoSubs span:last-child {
+  font-size: clamp(16px, 2vw, 30px);
+}
+
+.videoPause {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: none;
+  color: var(--paper);
+  cursor: pointer;
+}
+
+.videoPause:focus-visible {
+  outline: 2px solid var(--paper);
+  outline-offset: -4px;
+}
+
+/* ---------- Bottom CTA ---------- */
+
+.cta {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 64px var(--gutter) 96px;
+  display: flex;
+  justify-content: center;
+}
+
+.book {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 0 48px;
+  border-radius: 999px;
+  background: var(--acc);
+  color: var(--bg);
+  font-size: 15px;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.book:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.book:focus-visible {
+  outline: 2px solid var(--acc);
+  outline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  /* MENU fills the content width, and the tabs fit on one justified row under it. */
+  .page {
+    --title-size: 33vw;
+  }
+
+  .tabs {
+    gap: 8px 12px;
+  }
+
+  .tab {
+    font-size: clamp(16px, 4.8vw, 22px);
+  }
+
+  .heading {
+    font-size: 34px;
+  }
+
+  .videoSubs {
+    padding: 0 48px;
+  }
+}

@@ -1,0 +1,155 @@
+"use client";
+
+import Link from "next/link";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { allLinks, bookLinks, exploreLinks, type NavLink } from "@/lib/nav";
+import styles from "./SiteHeader.module.css";
+
+type Props = {
+  /** "overlay" floats over a hero; "page" sits in normal flow. */
+  variant?: "overlay" | "page";
+  /** Text colour of the bar. */
+  tone?: "paper" | "ink";
+  /** Which lion head to show in the centre. */
+  mark?: "red" | "paper" | "ink";
+  /** Highlights the current page's link. */
+  currentHref?: string;
+};
+
+/** Matches the CSS breakpoint where the split nav replaces the menu button. */
+const DESKTOP_QUERY = "(width >= 768px)";
+
+const MARK_SRC = {
+  red: "/brand/lion-head-red.svg",
+  paper: "/brand/lion-head-paper.svg",
+  ink: "/brand/lion-head-ink.svg",
+} as const;
+
+function NavItem({ link, current, onClick }: { link: NavLink; current: boolean; onClick?: () => void }) {
+  return (
+    <Link href={link.href} className={styles.link} aria-current={current ? "page" : undefined} onClick={onClick}>
+      <span className={styles.en}>{link.en}</span>
+      <span className={styles.tl} lang="tl">
+        {link.tl}
+      </span>
+    </Link>
+  );
+}
+
+export function SiteHeader({ variant = "overlay", tone = "paper", mark = "red", currentHref }: Props) {
+  const [open, setOpen] = useState(false);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const markRef = useRef<HTMLAnchorElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const dialogId = useId();
+
+  const close = useCallback(() => {
+    setOpen(false);
+    // The toggle is hidden at desktop widths; focus the home mark there instead
+    // so focus never drops to <body>.
+    const desktop = window.matchMedia(DESKTOP_QUERY).matches;
+    (desktop ? markRef.current : toggleRef.current)?.focus();
+  }, []);
+
+  // If the screen widens past the phone breakpoint while open (e.g. a tablet
+  // rotates), the overlay no longer belongs: close it.
+  useEffect(() => {
+    if (!open) return;
+    const mql = window.matchMedia(DESKTOP_QUERY);
+    const onChange = (e: MediaQueryListEvent) => {
+      if (e.matches) close();
+    };
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, [open, close]);
+
+  // While the overlay is open: lock page scroll, move focus in, trap Tab, close on Esc.
+  useEffect(() => {
+    if (!open) return;
+    const dialog = dialogRef.current;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const focusables = () =>
+      Array.from(dialog?.querySelectorAll<HTMLElement>("a[href], button:not([disabled])") ?? []);
+    focusables()[0]?.focus();
+
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        close();
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const items = focusables();
+      if (items.length === 0) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open, close]);
+
+  return (
+    <header className={`${styles.header} ${variant === "overlay" ? styles.floating : styles.inflow} ${styles[tone]}`}>
+      <nav aria-label="Explore" className={`${styles.list} ${styles.left}`}>
+        {exploreLinks.map((l) => (
+          <NavItem key={l.href} link={l} current={l.href === currentHref} />
+        ))}
+      </nav>
+
+      <Link ref={markRef} href="/" className={styles.mark} aria-label="Bintang home">
+        {/* eslint-disable-next-line @next/next/no-img-element -- small vector mark, no optimisation needed */}
+        <img src={MARK_SRC[mark]} alt="" width={53} height={52} />
+      </Link>
+
+      <nav aria-label="Book" className={`${styles.list} ${styles.right}`}>
+        {bookLinks.map((l) => (
+          <NavItem key={l.href} link={l} current={l.href === currentHref} />
+        ))}
+      </nav>
+
+      <button
+        ref={toggleRef}
+        type="button"
+        className={styles.toggle}
+        aria-expanded={open}
+        aria-controls={dialogId}
+        onClick={() => setOpen(true)}
+      >
+        <span className={styles.en}>Menu</span>
+        <span className={styles.tl} lang="tl">
+          Mga Pahina
+        </span>
+      </button>
+
+      {open && (
+        <div ref={dialogRef} id={dialogId} className={styles.overlay} role="dialog" aria-modal="true" aria-label="Site menu">
+          <button type="button" className={styles.close} onClick={close}>
+            Close <span lang="tl">· Isara</span>
+          </button>
+          <nav aria-label="All pages" className={styles.overlayList}>
+            {allLinks.map((l) => (
+              <NavItem
+                key={l.href}
+                link={l}
+                current={l.href === currentHref}
+                // Same-page link: no navigation happens, so hand focus back explicitly.
+                onClick={l.href === currentHref ? close : () => setOpen(false)}
+              />
+            ))}
+          </nav>
+        </div>
+      )}
+    </header>
+  );
+}

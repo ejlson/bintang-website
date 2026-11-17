@@ -1,0 +1,13 @@
+# macOS
+.DS_Store
+
+# Dependencies and build output (web/ has its own, fuller .gitignore)
+node_modules/
+.next/
+
+# Raw source masters: large, and not used by the site directly.
+# The site's encoded media lives in web/public/media; the brandpack is split into brandpack-components/.
+/aboutbig.mov
+/bintang-hero.mp4
+/brandpack2026.original.svg
+/brandpack2026.svg

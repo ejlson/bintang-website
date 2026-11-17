@@ -1,0 +1,137 @@
+:root {
+  /* Sakuga effects canvas: above the hero, below the header (10) and its menu overlay (50). */
+  --sk-fx-z: 9;
+  --paper: #ede9e9;
+  --paper-raised: #f6f4f3;
+  --ink: #2d2d2d;
+  --red: #d92e36;
+  --red-deep: #b8242c;
+  --green: #58be91;
+  --pink: #e9c0d4;
+  --yellow: #f6de43;
+
+  /* Aquavit (Adobe Fonts kit pev2vne) everywhere: 700 = Black, 400 = Regular. */
+  --font-display: "aquavit", "Arial Black", system-ui, sans-serif;
+  --font-serif: "aquavit", Georgia, serif;
+  --font-ui: "aquavit", "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+}
+
+img,
+video {
+  max-width: 100%;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Page transitions — film-cut wipes (components/PageTransition.tsx).
+   The old page's snapshot sits on top and a feathered mask eats it away,
+   revealing the new page underneath. --wipe is the leading edge (0% → 110%).
+   --------------------------------------------------------------------------- */
+@property --wipe {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+
+@keyframes page-wipe {
+  from { --wipe: 0%; }
+  to { --wipe: 110%; }
+}
+
+/* Clicks during the wipe go to the live page underneath. */
+::view-transition {
+  pointer-events: none;
+}
+
+/* Outgoing page above, incoming page below and shown as-is (no crossfade). */
+::view-transition-group(.wipe-down),
+::view-transition-group(.wipe-slant),
+::view-transition-group(.wipe-iris) {
+  z-index: 2;
+}
+::view-transition-group(.page-under) {
+  z-index: 1;
+}
+::view-transition-new(.page-under) {
+  animation: none;
+}
+
+::view-transition-old(.wipe-down),
+::view-transition-old(.wipe-slant),
+::view-transition-old(.wipe-iris) {
+  animation: page-wipe 0.75s var(--ease) both;
+}
+
+/* Top edge sweeps down. */
+::view-transition-old(.wipe-down) {
+  mask-image: linear-gradient(to bottom, transparent calc(var(--wipe) - 10%), #000 var(--wipe));
+}
+/* Menu: a 35° slash sweeping up from the bottom-right. */
+::view-transition-old(.wipe-slant) {
+  mask-image: linear-gradient(-35deg, transparent calc(var(--wipe) - 10%), #000 var(--wipe));
+}
+/* Opening a journal post: a hole opens from the centre. */
+::view-transition-old(.wipe-iris) {
+  mask-image: radial-gradient(circle farthest-corner, transparent calc(var(--wipe) - 10%), #000 var(--wipe));
+}
+
+/* Phones: the default wipe runs bottom-to-top instead. */
+@media (width < 768px) {
+  ::view-transition-old(.wipe-down) {
+    mask-image: linear-gradient(to top, transparent calc(var(--wipe) - 10%), #000 var(--wipe));
+  }
+}
+
+/* Reduced motion: a straight cut. The blanket rule above already shortens
+   animations; this also drops the mask so nothing lingers for a frame. */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation: none !important;
+  }
+  ::view-transition-old(*) {
+    display: none;
+  }
+}

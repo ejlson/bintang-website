@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bintang — Karaoke subtitles prototype</title>
+<link rel="stylesheet" href="https://use.typekit.net/pev2vne.css">
+<link href="https://fonts.googleapis.com/css2?family=Yuji+Boku&display=swap" rel="stylesheet">
+<style>
+  :root { --paper:#EDE9E9; --ink:#2D2D2D; --red:#D92E36; --yellow:#F6DE43; --base:var(--paper); --fill:var(--yellow); }
+  :root[data-palette="yellow-red"] { --base:var(--yellow); --fill:var(--red); }
+  * { box-sizing:border-box; }
+  html, body { margin:0; height:100%; background:var(--ink); overflow:hidden; }
+  body { font-family:'aquavit', 'Helvetica Neue', Arial, sans-serif; }
+
+  .hero { position:relative; height:100svh; min-height:640px; overflow:hidden;
+    background:var(--ink) url("media/hero-poster.jpg") center/cover no-repeat; }
+  .hero video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .scrim { position:absolute; inset:0; background:
+    linear-gradient(180deg, rgb(30 12 10 / .78) 0%, rgb(30 12 10 / .45) 9%, rgb(30 12 10 / .12) 20%, rgb(30 12 10 / 0) 30%),
+    linear-gradient(0deg, rgb(30 12 10 / .85) 0%, rgb(30 12 10 / .55) 12%, rgb(30 12 10 / .18) 26%, rgb(30 12 10 / 0) 38%),
+    rgb(58 24 20 / .18); }
+
+  /* ── karaoke block ── */
+  .karaoke { position:absolute; left:0; right:0; bottom:clamp(16px,3vh,32px); z-index:3; padding:0 120px;
+    text-align:center; font-weight:700; line-height:1.15; pointer-events:none; }
+  .row { position:relative; display:block; height:1.2em; }
+  .row.en { font-size:clamp(22px,2.8vw,42px); }
+  .row.tl { font-size:clamp(20px,2.5vw,38px); margin-top:4px; }
+  .line { position:relative; display:inline-block; white-space:nowrap; transform-origin:50% 100%; will-change:transform; }
+  .line[hidden] { display:none; }
+  .layer { display:block; color:var(--base);
+    text-shadow: 0 0 3px var(--ink), 0 0 3px var(--ink), 0 2px 0 var(--ink), 2px 0 0 var(--ink), -2px 0 0 var(--ink), 0 -2px 0 var(--ink); }
+  .layer.fill { position:absolute; inset:0; color:var(--fill); clip-path:inset(-12px 100% -12px -12px); }
+  .note { font-family:inherit; }
+
+  /* countdown dots: sit just left of the English line, like a videoke cue */
+  /* videoke cue: dots sit just above the first letter, so the line itself stays centred */
+  .dots { position:absolute; left:.04em; bottom:100%; margin-bottom:.12em; display:flex; align-items:center; gap:.2em; }
+  .dot { flex:none; width:.26em; height:.26em; border-radius:50%; background:var(--fill); box-shadow:0 0 0 2px var(--ink); will-change:transform; }
+
+  /* score card */
+  .score { position:absolute; left:50%; top:46%; z-index:3; text-align:center; transform:translate(-50%,-50%); pointer-events:none; }
+  .score[hidden] { display:none; }
+  .score-in { display:inline-block; transform-origin:50% 60%; will-change:transform; }
+  .score .num { display:block; font-size:clamp(96px,16vw,220px); line-height:.82; letter-spacing:-.03em; color:var(--yellow);
+    -webkit-text-stroke:3px var(--ink); paint-order:stroke fill; text-shadow:6px 6px 0 var(--red); }
+  .score .msg { display:block; margin-top:.25em; font-size:clamp(24px,3vw,44px); color:var(--paper);
+    text-shadow: 0 2px 0 var(--ink), 2px 0 0 var(--ink), -2px 0 0 var(--ink), 0 -2px 0 var(--ink); }
+  .score .msg small { display:block; font-size:.6em; color:var(--yellow); }
+
+  .pause { position:absolute; left:20px; bottom:20px; z-index:4; display:flex; align-items:center; justify-content:center;
+    width:44px; height:44px; padding:0; border:0; background:none; color:var(--paper); cursor:pointer; opacity:.85; }
+  .pause:hover { opacity:1; }
+  .pause:focus-visible { outline:2px solid var(--paper); outline-offset:3px; }
+
+  /* prototype controls (not part of the design) */
+  .panel { position:fixed; top:12px; right:12px; z-index:10; width:236px; padding:12px 14px; border-radius:10px;
+    background:rgb(237 233 233 / .94); color:var(--ink); font:13px/1.35 'Helvetica Neue', Arial, sans-serif; }
+  .panel b { display:block; font-size:12px; letter-spacing:.04em; text-transform:uppercase; margin:8px 0 4px; }
+  .panel b:first-child { margin-top:0; }
+  .panel label { display:block; margin:2px 0; cursor:pointer; }
+  .panel button { margin-top:10px; width:100%; padding:7px; border:2px solid var(--ink); border-radius:8px; background:var(--yellow);
+    font:700 13px 'Helvetica Neue', Arial, sans-serif; cursor:pointer; }
+  .panel .hide { position:absolute; top:6px; right:8px; width:auto; margin:0; padding:0 6px; border:0; background:none; font-size:16px; }
+  .panel.min > :not(.hide) { display:none; }
+  .panel.min { width:auto; padding:6px 30px 6px 10px; }
+  .panel.min::before { content:'Prototype controls'; }
+
+  @media (max-width:767px) {
+    .karaoke { padding:0 64px 0 64px; bottom:76px; }
+    .panel { top:auto; bottom:12px; right:12px; left:auto; }
+  }
+</style>
+</head>
+<body>
+<section class="hero">
+  <video autoplay muted loop playsinline poster="media/hero-poster.jpg">
+    <source src="media/hero-loop-portrait.mp4" media="(max-aspect-ratio: 1/1)" type="video/mp4">
+    <source src="media/hero-loop.mp4" type="video/mp4">
+  </video>
+  <div class="scrim"></div>
+
+  <div class="karaoke" aria-hidden="true">
+    <div class="row en"><span class="line" id="en"></span></div>
+    <div class="row tl"><span class="line" id="tl"></span></div>
+  </div>
+
+  <div class="score" id="score" aria-hidden="true" hidden>
+    <span class="score-in"><span class="num">100</span><span class="msg">Ang galing mo!<small>You’re a star!</small></span></span>
+  </div>
+
+  <button class="pause" id="pause" type="button" aria-label="Pause video and subtitles" aria-pressed="false">
+    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><g id="icon"><rect x="3" y="2" width="4" height="14" fill="currentColor"/><rect x="11" y="2" width="4" height="14" fill="currentColor"/></g></svg>
+  </button>
+</section>
+
+<form class="panel" id="panel">
+  <button type="button" class="hide" id="hide" aria-label="Hide controls">×</button>
+  <b>Wipe</b>
+  <label><input type="radio" name="step" value="twos" checked> Stepped, on twos (12fps)</label>
+  <label><input type="radio" name="step" value="smooth"> Smooth</label>
+  <b>Colours</b>
+  <label><input type="radio" name="palette" value="paper-yellow" checked> Paper → yellow</label>
+  <label><input type="radio" name="palette" value="yellow-red"> Yellow → red</label>
+  <b>Sound words</b>
+  <label><input type="radio" name="fx" value="notes" checked> Only on ♪ lines</label>
+  <label><input type="radio" name="fx" value="all"> Every line</label>
+  <label><input type="radio" name="fx" value="none"> Off</label>
+  <b>Extras</b>
+  <label><input type="checkbox" name="dots" checked> Countdown dots</label>
+  <label><input type="checkbox" name="score" checked> Score card at the end</label>
+  <button type="button" id="replay">Replay from the top</button>
+</form>
+
+<script src="sakuga-core.js"></script>
+<script>
+(() => {
+  const FX = window.SakugaFX;
+  const { Spring } = FX;
+
+  // fx: what plays when the line finishes. word = a sakuga sound word; note = it's a ♪ line.
+  const LINES = [
+    { en: 'Welcome to Bintang',    tl: 'Maligayang pagdating sa Bintang', fx: 'welcome' },
+    { en: '♪ Let’s eat! ♪',        tl: '♪ Kain tayo! ♪',                  fx: 'eat',  note: true },
+    { en: 'Since 1987',            tl: 'Simula pa noong 1987',            fx: 'since' },
+    { en: 'Pass the rice, please', tl: 'Pakiabot ang kanin',              fx: 'rice' },
+    { en: '♪ Let’s sing! ♪',       tl: '♪ Kantahan na! ♪',                fx: 'sing', note: true },
+  ];
+
+  const BEAT = 0.34;          // countdown dot
+  const SYL = 0.2;            // one syllable of wipe
+  const GAP = 0.14;           // English done → Tagalog starts
+  const HOLD = 0.85;          // line fully lit, effects playing
+  const EXIT = 0.25;          // smear out
+  const SCORE = 2.6;          // score card on screen
+
+  const opts = { step: 'twos', fx: 'notes', dots: true, score: true };
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+  const root = document.documentElement;
+  const enEl = document.getElementById('en'), tlEl = document.getElementById('tl');
+  const scoreEl = document.getElementById('score'), scoreIn = scoreEl.firstElementChild;
+  const video = document.querySelector('video');
+
+  const syllables = (w) => {
+    if (w === '♪') return 1;
+    if (/^\d+$/.test(w)) return 4;                              // "nineteen eighty-seven", roughly
+    return Math.max(1, (w.toLowerCase().match(/[aeiouy]+/g) || []).length);
+  };
+
+  // Build a line as two identical layers; the fill layer is clipped to show the sung part.
+  function build(el, text) {
+    const words = text.split(' ');
+    const html = words.map((w) => `<span class="w${w === '♪' ? ' note' : ''}">${w}</span>`).join(' ');
+    el.innerHTML = `<span class="layer base">${html}</span><span class="layer fill">${html}</span>`;
+    const fill = el.querySelector('.fill');
+    const spans = [...el.querySelectorAll('.base .w')];
+    let acc = 0;
+    const segs = spans.map((s, i) => { const d = syllables(words[i]) * SYL; const seg = { x: s.offsetLeft, w: s.offsetWidth, t0: acc, d }; acc += d; return seg; });
+    return { el, fill, segs, dur: acc, width: el.offsetWidth };
+  }
+
+  // Pixels lit after t seconds of singing.
+  function litX(L, t) {
+    if (t <= 0) return 0;
+    for (const s of L.segs) if (t < s.t0 + s.d) return s.x + s.w * ((t - s.t0) / s.d);
+    return L.width;
+  }
+  const setLit = (L, x) => { L.fill.style.clipPath = `inset(-12px ${Math.max(0, L.width - x)}px -12px -12px)`; };
+
+  // ── springs that drive the line's pop-in (squash & stretch, volume kept) ──
+  function popper(el, from = 0.25) {
+    const s = new Spring(from, 560, 16); s.to = 1;
+    return (dt) => {
+      const y = s.step(dt), x = 1 / Math.sqrt(Math.max(0.2, y));
+      el.style.transform = `scale(${x.toFixed(3)}, ${y.toFixed(3)})`;
+    };
+  }
+
+  function dotsFor(el) {
+    const d = document.createElement('span'); d.className = 'dots';
+    d.innerHTML = '<span class="dot"></span>'.repeat(4);
+    el.append(d); return [...d.children].map((n) => ({ n, s: null }));
+  }
+
+  // ── effects at the end of a line ──
+  const page = (el, fx, fy) => FX.at(el, fx, fy);
+  // keep a sound word fully on screen (narrow phones especially)
+  const word = (name, x, y, o) => {
+    const half = o.size * 0.6, lo = scrollX + half + 8, hi = scrollX + innerWidth - half - 8;
+    FX.sfx(name, Math.min(hi, Math.max(lo, x)), y, o);
+  };
+  function lineFx(item, L) {
+    if (opts.fx === 'none') return;
+    const words = opts.fx === 'all' || item.note;
+    const end = page(L.el, 1, 0.3), mid = page(L.el, 0.5, 0.5);
+    const big = Math.min(220, Math.max(120, innerWidth * 0.14));
+    switch (item.fx) {
+      case 'welcome':
+        for (let i = 0; i < 4; i++) FX.later(i * 90, () => FX.kira(mid.x - mid.w * 0.55 + Math.random() * mid.w * 1.1, mid.y - 30 + Math.random() * 50, { r: 10 + Math.random() * 6 }));
+        if (words) word('salamat', end.x + 40, end.y - 60, { size: big * 0.9, rot: -0.12 });
+        break;
+      case 'eat':
+        FX.puff(end.x + 10, end.y, { n: 6, size: 15, vy: -40 });
+        if (words) word('sarap', end.x + 50, end.y - 70, { size: big, rot: -0.16 });
+        break;
+      case 'since':
+        FX.burst(end.x + 20, end.y + 6, { r: 46 });
+        if (words) word('don', end.x + 60, end.y - 60, { size: big * 0.7, rot: -0.2 });
+        break;
+      case 'rice':
+        FX.puff(mid.x, mid.y - 20, { n: 5, size: 12, vy: -30, spread: 2 });
+        if (words) word('pon', end.x + 40, end.y - 54, { size: big * 0.6, rot: 0.1 });
+        break;
+      case 'sing':
+        FX.lines(end.x + 30, end.y, { n: 9, dir: -0.4, len: 60, spread: 40, life: 0.4 });
+        FX.kira(end.x + 70, end.y - 90, { r: 14 });
+        if (words) word('gogo', mid.x + mid.w * 0.15, end.y - 80, { size: big * 1.3, rot: -0.08 });
+        break;
+    }
+  }
+
+  // ── the timeline: one clock that stops when paused ──
+  let clock = 0, paused = false, last = performance.now();
+  let i = -1, L1, L2, item, phase, t0, dots, pop1, pop2, firedFx, scorePop;
+
+  function sched() {
+    const d = opts.dots ? BEAT * 4 : 0.3;
+    const a = d, b = a + L1.dur, c = b + GAP, e = c + L2.dur, f = e + HOLD, g = f + EXIT;
+    return { a, b, c, e, f, g };
+  }
+
+  function startLine(n) {
+    i = n; item = LINES[i]; phase = 'line'; t0 = clock; firedFx = false;
+    enEl.hidden = tlEl.hidden = false; scoreEl.hidden = true;
+    L1 = build(enEl, item.en); L2 = build(tlEl, item.tl);
+    setLit(L1, 0); setLit(L2, 0);
+    dots = opts.dots ? dotsFor(enEl) : [];
+    pop1 = popper(enEl); pop2 = popper(tlEl, 0.4);
+  }
+
+  function startScore() {
+    phase = 'score'; t0 = clock; enEl.hidden = tlEl.hidden = true; scoreEl.hidden = false;
+    scorePop = popper(scoreIn, 0.1);
+    const c = FX.at(scoreIn, 0.5, 0.35);
+    FX.burst(c.x, c.y, { r: 120, spikes: 17, life: 0.45 });
+    for (let k = 0; k < 6; k++) FX.later(100 + k * 120, () => FX.kira(c.x + (Math.random() - 0.5) * c.w * 1.3, c.y + (Math.random() - 0.5) * c.h, { r: 12 + Math.random() * 10 }));
+    if (opts.fx !== 'none') FX.later(350, () => word('salamat', c.x + c.w * 0.45, c.y - c.h * 0.45, { size: 200, rot: -0.18 }));
+  }
+
+  const q = (t) => opts.step === 'twos' ? Math.floor(t * 12) / 12 : t;   // animate on twos
+
+  function smear(el, k) {   // exit: stretch sideways, lean, then gone. no fade.
+    const s = 1 + k * 0.6;
+    el.style.transform = `translateX(${k * 70}px) skewX(${-k * 22}deg) scale(${s.toFixed(3)}, ${(1 / Math.sqrt(s)).toFixed(3)})`;
+  }
+
+  function frame(dt) {
+    const t = clock - t0, tq = q(t);
+    if (phase === 'line') {
+      const S = sched();
+      if (t < S.f) { pop1(dt); pop2(dt); }
+      // countdown dots pop out one per beat
+      dots.forEach((d, k) => {
+        if (!d.s && t >= (k + 1) * BEAT) { d.s = new Spring(1, 700, 22); d.s.to = 0; }
+        if (d.s) { const v = Math.max(0, d.s.step(dt)); d.n.style.transform = `scale(${v.toFixed(3)})`; }
+      });
+      setLit(L1, litX(L1, tq - S.a));
+      setLit(L2, litX(L2, tq - S.c));
+      if (!firedFx && t >= S.e) { firedFx = true; lineFx(item, L1); }
+      if (t >= S.f) {
+        const k = Math.min(1, q(t - S.f) / EXIT);
+        smear(enEl, k); smear(tlEl, k);
+        if (k === 1 && t - S.f >= EXIT) {
+          const c = FX.at(enEl, 0, 0.5); FX.lines(c.x, c.y + 10, { n: 6, dir: Math.PI, len: 50, spread: 50, life: 0.25 });
+          if (i === LINES.length - 1 && opts.score) startScore();
+          else startLine((i + 1) % LINES.length);
+        }
+      }
+    } else if (phase === 'score') {
+      if (t < SCORE) scorePop(dt);
+      else {
+        const k = Math.min(1, q(t - SCORE) / EXIT); smear(scoreIn, k);
+        if (t - SCORE >= EXIT) { scoreIn.style.transform = ''; startLine(0); }
+      }
+    }
+  }
+
+  function loop(now) {
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    if (!paused) { clock += dt; frame(dt); }
+    requestAnimationFrame(loop);
+  }
+
+  function still() {   // reduced motion: first line, fully lit, no effects
+    phase = 'still'; startLine(0); dots.forEach((d) => d.n.remove());
+    enEl.style.transform = tlEl.style.transform = '';
+    setLit(L1, L1.width); setLit(L2, L2.width);
+  }
+
+  function boot() {
+    if (reduce.matches) { video.removeAttribute('autoplay'); video.pause(); still(); return; }
+    startLine(0); requestAnimationFrame((n) => { last = n; loop(n); });
+  }
+
+  // ── controls ──
+  const pauseBtn = document.getElementById('pause'), icon = document.getElementById('icon');
+  pauseBtn.addEventListener('click', () => {
+    paused = !paused; FX.paused = paused;
+    paused ? video.pause() : video.play().catch(() => {});
+    pauseBtn.setAttribute('aria-pressed', String(paused));
+    pauseBtn.setAttribute('aria-label', paused ? 'Play video and subtitles' : 'Pause video and subtitles');
+    icon.innerHTML = paused ? '<path d="M4 2 L16 9 L4 16 Z" fill="currentColor"/>' : '<rect x="3" y="2" width="4" height="14" fill="currentColor"/><rect x="11" y="2" width="4" height="14" fill="currentColor"/>';
+  });
+  const panel = document.getElementById('panel');
+  panel.addEventListener('change', (e) => {
+    const { name, value, checked, type } = e.target;
+    if (name === 'palette') root.dataset.palette = value;
+    else opts[name] = type === 'checkbox' ? checked : value;
+  });
+  document.getElementById('replay').addEventListener('click', () => { if (phase !== 'still') { scoreIn.style.transform = ''; startLine(0); } });
+  document.getElementById('hide').addEventListener('click', () => panel.classList.toggle('min'));
+
+  // For checking in a hidden/background tab, where requestAnimationFrame doesn't run: step the whole thing by hand.
+  window.karaokeStep = (sec, fps = 60) => {
+    for (let n = Math.round(sec * fps); n--;) { clock += 1 / fps; frame(1 / fps); FX.advance(1 / fps); }
+    return { line: i, phase, t: +(clock - t0).toFixed(2) };
+  };
+
+  // ?at=12.5 freezes the prototype at that many seconds in (for screenshots).
+  const at = parseFloat(new URLSearchParams(location.search).get('at'));
+  const go = () => { boot(); if (at >= 0) { paused = true; FX.paused = true; video.pause(); panel.classList.add('min'); setTimeout(() => window.karaokeStep(at), 300); addEventListener('resize', () => FX.advance(1e-4)); } };
+
+  // Wait for Aquavit so word widths are measured in the real font.
+  (document.fonts ? document.fonts.load('700 40px aquavit').then(() => document.fonts.load('40px "Yuji Boku"', 'Sarap')).then(() => document.fonts.ready) : Promise.resolve()).then(go, go);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bintang — Aquavit preview</title>
+<link rel="stylesheet" href="https://use.typekit.net/pev2vne.css">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&display=swap" rel="stylesheet">
+<style>
+  :root { --paper:#EDE9E9; --ink:#2D2D2D; --red:#D92E36; --green:#58BE91; --pink:#E9C0D4; --yellow:#F6DE43; }
+  body { margin:0; font-family:'Helvetica Neue',Helvetica,Arial,sans-serif; color:var(--ink); }
+  .display { font-family:'aquavit',sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:-0.03em; line-height:.82; margin:0; text-align:center; }
+  section { padding:56px 20px 64px; }
+  .note { text-align:center; font-size:15px; margin:18px 0 0; }
+  .serif { font-family:'Newsreader',Georgia,serif; }
+  #status { position:fixed; top:12px; left:12px; background:var(--ink); color:var(--paper); padding:8px 12px; border-radius:8px; font-size:13px; z-index:9; }
+</style>
+</head>
+<body>
+<div id="status">Checking font…</div>
+<section style="background:var(--green)">
+  <h1 class="display" style="font-size:clamp(110px,21vw,320px)">Menu</h1>
+  <p class="note">Order two or three dishes between two, plus rice.</p>
+</section>
+<section style="background:var(--pink)">
+  <h1 class="display" style="font-size:clamp(84px,17vw,260px)">Journal</h1>
+</section>
+<section style="background:var(--ink); color:var(--paper)">
+  <h1 class="display" style="font-size:clamp(84px,17vw,260px)">Gallery</h1>
+</section>
+<section style="background:var(--yellow)">
+  <p class="display" style="font-size:72px">Kain tayo · Since 1987</p>
+  <p class="display" style="font-size:72px; font-weight:400; margin-top:16px">Aquavit Regular 400</p>
+</section>
+<script>
+  document.fonts.ready.then(() => {
+    const black = document.fonts.check('700 72px aquavit');
+    const loaded = [...document.fonts].filter(f => f.family.replace(/"/g,'') === 'aquavit' && f.status === 'loaded').length;
+    document.getElementById('status').textContent = black ? `Aquavit loaded (${loaded} face${loaded===1?'':'s'})` : 'Aquavit NOT loaded — fallback in use';
+  });
+</script>
+</body>
+</html>

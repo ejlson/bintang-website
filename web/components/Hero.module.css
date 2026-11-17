@@ -1,0 +1,127 @@
+.hero {
+  position: relative;
+  height: 100vh;
+  height: 100svh;
+  min-height: 640px;
+  overflow: hidden;
+  background: var(--ink) url("/media/hero-poster.jpg") center / cover no-repeat;
+  color: var(--paper);
+}
+
+@media (max-aspect-ratio: 1/1) {
+  .hero {
+    background-image: url("/media/hero-poster-portrait.jpg");
+  }
+}
+
+.video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Warm overlay: a light wash over the whole frame plus soft dark fades at the
+   top (behind the nav) and bottom (behind the subtitles). Warm-tinted so the
+   golden-hour footage doesn't turn grey. */
+.scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      180deg,
+      rgb(30 12 10 / 0.78) 0%,
+      rgb(30 12 10 / 0.45) 9%,
+      rgb(30 12 10 / 0.12) 20%,
+      rgb(30 12 10 / 0) 30%
+    ),
+    linear-gradient(
+      0deg,
+      rgb(30 12 10 / 0.85) 0%,
+      rgb(30 12 10 / 0.55) 12%,
+      rgb(30 12 10 / 0.18) 26%,
+      rgb(30 12 10 / 0) 38%
+    ),
+    rgb(58 24 20 / 0.18);
+}
+
+.pause {
+  position: absolute;
+  left: 20px;
+  bottom: 20px;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--paper);
+  cursor: pointer;
+  opacity: 0.85;
+  transition: opacity 0.2s var(--ease);
+}
+
+.pause:hover {
+  opacity: 1;
+}
+
+.pause:focus-visible,
+.thumb:focus-visible {
+  outline: 2px solid var(--paper);
+  outline-offset: 3px;
+}
+
+.thumb {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  z-index: 4;
+  display: block;
+  width: 76px;
+  height: 76px;
+  overflow: hidden;
+  border: 2px solid var(--paper);
+  border-radius: 10px;
+  background: var(--ink);
+  transition: transform 0.4s var(--ease);
+}
+
+.thumb:hover {
+  transform: scale(1.06);
+}
+
+.thumb video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (width < 768px) {
+  .thumb {
+    width: 60px;
+    height: 60px;
+    right: 16px;
+    bottom: 16px;
+  }
+
+  .pause {
+    left: 16px;
+    bottom: 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thumb,
+  .pause {
+    transition: none;
+  }
+
+  .thumb:hover {
+    transform: none;
+  }
+}

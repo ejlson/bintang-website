@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="14.64 640.55 289.83 126.04" width="289.83" height="126.04"><defs><radialGradient id="oval-fill-radial-gradient" cx="99.96" cy="669.05" fx="99.96" fy="669.05" r="86.97" gradientTransform="translate(-1658.9704 792.9238) rotate(-90) scale(.8938 2.7181)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#db4b31" />
+      <stop offset="1" stop-color="#f58a5e" />
+    </radialGradient>
+    </defs><g id="oval-fill"><ellipse cx="159.56" cy="703.58" rx="142.92" ry="61.02" fill="url(#oval-fill-radial-gradient)" stroke="#2d2d2d" stroke-miterlimit="10" />
+    </g></svg>

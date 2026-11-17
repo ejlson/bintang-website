@@ -1,0 +1,49 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "bintang-web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "web",
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "3000"
+      ],
+      "port": 3000
+    },
+    {
+      "name": "bintang-preview",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "4173",
+        "--directory",
+        "preview"
+      ],
+      "port": 4173
+    },
+    {
+      "name": "bintang-karaoke",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "exec python3 -m http.server \"${PORT:-4174}\" --directory preview"
+      ],
+      "port": 4174
+    },
+    {
+      "name": "bintang-web-prod",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "npm --prefix web run build && exec npm --prefix web run start -- --port 3002"
+      ],
+      "port": 3002
+    }
+  ]
+}
