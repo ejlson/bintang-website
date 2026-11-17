@@ -1,0 +1,38 @@
+/* Fixed colour layers behind a page (see ColourSweep.tsx). The page's content
+   sits above at z-index 1 with no background of its own. */
+
+.layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.base {
+  position: absolute;
+  inset: 0;
+}
+
+/* 200vh tall. The edge that leads the sweep fades out over a quarter of the
+   band (50vh), like Mala Project's; the rest is solid. */
+.band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 200vh;
+  will-change: transform;
+}
+
+.band[hidden] {
+  display: none;
+}
+
+.band[data-direction="down"] {
+  background: linear-gradient(to bottom, var(--sweep) 75%, transparent);
+}
+
+.band[data-direction="up"] {
+  background: linear-gradient(to bottom, transparent, var(--sweep) 25%);
+}

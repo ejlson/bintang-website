@@ -32,11 +32,15 @@ export function AboutPage() {
       <section className={styles.intro}>
         {/* No visible title on About: the statement leads. The H1 stays for screen readers and search. */}
         <h1 className="sr-only">About</h1>
-        <p className={styles.statement}>
-          Bintang is London’s oldest Filipino restaurant. Since 1987 we’ve cooked from the same kitchen on Kentish
-          Town Road — Filipino favourites with Asian influences, made to be shared. It’s a place for big flavours,
-          big nights, and long tables of friends and family.
-        </p>
+        <div className={styles.lead}>
+          <p className={styles.statement}>
+            Bintang is <em>London’s oldest Filipino restaurant</em>. Since 1987 we’ve cooked from the same kitchen on{" "}
+            <em>Kentish Town Road</em> — <em>Filipino</em> favourites with <em>Asian influences</em>, made to be shared.
+            It’s a place for big flavours, big nights, and long tables of friends and family.
+          </p>
+          {/* eslint-disable-next-line @next/next/no-img-element -- small vector drawing, no optimisation needed */}
+          <img className={styles.lion} src="/brand/lion-full-paper.svg" alt="" width={156} height={117} />
+        </div>
         <AboutFilm />
       </section>
 

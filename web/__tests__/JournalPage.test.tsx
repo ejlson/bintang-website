@@ -49,15 +49,17 @@ describe("JournalPage", () => {
     expect(t.getByText("Read the story")).toHaveAttribute("aria-hidden", "true");
   });
 
-  it("puts the headline on the left and the photo, summary and Read the story on the right", () => {
+  it("puts the headline and summary on the left, and the photo and Read the story on the right", () => {
     render(<JournalPage />);
     const top = screen.getByRole("region", { name: "Top story" });
-    const [text, media] = Array.from(top.children);
-    expect(text).toEqual(within(top).getByRole("heading", { level: 2, name: front.lead.title }));
+    const [text, media] = Array.from(top.children) as HTMLElement[];
+    expect(within(text).getByRole("heading", { level: 2, name: front.lead.title })).toBeInTheDocument();
+    expect(text).toHaveTextContent(front.lead.excerpt);
     expect(text.querySelector("img")).toBeNull();
     expect(media.querySelector("img")).not.toBeNull();
-    expect(media).toHaveTextContent(front.lead.excerpt);
-    expect(media).toHaveTextContent("Read the story");
+    expect(media.lastElementChild).toHaveTextContent("Read the story");
+    expect(media.lastElementChild).toHaveAttribute("aria-hidden", "true");
+    expect(within(top).getAllByRole("link")).toHaveLength(1);
     expect(screen.queryByRole("complementary", { name: "In brief" })).not.toBeInTheDocument();
   });
 

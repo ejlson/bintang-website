@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
-import { Placeholder } from "@/components/Placeholder";
+import { GalleryPage } from "@/components/GalleryPage";
 
-export const metadata: Metadata = { title: "Gallery" };
+export const metadata: Metadata = {
+  title: "Gallery",
+  description:
+    "Photographs from Bintang, London’s oldest Filipino restaurant: the kitchen, the garden, the karaoke room and the family album since 1987.",
+};
 
 export default function Page() {
-  return <Placeholder title="Gallery" tl="Larawan" href="/gallery" background="var(--ink)" tone="paper" />;
+  return <GalleryPage />;
 }

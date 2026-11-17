@@ -86,7 +86,7 @@ Designed on the Claude Design canvas "Bintang Website" (Menu artboard); options 
 
 1. **Colour:** deep red flood (`--red-deep`), paper text, paper lion head in the header.
 2. **Title:** none visible (the statement leads, as on the board); a visually hidden H1 "About" stays.
-3. **Statement + film:** the large Aquavit paragraph (34→68px) sits 24px under the navbar, with the then-and-now film to its right at the golden ratio (statement : film = 1.618 : 1). Below 900px they stack, statement first.
+3. **Statement + film:** the Aquavit paragraph (28→44px) sits 24px under the navbar, with the then-and-now film to its right at the golden ratio (statement up to 680px : film up to 420px = 1.618 : 1), pushed to the two edges. Key phrases (London’s oldest Filipino restaurant, Kentish Town Road, Filipino, Asian influences) are italic and underlined. The full-body lion drawing (paper, from the brand pack) sits under the statement at the bottom left, level with the bottom of the film. Below 900px they stack: statement, lion, film.
 4. **Film:** portrait 9:16 with square corners. It is muted, looping and inline, with a bottom-left pause control (WCAG 2.2.2). Reduced-motion and data-saver visitors start paused, with `preload="none"`, like the Home hero and the Karaoke video.
 5. **Chapters:** three columns (1987, The kitchen, Today), each an English/Tagalog label over a 22px paragraph, under a hairline.
 6. **Not built from the board:** the fixed bottom-right video thumbnail. The navbar Book button replaced it.

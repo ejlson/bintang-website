@@ -1,0 +1,379 @@
+/* Gallery (option D on the Claude Design canvas). Ink text on light section
+   colours that ColourSweep paints behind the page. Content has no background
+   of its own. Spacing follows the 8px scale: 4 8 12 16 24 32 48 64 96. */
+
+.page {
+  --gutter: clamp(16px, 5vw, 80px);
+  --gap: clamp(120px, 12vw, 200px);
+
+  position: relative;
+  min-height: 100vh;
+  min-height: 100svh;
+  color: var(--ink);
+  font-family: var(--font-serif);
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+}
+
+.small {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.centred {
+  max-width: 300px;
+  text-align: center;
+}
+
+/* ---------- Photo buttons ---------- */
+
+.shot {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: var(--ink);
+  cursor: zoom-in;
+  overflow: hidden;
+}
+
+.shot img {
+  object-fit: cover;
+  transition: transform 0.9s var(--ease);
+}
+
+@media (hover: hover) {
+  .shot:hover img {
+    transform: scale(1.03);
+  }
+}
+
+.shot:focus-visible {
+  outline: 2px solid var(--red-deep);
+  outline-offset: 4px;
+}
+
+/* ---------- Book link (deep red, like the TONY reference) ---------- */
+
+.book {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 24px;
+  background: var(--red-deep);
+  color: var(--paper);
+  font-size: 16px;
+  line-height: 1.1;
+  text-decoration: none;
+  transition: background-color 0.25s;
+}
+
+.book:hover {
+  background: var(--red);
+}
+
+.book:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+/* Red dot labels: the dot in red, the word in ink (red text fails contrast on yellow and pink). */
+.dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.2;
+  align-self: start;
+}
+
+.dot::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--red-deep);
+}
+
+/* ---------- Hero: big garden photo, small framed shopfront ---------- */
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 48px;
+  padding-top: 24px;
+}
+
+.heroShot {
+  aspect-ratio: 5 / 4;
+}
+
+.heroSide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  padding: 0 var(--gutter);
+}
+
+.framed {
+  display: flex;
+  align-items: center;
+  gap: clamp(16px, 3vw, 40px);
+}
+
+.framed > p:first-child {
+  text-align: right;
+}
+
+.frame {
+  width: clamp(140px, 13vw, 200px);
+  aspect-ratio: 4 / 5;
+}
+
+@media (width >= 768px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .heroSide {
+    padding-top: clamp(40px, 7vw, 120px);
+  }
+}
+
+/* ---------- Album: lanterns split by a column of cards ---------- */
+
+.album {
+  padding-top: var(--gap);
+}
+
+.albumIntro {
+  max-width: 300px;
+  margin: 0 0 24px var(--gutter);
+}
+
+.split {
+  position: relative;
+}
+
+.wide {
+  height: clamp(420px, 44vw, 640px);
+}
+
+/* Phones: the cards sit under the photo. */
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px var(--gutter) 0;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+.cardShot {
+  aspect-ratio: 4 / 3;
+}
+
+.cardCap {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 6px;
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+/* Wider screens: the column stands over the photo, a little right of centre,
+   overhanging it top and bottom, in the section's own colour. */
+@media (width >= 768px) {
+  .column {
+    position: absolute;
+    top: -56px;
+    bottom: -56px;
+    left: 52%;
+    width: clamp(240px, 20vw, 300px);
+    padding: 12px;
+    background: var(--paper);
+  }
+
+  .card {
+    flex: 1 1 0;
+    min-height: 0;
+  }
+
+  .cardShot {
+    flex: 1 1 auto;
+    aspect-ratio: auto;
+    min-height: 120px;
+  }
+}
+
+/* ---------- Rooms: three photos with labels ---------- */
+
+.rooms {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+  margin-top: var(--gap);
+  padding: 0 var(--gutter) 0 20px;
+}
+
+@media (width >= 768px) {
+  .rooms {
+    grid-template-columns: minmax(120px, 1fr) minmax(0, 3fr);
+  }
+}
+
+.trio {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.room {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+}
+
+.roomShot {
+  aspect-ratio: 4 / 3;
+}
+
+/* ---------- Nights: big photo, small photo, booking line ---------- */
+
+.nights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: stretch;
+  padding-top: var(--gap);
+  padding-bottom: var(--gap);
+}
+
+.nightsBig {
+  flex: 999 1 480px;
+  min-width: 0;
+  min-height: 520px;
+}
+
+.nightsSide {
+  flex: 1 1 300px;
+  display: flex;
+  gap: 24px;
+  padding: 0 20px;
+}
+
+.nightsCol {
+  flex: 0 1 260px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+.nightsSmall {
+  aspect-ratio: 3 / 4;
+}
+
+.nightsText {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.nightsSide .dot {
+  margin-left: auto;
+}
+
+/* ---------- Viewer ---------- */
+
+.viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 72px 16px 32px;
+  background: color-mix(in srgb, var(--ink) 97%, transparent);
+  color: var(--paper);
+}
+
+.big {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: min(1100px, 100%);
+  max-height: calc(100svh - 230px);
+  object-fit: contain;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.caption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  max-width: 320px;
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.count {
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+.round {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid color-mix(in srgb, var(--paper) 50%, transparent);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--paper);
+  cursor: pointer;
+}
+
+.round:hover {
+  border-color: var(--paper);
+}
+
+.round:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 3px;
+}
+
+.close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+}

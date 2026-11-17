@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { Placeholder } from "@/components/Placeholder";
-import Gallery from "@/app/gallery/page";
 import Contact from "@/app/contact/page";
 import Groups from "@/app/contact/groups/page";
 import Karaoke from "@/app/contact/karaoke/page";
@@ -34,7 +33,6 @@ describe("Placeholder", () => {
   });
 
   it.each([
-    [Gallery, "/gallery"],
     [Karaoke, "/contact/karaoke"],
     [Contact, "/contact"],
   ])("placeholder route %# (%s) renders its own nav label as title and marks itself current", (Page, href) => {

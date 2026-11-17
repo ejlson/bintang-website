@@ -36,23 +36,61 @@
   padding-bottom: clamp(96px, 10vw, 160px);
 }
 
+/* Statement 680px and film 420px at most (1.618 : 1), pushed to the two edges. */
 @media (width >= 900px) {
   .intro {
-    grid-template-columns: 1.618fr 1fr;
+    grid-template-columns:
+      min(calc((100% - 64px) * 0.618), 680px)
+      min(calc((100% - 64px) * 0.382), 420px);
+    justify-content: space-between;
   }
 }
 
 .statement {
   margin: 0;
-  font-size: clamp(34px, 4.6vw, 68px);
-  line-height: 1.12;
+  font-size: clamp(28px, 3vw, 44px);
+  line-height: 1.15;
   letter-spacing: -0.01em;
   text-wrap: pretty;
 }
 
+/* Left column: the statement on top, the full lion drawing at the bottom,
+   level with the bottom of the film. */
+.lead {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 48px;
+  align-self: stretch;
+}
+
+.lion {
+  display: block;
+  width: clamp(140px, 16vw, 230px);
+  height: auto;
+}
+
+/* Key phrases: slanted (Aquavit has no true italic) and underlined. */
+.statement em {
+  font-style: italic;
+  text-decoration: underline;
+  text-decoration-thickness: 0.06em;
+  text-underline-offset: 0.14em;
+}
+
 .film {
+  position: relative;
   max-width: 400px;
   margin: 0;
+}
+
+/* The caption hangs below the frame, out of flow, so the figure's bottom is the
+   video's bottom and the lion lines up with it. The section's bottom padding
+   leaves room for it. */
+.film > figcaption {
+  position: absolute;
+  top: 100%;
+  left: 0;
 }
 
 @media (width >= 900px) {

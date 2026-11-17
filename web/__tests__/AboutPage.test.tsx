@@ -83,6 +83,12 @@ describe("About page", () => {
     expect(film()).toHaveAttribute("preload", "none");
   });
 
+  it("shows the full lion drawing as decoration", () => {
+    const { container } = render(<About />);
+    const lion = container.querySelector('img[src="/brand/lion-full-paper.svg"]');
+    expect(lion).toHaveAttribute("alt", "");
+  });
+
   it("lists the chapters as headings with Tagalog subtitles", () => {
     render(<About />);
     const chapters = screen.getByRole("region", { name: "Our story" });

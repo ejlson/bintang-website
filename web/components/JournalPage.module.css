@@ -102,7 +102,6 @@
   border: 6px solid var(--ink);
 }
 
-.read,
 .line {
   display: inline-flex;
   align-items: center;
@@ -144,7 +143,7 @@
     transform: scale(1.03);
   }
 
-  .front:hover .read .arrow,
+  .front:hover .readMore .arrow,
   .story:hover .readMore .arrow,
   .line:hover .arrow {
     transform: translateX(4px);
@@ -159,17 +158,27 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 32px clamp(32px, 4vw, 64px);
-  align-items: start;
-  padding: clamp(32px, 4vw, 56px) 0 48px;
+  /* Both columns take the row's height, so the summary can sit on the same
+     baseline as the bottom of Read the story. */
+  align-items: stretch;
+  padding: clamp(20px, 2vw, 28px) 0 clamp(24px, 2.4vw, 32px);
   /* The rule between the JOURNAL title and the latest story. */
   border-top: var(--rule);
+}
+
+.leadText {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 20px;
+  max-width: 640px;
 }
 
 .leadTitle {
   margin: 0;
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: clamp(36px, 4vw, 64px);
+  font-size: clamp(30px, 3vw, 46px);
   line-height: 0.92;
   text-transform: uppercase;
   text-wrap: balance;
@@ -185,14 +194,10 @@
 }
 
 .standfirst {
-  margin: 4px 0 0;
+  margin: 0;
   font-family: var(--font-serif);
   font-size: clamp(17px, 1.4vw, 20px);
   line-height: 1.4;
-}
-
-.read {
-  align-self: flex-start;
 }
 
 @media (max-width: 899px) {
@@ -404,12 +409,14 @@
 }
 
 /* Fills with ink when the card is hovered or its link has focus. */
+.front:focus-within .readMore,
 .story:focus-within .readMore {
   background: var(--ink);
   color: var(--newsprint);
 }
 
 @media (hover: hover) {
+  .front:hover .readMore,
   .story:hover .readMore {
     background: var(--ink);
     color: var(--newsprint);

@@ -14,17 +14,20 @@ import styles from "./JournalPage.module.css";
    target. Headline links carry OPEN_POST for the iris transition.
    Older entries (with its search box) is a client component. */
 
-/** The latest story: headline on the left, photo on the right with the summary under it. */
+/** The latest story: headline and summary on the left, photo and Read the story on the right. */
 function Lead({ post }: { post: JournalPost }) {
   return (
     <section className={styles.front} aria-label="Top story">
-      <h2 className={styles.leadTitle}>
-        <Headline post={post} />
-      </h2>
+      <div className={styles.leadText}>
+        <h2 className={styles.leadTitle}>
+          <Headline post={post} />
+        </h2>
+        <p className={styles.standfirst}>{post.excerpt}</p>
+      </div>
       <div className={styles.leadMedia}>
         <Photo post={post} framed eager sizes="(min-width: 1200px) 560px, (min-width: 900px) 48vw, 100vw" />
-        <p className={styles.standfirst}>{post.excerpt}</p>
-        <span className={styles.read} aria-hidden="true">
+        {/* A cue, not a second link: the headline's link already covers the story. */}
+        <span className={styles.readMore} aria-hidden="true">
           Read the story
           <Arrow />
         </span>

@@ -3,6 +3,7 @@ import { render, screen, within } from "@testing-library/react";
 import { SiteFooter } from "@/components/SiteFooter";
 import Home from "@/app/page";
 import Gallery from "@/app/gallery/page";
+import Contact from "@/app/contact/page";
 import { BOOKING_URL } from "@/lib/nav";
 import { hours, site } from "@/lib/site";
 
@@ -47,7 +48,8 @@ describe("SiteFooter", () => {
 
   it.each([
     ["Home", Home],
-    ["a placeholder page", Gallery],
+    ["a placeholder page", Contact],
+    ["Gallery", Gallery],
   ])("is on %s", (_, Page) => {
     render(<Page />);
     expect(screen.getByRole("navigation", { name: "More" })).toBeInTheDocument();
