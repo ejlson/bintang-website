@@ -1,5 +1,9 @@
 .header {
   z-index: 10;
+  /* The Book button's burst canvas reaches past the page edge; clip it
+     sideways so it can't add a horizontal scroll (clip, unlike hidden,
+     leaves vertical overflow visible and makes no scroll container). */
+  overflow-x: clip;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: start;
@@ -27,15 +31,101 @@
   color: var(--ink);
 }
 
+/* Two 22px lines = 44px, the Book pill's height, so the row reads as one band. */
 .list {
   display: flex;
   flex-wrap: wrap;
   gap: 8px 32px;
+  font-size: 18px;
+  line-height: 22px;
 }
 
 .right {
   justify-content: flex-end;
   text-align: right;
+}
+
+/* Right column: enquiry links, then the Book button at the far edge. */
+.end {
+  grid-column: 3;
+  display: flex;
+  align-items: start;
+  justify-content: flex-end;
+  gap: 16px 32px;
+}
+
+/* Book: the Sakuga VFX button (components/BookButton). Hollow in the bar's
+   text colour; fills Bintang red on hover/press, which is also what the
+   impact frame inverts. `.book` is the plain-link fallback, drawn the same. */
+.paper {
+  --book-line: var(--paper);
+}
+
+.ink {
+  --book-line: var(--ink);
+}
+
+.book,
+.sakuga {
+  flex: none;
+}
+
+.book {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 30px;
+  border: 2px solid var(--book-line);
+  border-radius: 999px;
+  color: var(--book-line);
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-style: italic;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.book:hover,
+.book:active {
+  border-color: var(--red);
+  background: var(--red);
+  color: var(--paper);
+}
+
+.sakuga {
+  --sk-back: 270px; /* room for the 150px burst's rays (BookButton) */
+  --sk-card: transparent;
+  --sk-ink: var(--book-line);
+  --sk-btn-line: var(--book-line);
+  --sk-acc: var(--book-line);
+}
+
+.sakuga:hover,
+.sakuga:active {
+  --sk-card: var(--red);
+  --sk-ink: var(--paper);
+  --sk-btn-line: var(--red);
+}
+
+.sakuga::part(button) {
+  min-height: 44px;
+  padding: 10px 30px;
+  border-radius: 999px;
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: 0;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .link {
@@ -49,16 +139,25 @@
   display: block;
 }
 
-/* 0.92 keeps the Tagalog line secondary but ≥4.5:1 on every page colour
-   (deep red is the tightest at ~4.6:1). */
+/* 0.75 reads as a lighter secondary line. Contrast stays ≥4.5:1 on ink, paper,
+   yellow and pink, but drops to ~3.5:1 for paper text on deep red (About). */
 .tl {
-  opacity: 0.92;
+  opacity: 0.75;
+  /* Needs Aquavit Light in the Typekit kit; falls back to 400 until then.
+     font-synthesis stops the browser faking a weight it doesn't have. */
+  font-weight: 300;
+  font-synthesis-weight: none;
 }
 
 .link:hover .en,
 .link[aria-current="page"] .en {
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+.book:focus-visible {
+  outline: 2px solid var(--book-line);
+  outline-offset: 3px;
 }
 
 .link:focus-visible,
@@ -108,6 +207,12 @@
   overflow-y: auto;
   background: var(--ink);
   color: var(--paper);
+  --book-line: var(--paper);
+}
+
+.overlay .book,
+.overlay .sakuga {
+  align-self: flex-start;
 }
 
 .close {
@@ -139,9 +244,23 @@
   font-size: 15px;
 }
 
+/* Narrow desktops: smaller type and gaps so both lists fit on one row,
+   keeping the 22px lines so items still match the 44px Book pill. */
+@media (768px <= width < 1024px) {
+  .list {
+    column-gap: 20px;
+    font-size: 15px;
+  }
+
+  .end {
+    column-gap: 20px;
+  }
+}
+
 @media (width < 768px) {
+  /* Logo left; Book + Menu right (no room for both beside a centred mark). */
   .header {
-    grid-template-columns: 1fr auto 1fr;
+    grid-template-columns: auto 1fr auto;
     align-items: center;
   }
 
@@ -150,15 +269,29 @@
   }
 
   .mark {
-    grid-column: 2;
+    grid-column: 1;
+    justify-self: start;
   }
 
   .mark img {
     height: 44px;
   }
 
+  .end {
+    align-items: center;
+    gap: 16px;
+  }
+
+  .book {
+    padding: 0 22px;
+  }
+
+  .sakuga::part(button) {
+    padding: 10px 22px;
+  }
+
   .toggle {
     display: block;
-    grid-column: 3;
+    white-space: nowrap;
   }
 }

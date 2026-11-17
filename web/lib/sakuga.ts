@@ -14,6 +14,8 @@ type Fx = (x: number, y: number, opts?: Opts) => void;
 /** The parts of the vendored core's `window.SakugaFX` that the site uses. */
 export type SakugaFX = {
   paused: boolean;
+  /** True while the visitor asks for reduced motion; effects are skipped. */
+  readonly calm: boolean;
   /** Page coordinates of a point inside an element (fx, fy are 0–1 fractions of its box). */
   at: (el: Element, fx?: number, fy?: number) => { x: number; y: number; w: number; h: number };
   /** Run `f` after `ms` milliseconds of the core's own clock (it stops while paused). */

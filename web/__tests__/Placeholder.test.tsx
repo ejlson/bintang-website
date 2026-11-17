@@ -37,10 +37,8 @@ describe("Placeholder", () => {
   it.each([
     [About, "/about"],
     [Gallery, "/gallery"],
-    [Contact, "/contact"],
-    [Groups, "/contact/groups"],
     [Karaoke, "/contact/karaoke"],
-    [PrivateHire, "/contact/private-hire"],
+    [Contact, "/contact"],
   ])("placeholder route %# (%s) renders its own nav label as title and marks itself current", (Page, href) => {
     const link = allLinks.find((l) => l.href === href)!;
     render(<Page />);
@@ -49,5 +47,14 @@ describe("Placeholder", () => {
     expect(screen.getByText(link.tl, { selector: "p" })).toBeInTheDocument();
     const current = screen.getAllByRole("link").filter((a) => a.getAttribute("aria-current") === "page");
     expect(current.map((a) => a.getAttribute("href"))).toEqual([href]);
+  });
+
+  it.each([
+    [Groups, "Groups"],
+    [PrivateHire, "Private hire"],
+  ])("keeps the %# %s placeholder (no longer in the nav, so nothing is current)", (Page, title) => {
+    render(<Page />);
+    expect(screen.getByRole("heading", { level: 1 })).toHaveProperty("textContent", title);
+    expect(screen.getAllByRole("link").filter((a) => a.hasAttribute("aria-current"))).toHaveLength(0);
   });
 });

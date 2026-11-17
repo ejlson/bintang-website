@@ -275,6 +275,7 @@ describe("Subtitles", () => {
     function fakeFx(): SakugaFX {
       return {
         paused: false,
+        calm: false,
         at: vi.fn(() => ({ x: 100, y: 100, w: 200, h: 40 })),
         later: vi.fn(),
         clear: vi.fn(),

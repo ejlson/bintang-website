@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import { PageTransition } from "@/components/PageTransition";
+import { SwipeBackGuard } from "@/components/PageTransition";
+import { SmoothScroll } from "@/components/SmoothScroll";
+import "lenis/dist/lenis.css";
 import "./globals.css";
 
 const description =
@@ -62,7 +64,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <link rel="stylesheet" href="https://use.typekit.net/pev2vne.css" />
       </head>
       <body>
-        <PageTransition>{children}</PageTransition>
+        <SwipeBackGuard />
+        <SmoothScroll />
+        {children}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(restaurantJsonLd).replace(/</g, "\\u003c") }}

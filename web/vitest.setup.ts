@@ -67,3 +67,7 @@ Object.defineProperty(HTMLMediaElement.prototype, "pause", {
   configurable: true,
   value: vi.fn(),
 });
+
+// The Book button's Sakuga script draws on canvas, which jsdom lacks: keep the
+// plain-link fallback in tests unless a test file mocks this itself.
+vi.mock("@/lib/sakuga-button", () => ({ loadSakugaButton: () => Promise.resolve(null) }));

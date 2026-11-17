@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SiteHeader } from "@/components/SiteHeader";
-import { allLinks, bookLinks, exploreLinks } from "@/lib/nav";
+import { BOOKING_URL, allLinks, bookLinks, exploreLinks } from "@/lib/nav";
 import { fireMediaChange, mediaListeners, motion } from "../vitest.setup";
 
 const DESKTOP_QUERY = "(width >= 768px)";
@@ -16,10 +16,8 @@ const EXPECTED_EXPLORE = [
 ] as const;
 
 const EXPECTED_BOOK = [
-  ["Book", "Magpareserba", "/contact"],
-  ["Groups", "Grupo", "/contact/groups"],
   ["Karaoke", "Kantahan", "/contact/karaoke"],
-  ["Private hire", "Pribado", "/contact/private-hire"],
+  ["Contact us", "Makipag-ugnayan", "/contact"],
 ] as const;
 
 function linksIn(nav: HTMLElement) {
@@ -54,15 +52,27 @@ describe("SiteHeader links", () => {
     expect(linksIn(screen.getByRole("navigation", { name: "Explore" }))).toEqual(EXPECTED_EXPLORE.map((l) => [...l]));
   });
 
-  it("renders the book links on the right in spec order with EN + TL labels", () => {
+  it("renders the enquiry links on the right in spec order with EN + TL labels", () => {
     render(<SiteHeader />);
-    expect(linksIn(screen.getByRole("navigation", { name: "Book" }))).toEqual(EXPECTED_BOOK.map((l) => [...l]));
+    expect(linksIn(screen.getByRole("navigation", { name: "Enquire" }))).toEqual(EXPECTED_BOOK.map((l) => [...l]));
+  });
+
+  it("ends the bar with a Book button that opens OpenTable in a new tab", () => {
+    render(<SiteHeader />);
+    const book = screen.getByRole("link", { name: "Book a table on OpenTable (opens in a new tab)" });
+    expect(BOOKING_URL).toBe("https://www.opentable.co.uk/r/bintang-london");
+    expect(book).toHaveAttribute("href", BOOKING_URL);
+    expect(book).toHaveAttribute("target", "_blank");
+    expect(book).toHaveAttribute("rel", "noopener noreferrer");
+    // It sits after the enquiry links, as the last link in the bar.
+    const barLinks = screen.getAllByRole("link");
+    expect(barLinks[barLinks.length - 1]).toBe(book);
   });
 
   it("nav data matches the spec", () => {
     expect(exploreLinks.map((l) => [l.en, l.tl, l.href])).toEqual(EXPECTED_EXPLORE.map((l) => [...l]));
     expect(bookLinks.map((l) => [l.en, l.tl, l.href])).toEqual(EXPECTED_BOOK.map((l) => [...l]));
-    expect(allLinks).toHaveLength(8);
+    expect(allLinks).toHaveLength(6);
   });
 
   it("marks Tagalog lines with lang=tl", () => {
@@ -89,16 +99,10 @@ describe("SiteHeader links", () => {
   });
 
   it("sets aria-current=page only on the current link", () => {
-    render(<SiteHeader currentHref="/contact/groups" />);
+    render(<SiteHeader currentHref="/contact" />);
     const current = screen.getAllByRole("link").filter((a) => a.getAttribute("aria-current") === "page");
     expect(current).toHaveLength(1);
-    expect(current[0]).toHaveAttribute("href", "/contact/groups");
-  });
-
-  it("does not mark /contact current when on a /contact sub-page", () => {
-    render(<SiteHeader currentHref="/contact/karaoke" />);
-    const book = within(screen.getByRole("navigation", { name: "Book" })).getByRole("link", { name: /^Book/ });
-    expect(book).not.toHaveAttribute("aria-current");
+    expect(current[0]).toHaveAttribute("href", "/contact");
   });
 
   it("marks no link current on the home page", () => {
@@ -115,7 +119,7 @@ describe("SiteHeader mobile overlay", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
-  it("opens a modal dialog with all 8 links and moves focus inside", async () => {
+  it("opens a modal dialog with every page link plus the Book button and moves focus inside", async () => {
     const user = userEvent.setup();
     render(<SiteHeader currentHref="/menu" />);
     await user.click(toggle());
@@ -126,7 +130,7 @@ describe("SiteHeader mobile overlay", () => {
     expect(dialog.id).toBe(toggle().getAttribute("aria-controls"));
 
     const links = within(dialog).getAllByRole("link");
-    expect(links.map((a) => a.getAttribute("href"))).toEqual(allLinks.map((l) => l.href));
+    expect(links.map((a) => a.getAttribute("href"))).toEqual([...allLinks.map((l) => l.href), BOOKING_URL]);
     expect(within(dialog).getByRole("link", { name: /Mga Ulam/ })).toHaveAttribute("aria-current", "page");
 
     expect(dialog).toContainElement(document.activeElement as HTMLElement);

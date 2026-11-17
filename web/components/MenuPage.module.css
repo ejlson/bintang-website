@@ -20,8 +20,9 @@
 
 .page {
   --title-size: clamp(88px, 22vw, 340px);
-  --gutter: clamp(16px, 5vw, 80px);
-  --max: 1280px;
+  /* Same content width as the Journal (JournalPage.module.css). */
+  --gutter: clamp(12px, 3vw, 40px);
+  --max: 1600px;
   --rule: color-mix(in srgb, var(--acc) 22%, transparent);
   --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
 
@@ -56,19 +57,39 @@
 
 .title {
   margin: 0;
-  color: var(--acc);
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: var(--title-size);
-  line-height: 0.8;
-  text-transform: uppercase;
-  /* Wide and squished vertically, per the design. */
-  transform: scaleY(0.85);
-  transform-origin: 50% 100%;
+  line-height: 0;
 }
 
 .titleText {
   display: inline-block;
+  width: min(100%, 860px);
+}
+
+/* Brand-pack badge with the MENU title inside (MenuBadge in MenuPage.tsx). */
+.badge {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.badgeTitle {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 84px;
+}
+
+.badgeSmall,
+.badgeTag {
+  font-family: var(--sans);
+  font-weight: 700;
+}
+
+.badgeSmall {
+  font-size: 14.5px;
+}
+
+.badgeTag {
+  font-size: 11px;
 }
 
 /* Sticky tabs sit on a fade rather than a solid block: solid page colour
@@ -118,7 +139,7 @@
 .tabs {
   /* First paint approximates the title (MENU is ~2.72em wide in Aquavit Black);
      MenuPage then sets the measured width, so the row doesn't jump. */
-  width: calc(2.72 * var(--title-size));
+  width: min(100%, 860px);
   max-width: 100%;
   margin: 0 auto;
   padding: 16px 0;
@@ -478,7 +499,8 @@
 @media (max-width: 640px) {
   /* MENU fills the content width, and the tabs fit on one justified row under it. */
   .page {
-    --title-size: 33vw;
+    /* MENU (~2.72em wide) spans exactly the content width between the gutters. */
+    --title-size: calc((100vw - 2 * var(--gutter)) / 2.72);
   }
 
   .tabs {

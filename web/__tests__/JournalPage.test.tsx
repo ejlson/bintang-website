@@ -35,9 +35,8 @@ describe("JournalPage", () => {
       expect(time).toHaveTextContent(formatDate(post.date));
 
       expect(c.getByRole("img", { name: post.image.alt })).toBeInTheDocument();
-      // The wordmark is decorative: alt="" keeps it out of the accessibility tree.
       expect(c.getAllByRole("img")).toHaveLength(1);
-      expect(card.querySelector('img[src="/brand/bintang-wordmark-paper.svg"]')).toHaveAttribute("alt", "");
+      expect(card.querySelectorAll("img")).toHaveLength(1);
 
       expect(c.getByText(post.excerpt)).toBeInTheDocument();
 

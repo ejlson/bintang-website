@@ -67,6 +67,10 @@ video {
    Page transitions — film-cut wipes (components/PageTransition.tsx).
    The old page's snapshot sits on top and a feathered mask eats it away,
    revealing the new page underneath. --wipe is the leading edge (0% → 110%).
+   The snapshot is the whole page, which can be many screens tall, so the mask
+   is one screen in size and placed at --vt-y (how far the old page was
+   scrolled, read from the snapshot in PageTransition's onExit). Everything
+   outside it was off-screen anyway.
    --------------------------------------------------------------------------- */
 @property --wipe {
   syntax: "<percentage>";
@@ -77,11 +81,6 @@ video {
 @keyframes page-wipe {
   from { --wipe: 0%; }
   to { --wipe: 110%; }
-}
-
-/* Clicks during the wipe go to the live page underneath. */
-::view-transition {
-  pointer-events: none;
 }
 
 /* Outgoing page above, incoming page below and shown as-is (no crossfade). */
@@ -100,6 +99,9 @@ video {
 ::view-transition-old(.wipe-down),
 ::view-transition-old(.wipe-slant),
 ::view-transition-old(.wipe-iris) {
+  mask-size: 100vw 100dvh;
+  mask-position: 0 var(--vt-y, 0px);
+  mask-repeat: no-repeat;
   animation: page-wipe 0.75s var(--ease) both;
 }
 
@@ -111,7 +113,7 @@ video {
 ::view-transition-old(.wipe-slant) {
   mask-image: linear-gradient(-35deg, transparent calc(var(--wipe) - 10%), #000 var(--wipe));
 }
-/* Opening a journal post: a hole opens from the centre. */
+/* Opening a journal post: a hole opens from the centre of the screen. */
 ::view-transition-old(.wipe-iris) {
   mask-image: radial-gradient(circle farthest-corner, transparent calc(var(--wipe) - 10%), #000 var(--wipe));
 }
@@ -123,8 +125,18 @@ video {
   }
 }
 
-/* Reduced motion: a straight cut. The blanket rule above already shortens
-   animations; this also drops the mask so nothing lingers for a frame. */
+/* The browser already animated this back/forward swipe itself: plain cut. */
+:root[data-ua-transition]::view-transition-old(*),
+:root[data-ua-transition]::view-transition-new(*),
+:root[data-ua-transition]::view-transition-group(*) {
+  animation: none;
+}
+:root[data-ua-transition]::view-transition-old(*) {
+  display: none;
+}
+
+/* Reduced motion: a straight cut. (The blanket rule above doesn't reach
+   ::view-transition-* pseudo-elements, so this block is what does it.) */
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-old(*),
   ::view-transition-new(*),

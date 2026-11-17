@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { allLinks, bookLinks, exploreLinks, type NavLink } from "@/lib/nav";
+import { BookButton } from "./BookButton";
+import { getLenis } from "./SmoothScroll";
 import styles from "./SiteHeader.module.css";
 
 type Props = {
@@ -69,6 +71,7 @@ export function SiteHeader({ variant = "overlay", tone = "paper", mark = "red", 
     const dialog = dialogRef.current;
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    getLenis()?.stop();
     const focusables = () =>
       Array.from(dialog?.querySelectorAll<HTMLElement>("a[href], button:not([disabled])") ?? []);
     focusables()[0]?.focus();
@@ -95,6 +98,7 @@ export function SiteHeader({ variant = "overlay", tone = "paper", mark = "red", 
     document.addEventListener("keydown", onKeyDown);
     return () => {
       document.body.style.overflow = prevOverflow;
+      getLenis()?.start();
       document.removeEventListener("keydown", onKeyDown);
     };
   }, [open, close]);
@@ -112,28 +116,32 @@ export function SiteHeader({ variant = "overlay", tone = "paper", mark = "red", 
         <img src={MARK_SRC[mark]} alt="" width={53} height={52} />
       </Link>
 
-      <nav aria-label="Book" className={`${styles.list} ${styles.right}`}>
-        {bookLinks.map((l) => (
-          <NavItem key={l.href} link={l} current={l.href === currentHref} />
-        ))}
-      </nav>
+      <div className={styles.end}>
+        <nav aria-label="Enquire" className={`${styles.list} ${styles.right}`}>
+          {bookLinks.map((l) => (
+            <NavItem key={l.href} link={l} current={l.href === currentHref} />
+          ))}
+        </nav>
 
-      <button
-        ref={toggleRef}
-        type="button"
-        className={styles.toggle}
-        aria-expanded={open}
-        aria-controls={dialogId}
-        onClick={() => setOpen(true)}
-      >
-        <span className={styles.en}>Menu</span>
-        <span className={styles.tl} lang="tl">
-          Mga Pahina
-        </span>
-      </button>
+        <BookButton />
+
+        <button
+          ref={toggleRef}
+          type="button"
+          className={styles.toggle}
+          aria-expanded={open}
+          aria-controls={dialogId}
+          onClick={() => setOpen(true)}
+        >
+          <span className={styles.en}>Menu</span>
+          <span className={styles.tl} lang="tl">
+            Mga Pahina
+          </span>
+        </button>
+      </div>
 
       {open && (
-        <div ref={dialogRef} id={dialogId} className={styles.overlay} role="dialog" aria-modal="true" aria-label="Site menu">
+        <div ref={dialogRef} id={dialogId} className={styles.overlay} data-lenis-prevent role="dialog" aria-modal="true" aria-label="Site menu">
           <button type="button" className={styles.close} onClick={close}>
             Close <span lang="tl">· Isara</span>
           </button>
@@ -148,6 +156,7 @@ export function SiteHeader({ variant = "overlay", tone = "paper", mark = "red", 
               />
             ))}
           </nav>
+          <BookButton />
         </div>
       )}
     </header>

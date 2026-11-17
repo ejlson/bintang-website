@@ -44,6 +44,15 @@
         "npm --prefix web run build && exec npm --prefix web run start -- --port 3002"
       ],
       "port": 3002
+    },
+    {
+      "name": "bintang-web-start",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "exec npm --prefix web run start -- --port \"${PORT:-3004}\""
+      ],
+      "port": 3004
     }
   ]
 }

@@ -1,12 +1,11 @@
 /* Journal index and post pages. Pink page (the Journal's v2 colour), ink text.
-   Cards follow a printed-card pattern: 4:5 photo with the lion head and date
-   on it, serif title, hairline, short excerpt, and a ruled Read more bar that
+   Cards follow a printed-card pattern: 4:5 photo with the date on it, serif title, hairline, short excerpt, and a ruled Read more bar that
    fills with ink on hover.
    Spacing follows the 8px scale: 4 8 12 16 24 32 48 64 96. */
 
 .page {
-  --gutter: clamp(16px, 5vw, 80px);
-  --max: 1280px;
+  --gutter: clamp(12px, 3vw, 40px);
+  --max: 1600px;
   --rule: color-mix(in srgb, var(--ink) 30%, transparent);
   --muted: color-mix(in srgb, var(--ink) 82%, var(--pink));
   --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -64,7 +63,7 @@
   padding: clamp(48px, 6vw, 64px) var(--gutter) 0;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 64px 32px;
+  gap: 48px 20px;
 }
 
 @media (max-width: 1199px) {
@@ -76,7 +75,7 @@
 @media (max-width: 899px) {
   .grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 48px 24px;
+    gap: 40px 16px;
   }
 }
 
@@ -106,32 +105,18 @@
   background: var(--ink);
 }
 
-/* Scrims keep the lion head and date legible on bright photos. */
+/* A scrim at the foot keeps the date legible on bright photos. */
 .media::after {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
-  /* A heavy warm wash across the top (an ellipse, so it curves down at the
-     centre) carries the wordmark; a lighter one at the foot carries the date. */
-  background:
-    radial-gradient(ellipse 130% 52% at 50% 0%, rgb(48 26 26 / 0.82), rgb(48 26 26 / 0.45) 55%, rgb(48 26 26 / 0) 100%),
-    linear-gradient(to top, rgb(45 45 45 / 0.5), rgb(45 45 45 / 0) 24%);
+  background: linear-gradient(to top, rgb(45 45 45 / 0.5), rgb(45 45 45 / 0) 24%);
 }
 
 .img {
   object-fit: cover;
   transition: transform 0.8s var(--ease);
-}
-
-/* The wordmark, about two thirds of the card wide like a printed card's masthead. */
-.mark {
-  position: absolute;
-  z-index: 1;
-  top: 6%;
-  left: 5%;
-  width: 62%;
-  height: auto;
 }
 
 .date {
@@ -149,8 +134,8 @@
 /* ---------- Card text ---------- */
 
 .cardTitle {
-  margin: 20px 0 0;
-  padding-bottom: 20px;
+  margin: 14px 0 0;
+  padding-bottom: 14px;
   border-bottom: 1px solid var(--rule);
   font-family: var(--font-serif);
   font-weight: 400;
@@ -183,7 +168,7 @@
 
 .excerpt {
   flex: 1;
-  margin: 16px 0 24px;
+  margin: 12px 0 16px;
   color: var(--muted);
   font-size: 15px;
   line-height: 1.55;

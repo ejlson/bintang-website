@@ -12,11 +12,13 @@ export const exploreLinks: NavLink[] = [
   { href: "/journal", en: "Journal", tl: "Balita" },
 ];
 
+/** Table bookings go straight to OpenTable (the header's Book button). */
+export const BOOKING_URL = "https://www.opentable.co.uk/r/bintang-london";
+
+/** Enquiry pages, listed on the right of the header. */
 export const bookLinks: NavLink[] = [
-  { href: "/contact", en: "Book", tl: "Magpareserba" },
-  { href: "/contact/groups", en: "Groups", tl: "Grupo" },
   { href: "/contact/karaoke", en: "Karaoke", tl: "Kantahan" },
-  { href: "/contact/private-hire", en: "Private hire", tl: "Pribado" },
+  { href: "/contact", en: "Contact us", tl: "Makipag-ugnayan" },
 ];
 
 export const allLinks: NavLink[] = [...exploreLinks, ...bookLinks];

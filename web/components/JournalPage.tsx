@@ -15,7 +15,7 @@ export function Arrow() {
   );
 }
 
-/** Cover photo with the Bintang wordmark top-left and the date bottom-right, like a printed card. */
+/** Cover photo with the date bottom-right, like a printed card. */
 /** `eager` marks the above-the-fold cover: loaded straight away at high priority. */
 export function Cover({ post, sizes, eager }: { post: JournalPost; sizes: string; eager?: boolean }) {
   return (
@@ -26,8 +26,6 @@ export function Cover({ post, sizes, eager }: { post: JournalPost; sizes: string
         fetchPriority={eager ? "high" : undefined}
         className={styles.img}
       />
-      {/* eslint-disable-next-line @next/next/no-img-element -- small decorative SVG */}
-      <img src="/brand/bintang-wordmark-paper.svg" alt="" className={styles.mark} />
       <time dateTime={post.date} className={styles.date}>
         {formatDate(post.date)}
       </time>

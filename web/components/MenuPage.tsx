@@ -5,6 +5,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type 
 import { menus, type MenuId, type MenuItem, type MenuSheet } from "@/lib/menu";
 import { SiteHeader } from "./SiteHeader";
 import { KaraokeVideo } from "./KaraokeVideo";
+import { jumpTo } from "./SmoothScroll";
 import styles from "./MenuPage.module.css";
 
 const ids = menus.map((m) => m.id);
@@ -88,6 +89,59 @@ function Sheet({ sheet, video }: { sheet: MenuSheet; video: VideoState }) {
   );
 }
 
+/**
+ * The brand-pack badge (brandpack-components/frames/badge/badge-blank.svg)
+ * with the MENU title inside. Shapes are copied from the brand pack; the
+ * text is live, in Aquavit, squished vertically like the rest of the titles.
+ */
+function MenuBadge() {
+  return (
+    <svg className={styles.badge} viewBox="307.94 622.97 286.42 170.41" role="img" aria-label="Menu">
+      <defs>
+        <radialGradient id="menu-badge-fill" cx="457.8" cy="826.6" r="143.34" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#e9bfd3" />
+          <stop offset="1" stopColor="#ece8e7" />
+        </radialGradient>
+      </defs>
+      <g stroke="#2d2d2d" strokeMiterlimit="10">
+        <path
+          d="M456.43,775.43c-34.45,0-66.92-6.64-91.43-18.71-25.68-12.64-39.82-29.88-39.82-48.53s14.14-35.89,39.82-48.53c24.51-12.06,56.98-18.71,91.43-18.71s66.92,6.64,91.43,18.71c25.68,12.64,39.82,29.88,39.82,48.53s-14.14,35.890-39.82,48.53c-24.51,12.06-56.98,18.71-91.43,18.71Z"
+          fill="#f6de43"
+        />
+        <path
+          d="M498.22,766.75c.38,1.13.58,2.3.58,3.49,0,11.68-18.97,21.15-42.36,21.150s-42.36-9.48-42.36-21.15c0-1.19.19-2.36.58-3.49-49.09-8.49-84.27-31.5-84.27-58.56s35.18-50.08,84.27-58.560c-.38-1.13-.58-2.3-.58-3.49,0-11.69,18.97-21.16,42.36-21.16s42.36,9.48,42.36,21.16c0,1.19-.19,2.36-.58,3.49,49.09,8.48,84.27,31.5,84.27,58.56s-35.18,50.07-84.27,58.56Z"
+          fill="url(#menu-badge-fill)"
+        />
+        <circle cx="577.22" cy="702.92" r="15.16" fill="#f6de43" />
+        <circle cx="325.11" cy="702.92" r="15.16" fill="#f6de43" />
+      </g>
+      <g fill="#2d2d2d" fillRule="evenodd">
+        <path d="M336.88,698.25c1.23.2,1.72,1.71.84,2.6l-4.84,4.88,1.05,6.79c.19,1.24-1.090,2.17-2.21,1.61l-6.14-3.09-6.14,3.09c-1.11.56-2.4-.37-2.21-1.61l1.05-6.79-4.84-4.88c-.88-.88-.39-2.4.84-2.6l6.78-1.1,3.14-6.11c.57-1.11,2.16-1.11,2.73,0l3.140,6.11,6.78,1.1ZM328.11,703.36c0-1.4-1.13-2.53-2.53-2.53s-2.52,1.13-2.52,2.53,1.13,2.52,2.52,2.52,2.53-1.13,2.53-2.52Z" />
+        <path d="M589,698.25c1.23.2,1.72,1.71.84,2.6l-4.84,4.88,1.05,6.79c.19,1.24-1.09,2.17-2.21,1.61l-6.14-3.09-6.14,3.09c-1.11.56-2.4-.37-2.21-1.61l1.05-6.79-4.84-4.88c-.88-.88-.39-2.4.84-2.6l6.78-1.1,3.14-6.11c.57-1.11,2.16-1.11,2.73,0l3.14,6.11,6.78,1.1ZM580.23,703.36c0-1.4-1.13-2.53-2.53-2.53s-2.52,1.13-2.52,2.53,1.13,2.52,2.52,2.52,2.53-1.13,2.53-2.52Z" />
+      </g>
+      <g fill="#2d2d2d" textAnchor="middle" aria-hidden="true">
+        <text x="456.43" y="649" className={styles.badgeSmall} textLength="66" lengthAdjust="spacingAndGlyphs">
+          EST 1987
+        </text>
+        <text x="456.43" y="776" className={styles.badgeSmall} textLength="66" lengthAdjust="spacingAndGlyphs">
+          EST 1987
+        </text>
+        <text
+          transform="translate(456.43 726) scale(1 0.85)"
+          className={styles.badgeTitle}
+          textLength="226"
+          lengthAdjust="spacingAndGlyphs"
+        >
+          MENU
+        </text>
+        <text x="456.43" y="752" className={styles.badgeTag} textLength="158" lengthAdjust="spacingAndGlyphs">
+          A TASTE OF THE PHILIPPINES.
+        </text>
+      </g>
+    </svg>
+  );
+}
+
 /** The Menu page: À la carte, Brunch, Desserts and Karaoke as tabs, one accent colour each. */
 export function MenuPage() {
   const [active, setActive] = useState<MenuId>("carte");
@@ -152,7 +206,7 @@ export function MenuPage() {
     if (!bar || !panel) return;
     const fade = parseFloat(getComputedStyle(bar).paddingBottom) || 0;
     const target = panel.getBoundingClientRect().top + window.scrollY - (bar.offsetHeight - fade);
-    if (window.scrollY > target) window.scrollTo({ top: target });
+    if (window.scrollY > target) jumpTo(target);
   };
 
   // The tab row is justified to exactly the width of the MENU title, so it is
@@ -197,7 +251,7 @@ export function MenuPage() {
       <div className={styles.titleWrap}>
         <h1 className={styles.title}>
           <span ref={titleRef} className={styles.titleText}>
-            Menu
+            <MenuBadge />
           </span>
         </h1>
       </div>
