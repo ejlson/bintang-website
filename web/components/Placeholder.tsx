@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SiteHeader } from "./SiteHeader";
+import { FitTitle } from "./FitTitle";
 import styles from "./Placeholder.module.css";
 
 type Props = {
@@ -18,7 +19,9 @@ export function Placeholder({ title, tl, href, background, tone }: Props) {
     <main className={styles.page} style={{ background, color: tone === "paper" ? "var(--paper)" : "var(--ink)" }}>
       <SiteHeader variant="page" tone={tone} mark={tone === "paper" ? "paper" : "ink"} currentHref={href} />
       <section className={styles.body}>
-        <h1 className={styles.title}>{title}</h1>
+        <h1 className={styles.title}>
+          <FitTitle text={title} />
+        </h1>
         <p className={styles.tl} lang="tl">
           {tl}
         </p>

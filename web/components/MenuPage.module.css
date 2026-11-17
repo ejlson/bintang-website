@@ -19,7 +19,6 @@
 }
 
 .page {
-  --title-size: clamp(88px, 22vw, 340px);
   /* Same content width as the Journal (JournalPage.module.css). */
   --gutter: clamp(12px, 3vw, 40px);
   --max: 1600px;
@@ -41,9 +40,13 @@
     --bg 0.6s var(--ease);
 }
 
-/* The shared header follows the page's text colour so it fades with it. */
+/* The shared header follows the page's text colour so it fades with it,
+   Book button included (its outline would otherwise stay ink and vanish on
+   a dark page). --book-fill (set inline) swaps the red hover fill on the
+   red Karaoke page. */
 .page > header {
   color: inherit;
+  --book-line: var(--acc);
 }
 
 /* ---------- Title + tabs ---------- */
@@ -51,7 +54,7 @@
 .titleWrap {
   max-width: var(--max);
   margin: 0 auto;
-  padding: clamp(32px, 6vw, 64px) var(--gutter) 0;
+  padding: 24px var(--gutter) 0;
   text-align: center;
 }
 
@@ -61,35 +64,23 @@
 }
 
 .titleText {
-  display: inline-block;
-  width: min(100%, 860px);
+  display: block;
+  width: 100%;
 }
 
-/* Brand-pack badge with the MENU title inside (MenuBadge in MenuPage.tsx). */
-.badge {
+/* MENU spans the full content width (see MenuTitle in MenuPage.tsx). */
+.titleSvg {
   display: block;
   width: 100%;
   height: auto;
+  overflow: visible;
 }
 
-.badgeTitle {
+.titleWord {
+  fill: var(--acc);
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 84px;
-}
-
-.badgeSmall,
-.badgeTag {
-  font-family: var(--sans);
-  font-weight: 700;
-}
-
-.badgeSmall {
-  font-size: 14.5px;
-}
-
-.badgeTag {
-  font-size: 11px;
+  font-size: 368px;
 }
 
 /* Sticky tabs sit on a fade rather than a solid block: solid page colour
@@ -137,9 +128,9 @@
 }
 
 .tabs {
-  /* First paint approximates the title (MENU is ~2.72em wide in Aquavit Black);
-     MenuPage then sets the measured width, so the row doesn't jump. */
-  width: min(100%, 860px);
+  /* Same width as the MENU title, which spans the content column; MenuPage
+     also sets the measured title width. */
+  width: 100%;
   max-width: 100%;
   margin: 0 auto;
   padding: 16px 0;
@@ -498,10 +489,6 @@
 
 @media (max-width: 640px) {
   /* MENU fills the content width, and the tabs fit on one justified row under it. */
-  .page {
-    /* MENU (~2.72em wide) spans exactly the content width between the gutters. */
-    --title-size: calc((100vw - 2 * var(--gutter)) / 2.72);
-  }
 
   .tabs {
     gap: 8px 12px;

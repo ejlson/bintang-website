@@ -778,8 +778,8 @@ export const menus: Menu[] = [
   {
     "id": "karaoke",
     "label": "Karaoke",
-    "accent": "#F6DE43",
-    "background": "#2D2D2D",
+    "accent": "#2D2D2D",
+    "background": "#D92E36",
     "sheets": [
       {
         "label": "Karaoke · Kantahan",

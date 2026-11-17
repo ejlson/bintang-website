@@ -173,12 +173,12 @@ describe("MenuPage", () => {
     }
   });
 
-  it("uses the paper lion mark on the dark Karaoke page and the ink mark elsewhere", () => {
+  it("uses the ink lion mark on every menu, red Karaoke included", () => {
     render(<MenuPage />);
     const markSrc = () => screen.getByRole("link", { name: "Bintang home" }).querySelector("img")!.getAttribute("src");
     for (const m of menus) {
       fireEvent.click(tab(m.label));
-      expect(markSrc()).toBe(m.id === "karaoke" ? "/brand/lion-head-paper.svg" : "/brand/lion-head-ink.svg");
+      expect(markSrc()).toBe("/brand/lion-head-ink.svg");
     }
   });
 

@@ -87,8 +87,8 @@
 
 .book:hover,
 .book:active {
-  border-color: var(--red);
-  background: var(--red);
+  border-color: var(--book-fill, var(--red));
+  background: var(--book-fill, var(--red));
   color: var(--paper);
 }
 
@@ -102,9 +102,9 @@
 
 .sakuga:hover,
 .sakuga:active {
-  --sk-card: var(--red);
+  --sk-card: var(--book-fill, var(--red));
   --sk-ink: var(--paper);
-  --sk-btn-line: var(--red);
+  --sk-btn-line: var(--book-fill, var(--red));
 }
 
 .sakuga::part(button) {
