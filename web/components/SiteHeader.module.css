@@ -176,7 +176,7 @@
 
 .mark img {
   display: block;
-  height: 52px;
+  height: 40px;
   width: auto;
   filter: drop-shadow(0 2px 12px rgb(40 16 14 / 0.5));
 }
@@ -274,7 +274,7 @@
   }
 
   .mark img {
-    height: 44px;
+    height: 34px;
   }
 
   .end {
