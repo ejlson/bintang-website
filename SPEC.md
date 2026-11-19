@@ -26,7 +26,8 @@ web/
   app/page.tsx            Home
   app/menu/page.tsx       Menu (phase 1b) — components/MenuPage, KaraokeVideo; data in lib/menu.ts
   app/about/page.tsx      About (phase 1c) — components/AboutPage, AboutFilm; media in public/media/about/
-  app/[...]/page.tsx      placeholders: /gallery /journal
+  app/gallery/page.tsx    Gallery — components/GalleryPage, ColourSweep; data in lib/gallery.ts
+  app/[...]/page.tsx      placeholders: /journal
                           /contact /contact/groups /contact/karaoke /contact/private-hire
   components/SiteHeader   bilingual split nav + centred lion head + mobile overlay
   components/Hero         video, warm overlay, pause control, thumbnail, reduced-motion poster
@@ -82,31 +83,48 @@ Designed on the Claude Design canvas "Bintang Website" (Menu artboard); options 
 
 **Open:** Uber Eats / Deliveroo links (URLs needed) · real karaoke footage · karaoke pricing/capacity · Tagalog labels need a native-speaker check · brunch hours (cards say both Sat 11–3 and 11–4; site uses 11–3) · Barbera d’Alba is listed under white wine · "Merlo Basco" spelling.
 
-## About (phase 1c, from the "About" board in the Claude Design canvas)
+## About (rebuilt 19 Nov 2026, from the "About option B — Editorial album" board in the Claude Design canvas)
 
-1. **Colour:** deep red flood (`--red-deep`), paper text, paper lion head in the header.
-2. **Title:** none visible (the statement leads, as on the board); a visually hidden H1 "About" stays.
-3. **Statement + film:** the Aquavit paragraph (28→44px) sits 24px under the navbar, with the then-and-now film to its right at the golden ratio (statement up to 680px : film up to 420px = 1.618 : 1), pushed to the two edges. Key phrases (London’s oldest Filipino restaurant, Kentish Town Road, Filipino, Asian influences) are italic and underlined. The full-body lion drawing (paper, from the brand pack) sits under the statement at the bottom left, level with the bottom of the film. Below 900px they stack: statement, lion, film.
-4. **Film:** portrait 9:16 with square corners. It is muted, looping and inline, with a bottom-left pause control (WCAG 2.2.2). Reduced-motion and data-saver visitors start paused, with `preload="none"`, like the Home hero and the Karaoke video.
-5. **Chapters:** three columns (1987, The kitchen, Today), each an English/Tagalog label over a 22px paragraph, under a hairline.
-6. **Not built from the board:** the fixed bottom-right video thumbnail. The navbar Book button replaced it.
+`components/AboutPage` (+ `AboutFilm`), media in `public/media/about/`. Deep red flood (`--red-deep`), paper text, a quiet newspaper feel like the Menu.
 
-**Open:** the founding story (who opened it, and why) for the 1987 chapter · the Tagalog lines need a native-speaker check.
+1. **One system:** spacing 8 · 16 · 24 · 32 · 48 · 64 · 96; every section opens on a 2px rule, 24px above its content, with the same section gap below; inner dividers 1px; columns split by soft rules. Type roles, Aquavit only (700 display and labels, 400 text): label 12px tracked caps · caption 14px italic · small 16px · story 20–24px · statement 32–48px · item title 32px · display 40px caps · headline 48–112px caps · giant quote 56–160px caps.
+2. **Masthead:** "ABOUT US" across the width (FitTitle, H1) beside a rotating stamp ("London's oldest Filipino restaurant · Since 1987" around the lion head); a tracked band between rules; ruled facts (Since, Find us, Open from `lib/site`, Brunch).
+3. **Statement + film:** the statement (key phrases italic and underlined) with the full lion at its foot, and the then-and-now film at 1.618 : 1; film square-cornered, muted, looping, with a pause control; reduced-motion and data-saver visitors start paused.
+4. **History ("Where it began. Camden, 1987."):** two stories set like a newspaper feature with the family's own photos (Halloween at the original shopfront; the bamboo dining room), "From one kitchen" years (1987–2026), and the then-and-now strip in full colour. Facts from maginhawagroup.co.uk/about.
+5. **Giant quote:** "Same street, same kitchen, same recipes." (from the old site).
+6. **From the kitchen:** dish names from the current menu run on in a box, linking to /menu.
+7. **Come for:** Dinner, Brunch, Karaoke, Groups; Book a table (OpenTable, new tab) and Groups and private hire.
+8. **Motion (CSS scroll-driven, no JS):** rules draw in; headlines rise from a mask; photos develop from pale and soft; the years arrive one after another; the stamp turns with the scroll; each dish is underlined as it passes the middle of the screen. All still for reduced motion and in browsers without scroll-driven animations.
 
-## Site footer (17 Nov 2026)
+**Open:** the Tagalog lines need a native-speaker check · the Maginhawa story page says the group began in "Camden" while Bintang is on Kentish Town Road; the headline follows the story page.
 
-`components/SiteFooter`, after Mala Project's footer, is the last child of every page's `<main>` (Home, Menu, About, Journal and posts, every placeholder). On Menu, the sticky tab bar is wrapped with the sheets so it lets go before the footer.
-1. **No colour of its own:** it takes the page's background and text colour, so it follows the Menu tab fades too. On Home it sits on ink with paper text.
-2. **Left:** one column of links, English only, in the nav type (16/20px): Reserve on OpenTable · Group bookings · Private hire · email address (mailto:) · phone (tel:). It lines up with the page column (`--max`, `--gutter`).
-3. **Right (right-aligned):** Find us (address, links to Google Maps) and Opening hours. The details live in `lib/site.ts`, which the JSON-LD also uses.
-4. **Sign-off:** "© Bintang · Kentish Town, London" and "Since 1987", 13.6px. No Tagalog lines in the footer.
-5. **< 768px:** everything stacks on the left.
+## Site footer (17 Nov 2026; redesigned 19 Nov 2026)
+
+`components/SiteFooter`, from the "Footer — blurred wordmark" boards on the Claude Design canvas (after the Moah studio site), is the last child of every page's `<main>`.
+1. **No colour of its own:** the background is the page's, and the lion and type take the page's text colour (so it follows the Menu tab fades too). On Home it sits on ink with paper text. Aquavit only.
+2. **The lion:** the full lion (`public/brand/lion-full-paper.svg`, used as a mask over `currentColor`), 76px from the top, as wide as the content allows (20px gutters) without outgrowing the screen height. **Fade-out:** it fades away towards the bottom, softening a little as it goes: 3 copies (sharp, then blurred 0.4× and 1× `--lion-blur`: 12px desktop, 6px phone), each shown in its own band and fading out, gone by ~90% of its height so the bottom text stays clear. Each copy is blurred before its band is cut (the other way round smears band edges into streaks). Decorative (`aria-hidden`).
+3. **Top row:** "Since 1987" · small-caps links (Groups, Private hire, Karaoke, email, phone) · a hollow "Book a table" pill to OpenTable (fills red on hover, like the header's).
+4. **Bottom row:** "London's oldest Filipino restaurant." and the address (links to Google Maps) · opening hours · "Back to top ↑" (Lenis-eased, then focus goes to the home mark). Contact details and hours live in `lib/site.ts`, shared with the JSON-LD.
+5. **Height:** one screen, `max(560px, 100svh)`. **< 768px:** the type stacks at the top and the lion sits underneath it, running off the bottom.
 
 **Open:** Instagram/Facebook links (handles needed) · it sits inside `<main>` like the header, so it isn't a top-level contentinfo landmark.
 
+## Gallery (17 Nov 2026, option D "Split frame" on the Claude Design canvas)
+
+From the Claude Design "Gallery option D" board, after two references the client shared (a Japanese ceramics shop's split photo and the TONY restaurant site). `components/GalleryPage`, photos in `public/media/gallery/` (14 JPEGs, 1600×900 or 900×1600), data in `lib/gallery.ts`.
+1. **Header:** ink text and the ink lion (`tone="ink" mark="ink"`). The visible page has no title; a visually hidden H1 stays.
+2. **Hero:** the garden photo (5:4) on the left half; on the right, a small framed photo of today’s shopfront between "Since 1987" and "Kentish Town", one bilingual line, and a deep-red Book a table button (OpenTable, new tab). Stacks below 768px. No lettering over the photo.
+3. **Album (split frame):** a short intro line, then the family album photo (an old family photo held up in the garden) full width (420–640px tall) with a narrow column (240–300px, a little right of centre, overhanging 56px top and bottom) of three album cards: the first shopfront, the old dining room, and the old dining room held up outside today’s shopfront. Each card is captioned with "Album" on the right. Below 768px the cards sit under the photo.
+4. **Rooms:** a red-dot "Gallery" label, then three photos with English / Tagalog labels above: Kitchen / Kusina, Garden / Hardin, Karaoke / Kantahan.
+5. **Nights:** the full karaoke room large on the left; the bar photo, a line about birthdays and leaving dos, a Book a table button and a red-dot "Book" label on the right. The site footer follows.
+6. **Viewer:** every photo is a button that opens a full-screen viewer (all 14 photos, in `PHOTOS` order): Close / Previous / Next buttons, arrow keys step and wrap, Esc closes, Tab stays inside, focus goes to Close on open and back to the photo on close, and the page behind doesn't scroll.
+7. **Colour sweep (Mala Project style), `components/ColourSweep`:** each section names a background colour (`data-sweep`): hero white, album paper, rooms yellow, nights pink (with the footer). The colours sit on a fixed layer behind the page. When a section crosses the middle of the screen, its colour sweeps in as a 200vh band with a soft 50vh leading edge, over 1s on the site's ease-out curve: **down from the top when scrolling down, up from the bottom when scrolling back up.** A new section mid-sweep lands the old colour at once and starts the next. The first colour on load (or after a restored scroll position) is set without a sweep. Reduced motion: the colour just changes. Text stays ink on every colour; red-dot labels keep ink words because red text fails contrast on yellow and pink.
+
+**Open:** real years for the album captions · Tagalog labels need a native-speaker check · more photos (the karaoke and kitchen sets are thin).
+
 ## Placeholder pages
 
-Each one uses its page's v2 colour ( Menu green, Journal pink, Gallery ink, Contact yellow). They show the shared header, a big Aquavit title, "Coming soon / Malapit na", and a link back home.
+Each one uses its page's v2 colour ( Menu green, Journal pink, Contact yellow). They show the shared header, a big Aquavit title, "Coming soon / Malapit na", and a link back home.
 
 ## Done means
 

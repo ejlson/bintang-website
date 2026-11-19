@@ -42,7 +42,9 @@ export function ColourSweep({ root }: Props) {
 
     const sections = Array.from(container.querySelectorAll<HTMLElement>("[data-sweep]"));
     if (sections.length === 0) return;
-    base.style.background = sections[0].dataset.sweep!;
+    // Only on the first run: a re-run (hydration, a reduced-motion change)
+    // keeps the colour already showing until the observer reports.
+    if (!base.style.background) base.style.background = sections[0].dataset.sweep!;
     // Very old browsers: the first section's colour stays for the whole page.
     if (typeof IntersectionObserver === "undefined") return;
 
@@ -87,20 +89,27 @@ export function ColourSweep({ root }: Props) {
     };
 
     // A section counts once it covers the middle line of the screen. The first
-    // report (on load, or after a restored scroll position) sets the colour
-    // without a sweep.
+    // section found there (on load, or after a restored scroll position) sets
+    // the colour without a sweep.
     let first = true;
+    // The line has no height, so a section whose edge sits exactly on it is
+    // reported too. When two are reported, take the one that spans the line.
+    const spans = (e: IntersectionObserverEntry) => {
+      const r = e.boundingClientRect;
+      const line = e.rootBounds?.top;
+      return !r || line === undefined || (r.top < line && r.bottom > line);
+    };
     const io = new IntersectionObserver(
       (entries) => {
-        for (const e of entries) {
-          if (!e.isIntersecting) continue;
-          const index = sections.indexOf(e.target as HTMLElement);
-          if (first) {
-            current = index;
-            settle(sections[index].dataset.sweep!);
-          } else go(index);
-        }
-        first = false;
+        const hits = entries.filter((e) => e.isIntersecting);
+        if (hits.length === 0) return;
+        const hit = hits.find(spans) ?? hits[hits.length - 1];
+        const index = sections.indexOf(hit.target as HTMLElement);
+        if (first) {
+          first = false;
+          current = index;
+          settle(sections[index].dataset.sweep!);
+        } else go(index);
       },
       { rootMargin: "-50% 0px -50% 0px" },
     );
@@ -108,7 +117,11 @@ export function ColourSweep({ root }: Props) {
 
     return () => {
       io.disconnect();
-      anim?.cancel();
+      // Land a sweep in progress so no half-moved band is left on screen.
+      if (anim) {
+        anim.cancel();
+        settle(band.style.getPropertyValue("--sweep"));
+      }
     };
   }, [root, reduce]);
 

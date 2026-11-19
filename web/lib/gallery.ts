@@ -7,17 +7,17 @@ const port = (id: string, alt: string): Photo => ({ id, src: `/media/gallery/${i
 /** Every photo, in page order. The lightbox steps through them in this order. */
 export const PHOTOS = [
   land("garden", "The garden at golden hour"),
-  port("shopfront-today", "The shopfront on Kentish Town Road today"),
-  port("lanterns", "Lanterns in the old dining room"),
+  port("shopfront", "The shopfront on Kentish Town Road today"),
+  port("family-album", "The family, from the album, in the garden today"),
   port("shopfront-1987", "The original shopfront"),
   port("dining-room", "The dining room, years ago"),
-  port("family", "The family"),
+  port("then-and-now", "Then and now: the old dining room at today’s shopfront"),
   land("trays", "Trays from the kitchen, topped with lemon"),
   land("summer", "A full garden on a summer evening"),
-  land("singing", "Singing in the karaoke room"),
+  land("singing", "A young guest in the karaoke room"),
   land("karaoke-room", "The karaoke room, full"),
   land("bar", "Behind the bar"),
-  land("noodles", "Noodles with grated cheese"),
+  land("spaghetti", "Filipino spaghetti, topped with cheese"),
   land("friends", "Friends at a garden table"),
   land("buffet", "A buffet for a private party"),
 ] as const satisfies readonly Photo[];
@@ -35,8 +35,8 @@ export function photo(id: PhotoId): Photo {
   return PHOTOS[indexOf(id)];
 }
 
-/** The narrow column over the lanterns photo: three from the family album. */
-export const ALBUM_CARDS: PhotoId[] = ["shopfront-1987", "dining-room", "family"];
+/** The narrow column over the family album photo: old photos, two of them held up in today’s rooms. */
+export const ALBUM_CARDS: PhotoId[] = ["shopfront-1987", "dining-room", "then-and-now"];
 
 /** The three rooms, each with an English and a Tagalog label (Tagalog pending native-speaker review). */
 export const ROOMS: { id: PhotoId; en: string; tl: string }[] = [

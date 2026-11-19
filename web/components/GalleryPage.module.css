@@ -58,6 +58,14 @@
   outline-offset: 4px;
 }
 
+/* Photos that run to the screen edge: draw the ring inside, so it isn't cut off. */
+.heroShot:focus-visible,
+.wide:focus-visible,
+.nightsBig:focus-visible {
+  outline-color: var(--paper);
+  outline-offset: -6px;
+}
+
 /* ---------- Book link (deep red, like the TONY reference) ---------- */
 
 .book {
@@ -149,7 +157,7 @@
   }
 }
 
-/* ---------- Album: lanterns split by a column of cards ---------- */
+/* ---------- Album: the family album photo split by a column of cards ---------- */
 
 .album {
   padding-top: var(--gap);
@@ -226,8 +234,9 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 24px;
-  margin-top: var(--gap);
-  padding: 0 var(--gutter) 0 20px;
+  /* Padding, not margin: the gap must belong to a section, or the middle
+     line can fall where no colour is claimed. */
+  padding: var(--gap) var(--gutter) 0 20px;
 }
 
 @media (width >= 768px) {
@@ -316,11 +325,13 @@
   color: var(--paper);
 }
 
+/* As wide as it can be (up to 1100px), shrunk to fit the height; contain
+   keeps portrait photos whole. */
 .big {
   display: block;
-  width: auto;
+  width: 100%;
   height: auto;
-  max-width: min(1100px, 100%);
+  max-width: 1100px;
   max-height: calc(100svh - 230px);
   object-fit: contain;
 }

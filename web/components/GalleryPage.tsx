@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ALBUM_CARDS, PHOTOS, ROOMS, SECTION_COLOURS, indexOf, photo, type PhotoId } from "@/lib/gallery";
 import { BOOKING_URL } from "@/lib/nav";
 import { ColourSweep } from "./ColourSweep";
@@ -13,7 +13,20 @@ import styles from "./GalleryPage.module.css";
 type Open = (index: number, from: HTMLElement) => void;
 
 /** A photo as a button that opens the viewer. Sized by its parent (the image fills it). */
-function Shot({ id, onOpen, sizes, className }: { id: PhotoId; onOpen: Open; sizes: string; className?: string }) {
+function Shot({
+  id,
+  onOpen,
+  sizes,
+  className,
+  eager = false,
+}: {
+  id: PhotoId;
+  onOpen: Open;
+  sizes: string;
+  className?: string;
+  /** Above the fold on load: fetch now, at high priority. */
+  eager?: boolean;
+}) {
   const p = photo(id);
   return (
     <button
@@ -22,7 +35,14 @@ function Shot({ id, onOpen, sizes, className }: { id: PhotoId; onOpen: Open; siz
       aria-label={`Open photo: ${p.alt}`}
       onClick={(e) => onOpen(indexOf(id), e.currentTarget)}
     >
-      <Image src={p.src} alt={p.alt} fill sizes={sizes} />
+      <Image
+        src={p.src}
+        alt={p.alt}
+        fill
+        sizes={sizes}
+        loading={eager ? "eager" : "lazy"}
+        fetchPriority={eager ? "high" : undefined}
+      />
     </button>
   );
 }
@@ -45,27 +65,36 @@ function Viewer({ index, onClose, onStep }: { index: number; onClose: () => void
     };
   }, []);
 
-  const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === "Escape") onClose();
-    else if (e.key === "ArrowLeft") onStep(-1);
-    else if (e.key === "ArrowRight") onStep(1);
-    else if (e.key === "Tab") {
-      const buttons = Array.from(ref.current?.querySelectorAll<HTMLButtonElement>("button") ?? []);
-      const first = buttons[0];
-      const last = buttons[buttons.length - 1];
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
-    } else return;
-    if (e.key !== "Tab") e.preventDefault();
-  };
+  // Keys are heard on the document, not the dialog: clicking the photo or the
+  // backdrop (or any button in Safari, which doesn't focus on click) leaves
+  // focus on <body>, and the keys must still work then.
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      else if (e.key === "ArrowLeft") onStep(-1);
+      else if (e.key === "ArrowRight") onStep(1);
+      else if (e.key === "Tab") {
+        const buttons = Array.from(ref.current?.querySelectorAll<HTMLButtonElement>("button") ?? []);
+        const first = buttons[0];
+        const last = buttons[buttons.length - 1];
+        const inside = ref.current?.contains(document.activeElement) ?? false;
+        if (e.shiftKey && (!inside || document.activeElement === first)) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && (!inside || document.activeElement === last)) {
+          e.preventDefault();
+          first.focus();
+        }
+        return;
+      } else return;
+      e.preventDefault();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [onClose, onStep]);
 
   return (
-    <div ref={ref} className={styles.viewer} role="dialog" aria-modal="true" aria-label="Photo viewer" onKeyDown={onKeyDown}>
+    <div ref={ref} className={styles.viewer} role="dialog" aria-modal="true" aria-label="Photo viewer">
       <button type="button" className={`${styles.round} ${styles.close}`} aria-label="Close" data-close onClick={onClose}>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
           <path d="M5 5l14 14M19 5L5 19" />
@@ -78,7 +107,7 @@ function Viewer({ index, onClose, onStep }: { index: number; onClose: () => void
         alt={p.alt}
         width={p.width}
         height={p.height}
-        sizes="(width >= 1200px) 1100px, 100vw"
+        sizes={p.height > p.width ? "(width >= 768px) 520px, 100vw" : "(width >= 1200px) 1100px, 100vw"}
       />
       <div className={styles.controls}>
         <button type="button" className={styles.round} aria-label="Previous photo" onClick={() => onStep(-1)}>
@@ -112,7 +141,7 @@ function BookLink() {
 
 /**
  * Gallery, option D from the Claude Design canvas: a big garden photo beside a
- * small framed shopfront; the lanterns photo split by a narrow column of album
+ * small framed shopfront; the family album photo split by a narrow column of album
  * cards; three rooms; one big and one small photo with a booking line.
  * Each section has its own background colour, swept in on scroll (ColourSweep).
  */
@@ -142,7 +171,7 @@ export function GalleryPage() {
         <h1 className="sr-only">Gallery — photographs from Bintang, Kentish Town, since 1987</h1>
 
         <section className={styles.hero} data-sweep={SECTION_COLOURS.hero} aria-label="Bintang">
-          <Shot id="garden" onOpen={onOpen} className={styles.heroShot} sizes="(width >= 768px) 50vw, 100vw" />
+          <Shot id="garden" onOpen={onOpen} className={styles.heroShot} sizes="(width >= 768px) 50vw, 100vw" eager />
           <div className={styles.heroSide}>
             <div className={styles.framed}>
               <p className={styles.small}>
@@ -150,7 +179,7 @@ export function GalleryPage() {
                 <br />
                 1987
               </p>
-              <Shot id="shopfront-today" onOpen={onOpen} className={styles.frame} sizes="200px" />
+              <Shot id="shopfront" onOpen={onOpen} className={styles.frame} sizes="200px" eager />
               <p className={styles.small}>
                 Kentish
                 <br />
@@ -168,10 +197,10 @@ export function GalleryPage() {
 
         <section className={styles.album} data-sweep={SECTION_COLOURS.album} aria-label="From the album">
           <p className={`${styles.small} ${styles.albumIntro}`}>
-            Open the family album: thirty-nine years of lanterns, birthdays and long tables on Kentish Town Road.
+            Open the family album: thirty-nine years of birthdays, karaoke and long tables on Kentish Town Road.
           </p>
           <div className={styles.split}>
-            <Shot id="lanterns" onOpen={onOpen} className={styles.wide} sizes="100vw" />
+            <Shot id="family-album" onOpen={onOpen} className={styles.wide} sizes="100vw" />
             <div className={styles.column}>
               {ALBUM_CARDS.map((id) => (
                 <figure key={id} className={styles.card}>
