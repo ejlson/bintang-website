@@ -81,6 +81,7 @@ Designed on the Claude Design canvas "Bintang Website" (Menu artboard); options 
 7. **Footer:** halal/allergen/service-charge notes on drinks sheets, and a "Book a table" button to `/contact`.
 8. **Spacing:** 8px scale (8/12/16/24/32/48/64/96); title, tabs and sheets share one container (max 1280px, gutter `clamp(16px, 5vw, 80px)`).
 
+9. **Motion (19 Nov 2026, About's motion in CSS, no JS):** on load MENU rises from a mask, the tabs arrive left to right and the menu comes in under them. On the scroll timeline (MENU itself stays put once it has risen in): each band draws its two rules in; section headings rise; sections fade up as they enter (every other one a beat later), settled before the middle of the screen so prices sit still while read; the karaoke card's title rises and lags the page (±8px). Tab switches replay it for the new sheets. None for reduced motion; without scroll-driven animation support only the load entrance plays.
 **Open:** Uber Eats / Deliveroo links (URLs needed) · real karaoke footage · karaoke pricing/capacity · Tagalog labels need a native-speaker check · brunch hours (cards say both Sat 11–3 and 11–4; site uses 11–3) · Barbera d’Alba is listed under white wine · "Merlo Basco" spelling.
 
 ## About (rebuilt 19 Nov 2026, from the "About option B — Editorial album" board in the Claude Design canvas)
@@ -97,6 +98,14 @@ Designed on the Claude Design canvas "Bintang Website" (Menu artboard); options 
 8. **Motion (CSS scroll-driven, no JS):** rules draw in; headlines rise from a mask; photos develop from pale and soft; the years arrive one after another; the stamp turns with the scroll; each dish is underlined as it passes the middle of the screen. All still for reduced motion and in browsers without scroll-driven animations.
 9. **Editorial entrance + reveals (CSS, no JS):** on load the page opens on the red ground and the first screen sets itself in about a second (rules draw under the masthead, band and facts; ABOUT US rises from a mask; the stamp, band and facts arrive; the statement rises; the film wipes open; the lion and caption fade in). Below the fold, photos wipe open from the bottom as they scroll in, text arrives in its blocks, and the "Come for" columns and then-and-now photos arrive left to right; these follow the scroll, so nothing can stay blank. None of it for reduced motion; the scroll reveals also need scroll-driven animation support.
 
+10. **Parallax (19 Nov 2026, CSS scroll-driven):** ABOUT US stays put (no sink, by request); the stamp lags 22% over the first 60vh; photos are scaled to 116% inside their frames and drift −6% to +6% as they pass (on the frame's named view timeline, because a clipping frame is its own scroll container); the lion runs 32px ahead of the page and the giant quote lags 20px (keeping its 0.92 squash). Still for reduced motion.
+
+## Journal motion (19 Nov 2026, About's motion in CSS, no JS)
+
+1. **Load:** JOURNAL rises from a mask, the rule under it draws across, the lead story fades up and its photo wipes open, then Read the story arrives. The post page sets itself the same way (back link and kicker, title, photo wipe, lede).
+2. **Scroll (follows the scroll timeline):** JOURNAL stays put once it has risen in; the Older entries bar draws both rules and its head rises; older stories fade up left to right a beat apart (four to a row); every photo is scaled to 116% and drifts −6% to +6% in its frame; the advert's rule draws, its title rises and lags 14px, its lines and the colophon fade up.
+3. **Tap targets:** nothing between a headline link and its story block (`.front`, `.story`) is clipped or translated, since that would shrink the stretched link.
+4. None for reduced motion; without scroll-driven animation support only the load entrance plays.
 **Open:** the Tagalog lines need a native-speaker check · the Maginhawa story page says the group began in "Camden" while Bintang is on Kentish Town Road; the headline follows the story page.
 
 ## Site footer (17 Nov 2026; redesigned 19 Nov 2026)

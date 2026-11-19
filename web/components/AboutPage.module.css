@@ -916,3 +916,79 @@
   from { opacity: 0; scale: 0.85; }
   to { opacity: 1; scale: 1; }
 }
+
+/* ---------- Parallax ----------
+   Layers move at different speeds as the page scrolls, all on the scroll timeline (so it
+   rewinds with the scroll):
+   - The stamp lags behind the masthead as the first screen leaves (ABOUT US stays put).
+   - Photos sit a little deeper than their frames: each image is scaled up and drifts
+     against the frame as it passes, so the page reads as a print laid over them.
+   - The lion runs slightly ahead of the page, and the giant quote lags behind it.
+   Same guards as above: no scroll timelines, or reduced motion, means a still page. */
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .stamp {
+      --sink: 22%;
+      animation: stampIn 0.9s var(--ease) 0.35s both, sink linear both;
+      animation-timeline: auto, scroll(root);
+      animation-range: normal, 0 60vh;
+    }
+
+    /* The frames clip (overflow: hidden), which makes them scroll containers, so a plain
+       view() on the image would track the frame; images follow their frame's timeline. */
+    .frame,
+    .photoFrame {
+      view-timeline: --about-frame block;
+    }
+
+    .frame img,
+    .photoFrame img {
+      scale: 1.16;
+      animation: develop linear both, drift linear both;
+      animation-timeline: --about-frame, --about-frame;
+      animation-range: entry 0% cover 45%, cover 0% cover 100%;
+    }
+
+    .photo:hover .photoFrame img {
+      scale: 1.19;
+    }
+
+    .lion {
+      --float: -32px;
+      animation: fadeUp 0.8s var(--ease) 1s both, float linear both;
+      animation-timeline: auto, view();
+      animation-range: normal, cover 0% cover 100%;
+    }
+
+    /* The quote keeps its squash (scaleY 0.92), so it has its own keyframes. */
+    .qt {
+      --float: 20px;
+      animation: rise linear both, floatQuote linear both;
+      animation-timeline: view(), view();
+      animation-range: entry 10% cover 30%, cover 0% cover 100%;
+    }
+  }
+}
+
+/* Lags behind the page by --sink of its own height. */
+@keyframes sink {
+  to { transform: translateY(var(--sink, 55%)); }
+}
+
+/* An image drifting inside its frame; the image is scaled up so its edges never show. */
+@keyframes drift {
+  from { translate: 0 -6%; }
+  to { translate: 0 6%; }
+}
+
+@keyframes floatQuote {
+  from { transform: translateY(calc(-1 * var(--float, 40px))) scaleY(0.92); }
+  to { transform: translateY(var(--float, 40px)) scaleY(0.92); }
+}
+
+/* A layer moving off the page's speed: a positive --float lags behind, negative runs ahead. */
+@keyframes float {
+  from { transform: translateY(calc(-1 * var(--float, 40px))); }
+  to { transform: translateY(var(--float, 40px)); }
+}

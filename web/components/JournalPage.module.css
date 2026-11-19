@@ -585,3 +585,223 @@
 .missing .line {
   margin-top: 32px;
 }
+
+/* ---------- Motion ----------
+   The same motion as About (AboutPage.module.css), set for the newspaper.
+   On load, the front page sets itself: JOURNAL rises from behind a mask, the rule under
+   it draws across, the lead story arrives and its photo wipes open. Below that, everything
+   follows the scroll (so scrolling back rewinds it): rules draw in, headlines rise, the
+   older entries arrive left to right a beat apart, and photos drift inside their frames.
+   One rule here: never clip or translate anything between a story's headline link and its
+   block (.front, .story). The link's ::after covers the block, and a clip-path or
+   transform on an ancestor in between would shrink that tap target.
+   Reduced motion: none of it. Browsers without scroll timelines get the load entrance only. */
+
+@media (prefers-reduced-motion: no-preference) {
+  .title svg {
+    animation: rise 1s var(--ease) 0.1s both;
+  }
+
+  .front {
+    border-top-color: transparent;
+    animation: fadeUp 0.8s var(--ease) 0.35s both;
+  }
+
+  .front::before {
+    content: "";
+    position: absolute;
+    top: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: currentColor;
+    transform-origin: 0 50%;
+    animation: rule 0.9s var(--ease) 0.2s both;
+  }
+
+  .front .photo {
+    animation: wipe 1.1s var(--ease) 0.55s both;
+  }
+
+  .front .readMore {
+    animation: fadeUp 0.7s var(--ease) 0.9s both;
+  }
+
+  /* Post page: the same entrance. */
+  .back,
+  .kicker {
+    animation: fadeUp 0.7s var(--ease) 0.1s both;
+  }
+
+  .postTitle {
+    animation: rise 1s var(--ease) 0.2s both;
+  }
+
+  .postPhoto {
+    animation: wipe 1.1s var(--ease) 0.4s both;
+  }
+
+  .postLede,
+  .postBody > .line,
+  .postNote {
+    animation: fadeUp 0.7s var(--ease) 0.7s both;
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* Photos sit deeper than their frames and drift as they pass. The frame clips
+       (overflow: hidden), which makes it a scroll container, so a plain view() on the
+       image would track the frame; the image follows its frame's timeline instead. */
+    .photo {
+      view-timeline: --journal-photo block;
+    }
+
+    .img {
+      scale: 1.16;
+      animation: drift linear both;
+      animation-timeline: --journal-photo;
+      animation-range: cover 0% cover 100%;
+    }
+
+    /* Rules draw in, left to right, like type being set. */
+    .dividerBar,
+    .advert,
+    .colophon {
+      position: relative;
+      border-top-color: transparent;
+    }
+
+    .dividerBar {
+      border-bottom-color: transparent;
+      view-timeline: --journal-bar block;
+    }
+
+    .advert {
+      view-timeline: --journal-advert block;
+    }
+
+    .colophon {
+      view-timeline: --journal-colophon block;
+    }
+
+    .dividerBar::before,
+    .dividerBar::after,
+    .advert::before,
+    .colophon::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: currentColor;
+      transform-origin: 0 50%;
+      animation: rule linear both;
+    }
+
+    .dividerBar::before,
+    .advert::before,
+    .colophon::before {
+      top: -2px;
+    }
+
+    .dividerBar::after {
+      bottom: -2px;
+    }
+
+    .dividerBar::before,
+    .dividerBar::after {
+      animation-timeline: --journal-bar;
+      animation-range: entry 0% entry 100%;
+    }
+
+    .dividerBar::after {
+      animation-range: entry 30% cover 40%;
+    }
+
+    .advert::before {
+      animation-timeline: --journal-advert;
+      animation-range: entry 0% entry 40%;
+    }
+
+    .colophon::before {
+      animation-timeline: --journal-colophon;
+      animation-range: entry 0% entry 100%;
+    }
+
+    /* The section head rises into place from behind a mask (it holds no story link). */
+    .divider {
+      animation: rise linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 30%;
+    }
+
+    /* Text arrives in its blocks. */
+    .tools,
+    .advertLine,
+    .advertLinks,
+    .colophon,
+    .cta {
+      animation: fadeUp linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 25%;
+    }
+
+    /* Older entries arrive left to right, a beat apart (four or two to a row; one on phones). */
+    .story {
+      animation: fadeUp linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 20%;
+    }
+
+    @media (min-width: 600px) and (max-width: 1099px) {
+      .story:nth-child(2n + 2) { animation-range: entry 8% cover 26%; }
+    }
+
+    @media (min-width: 1100px) {
+      .story:nth-child(4n + 2) { animation-range: entry 8% cover 26%; }
+      .story:nth-child(4n + 3) { animation-range: entry 16% cover 32%; }
+      .story:nth-child(4n + 4) { animation-range: entry 24% cover 38%; }
+    }
+
+    /* The advert's title lags the page a little, like a poster pasted further back. */
+    .advertTitle {
+      --float: 14px;
+      animation: rise linear both, float linear both;
+      animation-timeline: view(), view();
+      animation-range: entry 10% cover 30%, cover 0% cover 100%;
+    }
+  }
+}
+
+@keyframes rule {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes rise {
+  from { clip-path: inset(-0.3em -0.2em 100% -0.2em); translate: 0 0.35em; }
+  to { clip-path: inset(-0.3em -0.2em -0.2em -0.2em); translate: 0 0; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; translate: 0 24px; }
+  to { opacity: 1; translate: 0 0; }
+}
+
+@keyframes wipe {
+  from { clip-path: inset(100% 0 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+
+/* An image drifting inside its frame; the image is scaled up so its edges never show. */
+@keyframes drift {
+  from { translate: 0 -6%; }
+  to { translate: 0 6%; }
+}
+
+/* A layer moving off the page's speed: a positive --float lags behind, negative runs ahead. */
+@keyframes float {
+  from { transform: translateY(calc(-1 * var(--float, 40px))); }
+  to { transform: translateY(var(--float, 40px)); }
+}
