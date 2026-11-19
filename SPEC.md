@@ -64,6 +64,10 @@ web/
 7. **H1:** visually hidden, "Bintang — London's oldest Filipino restaurant, Camden Town since 1987".
 8. **Metadata:** title, description, Open Graph image (the poster), theme colour, and Restaurant JSON-LD (address 93 Kentish Town Road NW1 8NY, phone 020 7267 2197, opening hours Tue–Sun as on the current site, servesCuisine Filipino).
 
+## Scrollbar (19 Nov 2026)
+
+No window scrollbar on any page (`scrollbar-width: none` and `::-webkit-scrollbar { display: none }` on `html` in `app/globals.css`). Scrolling still works with wheel, trackpad, touch and keys.
+
 ## Design tokens (CSS custom properties)
 
 `--paper #EDE9E9 · --ink #2D2D2D · --red #D92E36 · --red-deep #B8242C · --green #58BE91 · --pink #E9C0D4 · --yellow #F6DE43`
@@ -140,7 +144,7 @@ After a Pinterest pin of the Simon Wheatley ("Don't Call Me Urban") portfolio ho
 
 ## Karaoke (19 Nov 2026, from the "Karaoke — night edition" board in the Claude Design canvas)
 
-`components/KaraokePage` (+ `KaraokeHero`, `KaraokeSnap`) at `/contact/karaoke`. Ink page, yellow for the wordmark, header and information. No scrollbar on this page (`scrollbar-width: none` on `html:has(.page)`; scrolling works as normal). A pinned video; the information scrolls up over it and rests at its foot; then the footer comes up and pushes everything away.
+`components/KaraokePage` (+ `KaraokeHero`, `KaraokeSnap`) at `/contact/karaoke`. Ink page, yellow for the wordmark, header and information. No scrollbar (site-wide, see `app/globals.css`; scrolling works as normal). A pinned video; the information scrolls up over it and rests at its foot; then the footer comes up and pushes everything away.
 1. **Pinned stage (sticky, `--stage-h` = max(600px, 100svh), negative bottom margin so the rest of the page lies on top of it):** `karaoke-loop.mp4`, the karaoke scenes cut from the Home film (`bintang-hero.mp4` 14.55–18.12s + 20.80–26.87s, ~9.6s, 1920×1080 H.264 CRF 24, ~2.3 MB, no audio; portrait screens get a 608×1080 crop, ~0.8 MB, swapped on rotation), muted, looping, inline. The poster (the full room) is the stage's background, landscape or portrait. A dark fade at the top and the foot. The Home page's videoke subtitles (`components/Subtitles`, same lines, sakuga effects and score card; see Home §3) play over the foot. One pause button (bottom left, 44px, "Pause video" + `aria-pressed`) stops the video and the subtitles (WCAG 2.2.2). Reduced-motion and data-saver visitors start paused on the poster (`preload="none"`, no download) with the subtitles' still line, as on Home; pressing play starts the video. As the visitor scrolls, the subtitles fade out over the first 35vh and are taken off the page at 40% of a screen (which also wipes their sakuga effects layer, so no effect is left frozen over the information; back at the top they start again) and the room dims to 62% ink over the first 70vh, so the yellow reads. The stage stays pinned until the footer covers it.
 2. **Header and title:** the shared `SiteHeader` in yellow (`variant="overlay" tone="yellow" mark="yellow"`: yellow links, yellow lion `brand/lion-head-yellow.svg`, yellow Book outline; Karaoke current) with "KARAOKE" in yellow across the width under it (FitTitle, H1), in a sticky strip one screen tall (that screen is also the scroll before the information arrives). Clicks pass through its empty space.
 3. **Information, scrolling over the video:** after the strip, so it scrolls up from the bottom like any page, then rests: sticky just under KARAOKE, as tall as the rest of the screen, columns at its foot. Yellow text, no background, a soft shadow behind the letters. Two columns split by a yellow rule (stacked below 900px, tighter type below 600px), from the board. On wide screens an empty space between each column's text and its buttons takes whatever height is left (72–280px), so the buttons sit low:

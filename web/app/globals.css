@@ -27,6 +27,13 @@
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  /* No window scrollbar on any page. Scrolling still works as normal
+     (wheel, trackpad, touch, keyboard). */
+  scrollbar-width: none;
+}
+
+html::-webkit-scrollbar {
+  display: none;
 }
 
 body {
