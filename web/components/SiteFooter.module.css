@@ -42,28 +42,58 @@
   width: min(calc(100% - 2 * var(--gutter-x)), calc(var(--lion-h) * 1.3385));
   aspect-ratio: 156.29 / 116.77;
   transform: translateX(-50%);
-  pointer-events: none;
 }
 
-/* The band mask's box reaches 40px past the lion on each side (its gradient
-   only runs top to bottom), so a blurred copy's sideways spill isn't cut off. */
+/* Each fade band's mask box reaches 60px above the lion (so the tail can swing
+   up unclipped; FooterLion offsets the stops to match) and 40px to each side
+   (so a blurred copy's sideways spill isn't cut off). */
 .band {
   position: absolute;
-  inset: 0 -40px;
+  inset: -60px -40px 0;
+  pointer-events: none;
 }
 
 .layer {
   position: absolute;
-  inset: 0 40px;
+  inset: 60px 40px 0;
 }
 
-/* The drawing, painted in the text colour through the SVG's shape. */
-.shape {
+.drawing {
+  display: block;
   width: 100%;
   height: 100%;
-  background: currentColor;
-  -webkit-mask: url("/brand/lion-full-paper.svg") center / contain no-repeat;
-  mask: url("/brand/lion-full-paper.svg") center / contain no-repeat;
+  overflow: visible;
+}
+
+.defs {
+  position: absolute;
+}
+
+/* ---------- Tail swing (FooterLion) ----------
+   The tail's group sits translated to its pivot, so rotating about the group's
+   own origin turns the tail on its base. One swing: out, back past rest, a
+   smaller return, rest. */
+
+.swing {
+  transform-box: view-box;
+  transform-origin: 0 0;
+}
+
+.lion[data-swaying] .swing {
+  animation: tail-swing 4.4s ease-in-out both;
+}
+
+@keyframes tail-swing {
+  0%, 100% { transform: rotate(0deg); }
+  22% { transform: rotate(3.5deg); }
+  50% { transform: rotate(-3.5deg); }
+  78% { transform: rotate(1.9deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lion[data-swaying] .swing {
+    animation: none;
+  }
 }
 
 /* ---------- Type ---------- */
