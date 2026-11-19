@@ -74,11 +74,8 @@ export function AboutFilm() {
           )}
         </button>
       </div>
-      <figcaption className={styles.caption}>
-        <span className={styles.line}>Then and now</span>{" "}
-        <span className={styles.line} lang="tl">
-          Noon at ngayon
-        </span>
+      <figcaption className={styles.cap}>
+        Then and now · <span lang="tl">Noon at ngayon</span>
       </figcaption>
     </figure>
   );

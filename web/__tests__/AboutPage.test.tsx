@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import About from "@/app/about/page";
-import { CHAPTERS } from "@/components/AboutPage";
+import { ALBUM, DISHES, YEARS } from "@/components/AboutPage";
 import { ABOUT_FILM, ABOUT_FILM_POSTER } from "@/components/AboutFilm";
 import { motion } from "../vitest.setup";
 
@@ -21,11 +21,19 @@ afterEach(() => {
 });
 
 describe("About page", () => {
-  it("has one ABOUT title and the statement", () => {
+  it("has one ABOUT US title and the statement with its key phrases", () => {
     render(<About />);
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
-    expect(screen.getByRole("heading", { level: 1, name: "About" })).toBeInTheDocument();
-    expect(screen.getByText(/London’s oldest Filipino restaurant/)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: "About us" })).toBeInTheDocument();
+    const keys = screen.getAllByText(/./, { selector: "em" }).map((e) => e.textContent);
+    expect(keys).toEqual(["London’s oldest Filipino restaurant", "Kentish Town Road", "Filipino", "Asian influences"]);
+  });
+
+  it("shows the ruled facts from the site details", () => {
+    render(<About />);
+    expect(screen.getByText("Find us").nextElementSibling).toHaveTextContent("93 Kentish Town Road");
+    expect(screen.getByText("Open").nextElementSibling).toHaveTextContent("Tue–Thu 5–9.30pm");
+    expect(screen.getByText("Open").nextElementSibling).not.toHaveTextContent("Closed");
   });
 
   it("marks About as the current page", () => {
@@ -44,7 +52,7 @@ describe("About page", () => {
     expect(film()).toHaveAttribute("preload", "metadata");
     expect(play).toHaveBeenCalled();
     expect(pauseButton()).toHaveAttribute("aria-pressed", "false");
-    expect(screen.getByText("Noon at ngayon")).toHaveAttribute("lang", "tl");
+    expect(within(film().closest("figure")!).getByText("Noon at ngayon")).toHaveAttribute("lang", "tl");
   });
 
   it("pauses and resumes from the control", async () => {
@@ -89,15 +97,43 @@ describe("About page", () => {
     expect(lion).toHaveAttribute("alt", "");
   });
 
-  it("lists the chapters as headings with Tagalog subtitles", () => {
+  it("tells the history with the two family-album photos", () => {
     render(<About />);
-    const chapters = screen.getByRole("region", { name: "Our story" });
-    const headings = within(chapters).getAllByRole("heading", { level: 2 });
-    expect(headings).toHaveLength(CHAPTERS.length);
-    expect(headings.map((h) => h.textContent)).toEqual(CHAPTERS.map((c) => `${c.en} ${c.tl}`));
-    for (const c of CHAPTERS) {
-      expect(within(chapters).getByText(c.tl)).toHaveAttribute("lang", "tl");
-      expect(within(chapters).getByText(c.body)).toBeInTheDocument();
+    const history = screen.getByRole("region", { name: "Where it began. Camden, 1987." });
+    expect(within(history).getByAltText(/Halloween outside the original Bintang shopfront/)).toBeInTheDocument();
+    expect(within(history).getByAltText(/old bamboo-walled dining room/)).toBeInTheDocument();
+    expect(within(history).getByText(/Chef Omar Shah’s parents opened Bintang/)).toBeInTheDocument();
+  });
+
+  it("lists the group's years in order", () => {
+    render(<About />);
+    const list = screen.getByRole("heading", { name: "From one kitchen" }).nextElementSibling as HTMLElement;
+    const items = within(list).getAllByRole("listitem");
+    expect(items.map((li) => li.firstElementChild?.textContent)).toEqual(YEARS.map((y) => y.year));
+  });
+
+  it("shows the then-and-now photos with captions", () => {
+    render(<About />);
+    for (const p of ALBUM) {
+      const img = screen.getByAltText(p.alt);
+      expect(img.getAttribute("src")).toContain(encodeURIComponent(p.src));
+      expect(screen.getByText(p.caption)).toBeInTheDocument();
     }
+  });
+
+  it("runs the dishes on as a list and links to the menu", () => {
+    render(<About />);
+    const box = screen.getByRole("region", { name: /From the kitchen/ });
+    for (const d of DISHES) expect(within(box).getByText(d)).toBeInTheDocument();
+    expect(within(box).getByRole("link", { name: /See the menu/ })).toHaveAttribute("href", "/menu");
+  });
+
+  it("ends with an OpenTable booking link and private hire", () => {
+    render(<About />);
+    const come = screen.getByRole("region", { name: /Come for/ });
+    const book = within(come).getByRole("link", { name: /Book a table/ });
+    expect(book).toHaveAttribute("href", "https://www.opentable.co.uk/r/bintang-london");
+    expect(book).toHaveAttribute("target", "_blank");
+    expect(within(come).getByRole("link", { name: /Groups and private hire/ })).toHaveAttribute("href", "/contact/private-hire");
   });
 });

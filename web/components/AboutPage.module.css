@@ -1,61 +1,263 @@
-/* About page. Deep red flood, paper text — the About colour from the v2 design.
-   Same 1600px content column and gutters as the Menu and Journal.
-   Spacing follows the 8px scale: 4 8 12 16 24 32 48 64 96. */
+/* About page, after the "About option B — Editorial album" board.
+   Deep red flood, paper text; a quiet newspaper feel like the Menu (tracked band between
+   rules, column rules, a boxed section, ruled lines).
+
+   One system for the whole page:
+   - Spacing: 8 · 16 · 24 · 32 · 48 · 64 · 96. Every section opens on a 2px rule with 24px
+     above its content and ends with the same section gap. Inner dividers are 1px.
+   - Type roles: .k label · .cap caption · .s small text · .m story text · .statement
+     · .h3 item title · .d display · .hl headline · .qt giant quote.
+     Aquavit throughout: 700 for display and labels, 400 for text. */
 
 .page {
-  --gutter: clamp(12px, 3vw, 40px);
+  --gutter: clamp(16px, 3vw, 40px);
   --max: 1600px;
-  --rule: color-mix(in srgb, var(--paper) 35%, transparent);
+  --section-gap: clamp(64px, 8vw, 96px);
+  --soft-rule: color-mix(in srgb, currentColor 22%, transparent);
 
   min-height: 100vh;
   min-height: 100svh;
   background: var(--red-deep);
   color: var(--paper);
-  font-family: var(--font-serif);
+  font-family: var(--font-ui);
+  font-weight: 400;
 }
 
-.intro,
-.chapters {
+.wrap {
   max-width: var(--max);
   margin: 0 auto;
-  padding-left: var(--gutter);
-  padding-right: var(--gutter);
+  padding: 0 var(--gutter);
 }
 
-/* ---------- Statement + film ---------- */
+/* ---------- Type roles ---------- */
 
-/* Statement and film side by side at the golden ratio (1.618 : 1).
-   The statement sits 24px under the navbar, like the other pages' titles.
-   Below 900px they stack: statement, then the film. */
+.k,
+.band,
+.d,
+.hl,
+.qt,
+.pill,
+.more {
+  font-family: var(--font-display);
+}
+
+.k {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.cap {
+  margin: 0;
+  font-size: 14px;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.s {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.m {
+  margin: 0;
+  font-size: clamp(20px, 1.7vw, 24px);
+  line-height: 1.4;
+}
+
+.h3 {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.d {
+  margin: 0;
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
+.hl {
+  margin: 0;
+  font-size: clamp(48px, 7vw, 112px);
+  font-weight: 700;
+  line-height: 0.88;
+  text-transform: uppercase;
+}
+
+.qt {
+  margin: 0;
+  font-size: clamp(56px, 10vw, 160px);
+  font-weight: 700;
+  line-height: 0.86;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  transform: scaleY(0.92);
+  transform-origin: 0 0;
+}
+
+.center {
+  text-align: center;
+}
+
+/* Columns divided by soft rules, like the Menu's column rules. Each ruled grid has fixed
+   column counts per breakpoint (below), so the first item of every row is known and loses its
+   rule. On a phone the columns stack and the soft rules run between them instead. */
+.ruled > * + * {
+  padding-top: 16px;
+  border-top: 1px solid var(--soft-rule);
+}
+
+@media (width >= 600px) {
+  .ruled > * + * {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .ruled > * {
+    padding-left: 24px;
+    border-left: 1px solid var(--soft-rule);
+  }
+}
+
+.sec {
+  padding: 24px 0 var(--section-gap);
+  border-top: 2px solid currentColor;
+}
+
+/* ---------- Masthead ---------- */
+
+.masthead {
+  display: flex;
+  align-items: center;
+  gap: clamp(16px, 3vw, 48px);
+  padding: 24px 0;
+  border-bottom: 2px solid currentColor;
+}
+
+.title {
+  flex: 1 1 0;
+  min-width: 0;
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 0;
+}
+
+.stamp {
+  position: relative;
+  flex: 0 0 auto;
+  width: clamp(96px, 12vw, 176px);
+  aspect-ratio: 1;
+}
+
+.ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.ring text {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.stampMark {
+  position: absolute;
+  inset: 32%;
+  background: currentColor;
+  mask: url("/brand/lion-head-paper.svg") center / contain no-repeat;
+}
+
+.band {
+  margin: 0;
+  padding: 12px 0;
+  border-bottom: 1px solid currentColor;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.4em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  margin: 0;
+  padding: 24px 0;
+  border-bottom: 1px solid currentColor;
+}
+
+@media (width >= 600px) {
+  .facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .facts > :nth-child(2n + 1) {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+
+@media (width >= 1000px) {
+  .facts {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .facts > :nth-child(2n + 1) {
+    padding-left: 24px;
+    border-left: 1px solid var(--soft-rule);
+  }
+
+  .facts > :nth-child(4n + 1) {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+
+.facts > div {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.facts dd {
+  margin: 0;
+}
+
+/* ---------- Statement + film, golden ratio ---------- */
+
+/* Statement (with the lion at its foot) and film at 1.618 : 1. Below 900px they stack. */
 .intro {
   display: grid;
   grid-template-columns: 1fr;
   align-items: start;
-  gap: 48px clamp(24px, 4vw, 64px);
-  padding-top: 24px;
-  padding-bottom: clamp(96px, 10vw, 160px);
+  gap: 48px 64px;
+  padding: 48px 0 var(--section-gap);
 }
 
-/* Statement 680px and film 420px at most (1.618 : 1), pushed to the two edges. */
 @media (width >= 900px) {
   .intro {
     grid-template-columns:
-      min(calc((100% - 64px) * 0.618), 680px)
-      min(calc((100% - 64px) * 0.382), 420px);
+      min(calc((100% - 64px) * 0.618), 760px)
+      min(calc((100% - 64px) * 0.382), 464px);
     justify-content: space-between;
   }
 }
 
-.statement {
-  margin: 0;
-  font-size: clamp(28px, 3vw, 44px);
-  line-height: 1.15;
-  letter-spacing: -0.01em;
-  text-wrap: pretty;
-}
-
-/* Left column: the statement on top, the full lion drawing at the bottom,
-   level with the bottom of the film. */
 .lead {
   display: flex;
   flex-direction: column;
@@ -64,10 +266,12 @@
   align-self: stretch;
 }
 
-.lion {
-  display: block;
-  width: clamp(140px, 16vw, 230px);
-  height: auto;
+.statement {
+  margin: 0;
+  font-size: clamp(32px, 3.4vw, 48px);
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  text-wrap: pretty;
 }
 
 /* Key phrases: slanted (Aquavit has no true italic) and underlined. */
@@ -78,19 +282,17 @@
   text-underline-offset: 0.14em;
 }
 
+.lion {
+  display: block;
+  width: clamp(144px, 16vw, 224px);
+  height: auto;
+}
+
+/* The film (components/AboutFilm). */
 .film {
   position: relative;
   max-width: 400px;
   margin: 0;
-}
-
-/* The caption hangs below the frame, out of flow, so the figure's bottom is the
-   video's bottom and the lion lines up with it. The section's bottom padding
-   leaves room for it. */
-.film > figcaption {
-  position: absolute;
-  top: 100%;
-  left: 0;
 }
 
 @media (width >= 900px) {
@@ -99,7 +301,14 @@
   }
 }
 
-/* Square corners on the film. */
+/* The caption hangs below the frame, out of flow, so the lion lines up with the
+   bottom of the video. The section's bottom gap leaves room for it. */
+.film > figcaption {
+  position: absolute;
+  top: calc(100% + 16px);
+  left: 0;
+}
+
 .filmFrame {
   position: relative;
   aspect-ratio: 9 / 16;
@@ -136,50 +345,434 @@
   outline-offset: -4px;
 }
 
-.caption {
-  margin-top: 10px;
-  font-family: var(--font-ui);
-  font-size: 14px;
-  line-height: 1.3;
+/* ---------- History + family album ---------- */
+
+.headline {
+  margin-top: 24px;
+  padding: 16px 0 24px;
+  border-top: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  text-align: center;
+  text-wrap: balance;
 }
 
-/* English over Tagalog: block lines (not <br>) so the accessible name keeps its space. */
-.line {
-  display: block;
-}
-
-.line[lang="tl"] {
-  opacity: 0.92;
-}
-
-/* ---------- Chapters ---------- */
-
-.chapters {
+/* Photo and text at the golden ratio, divided by a rule; the second story mirrors the first. */
+.story {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 48px 32px;
-  padding-bottom: clamp(120px, 12vw, 200px);
+  grid-template-columns: 1fr;
+  gap: 32px;
+  padding: 48px 0;
 }
 
-/* The hairline sits inside the gutters, not edge to edge. */
-.chapters::before {
-  content: "";
-  grid-column: 1 / -1;
-  height: 1px;
-  margin-bottom: -8px;
-  background: var(--rule);
+.story + .story {
+  border-top: 1px solid currentColor;
 }
 
-.label {
-  margin: 0 0 14px;
-  font-family: var(--font-ui);
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.2;
+@media (width >= 900px) {
+  .story {
+    grid-template-columns: minmax(0, 1.618fr) minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .storyFigure {
+    padding-right: 48px;
+  }
+
+  .storyText {
+    padding-left: 48px;
+    border-left: 1px solid currentColor;
+  }
+
+  .storyMirror {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.618fr);
+  }
+
+  .storyMirror .storyFigure {
+    order: 2;
+    padding-right: 0;
+    padding-left: 48px;
+  }
+
+  .storyMirror .storyText {
+    justify-content: flex-end;
+    padding-left: 0;
+    padding-right: 48px;
+    border-left: 0;
+    border-right: 1px solid currentColor;
+  }
 }
 
-.body {
+.storyFigure {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   margin: 0;
-  font-size: 22px;
-  line-height: 1.4;
+}
+
+.storyText {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.frame {
+  overflow: hidden;
+  background: var(--ink);
+}
+
+.frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.brief {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px 0 48px;
+  border-top: 1px solid currentColor;
+}
+
+.years {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (width >= 600px) {
+  .years {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .years > :nth-child(3n + 1) {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+
+@media (width >= 1200px) {
+  .years {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .years > :nth-child(3n + 1) {
+    padding-left: 24px;
+    border-left: 1px solid var(--soft-rule);
+  }
+
+  .years > :nth-child(6n + 1) {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+
+.years li {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.boxedLine {
+  padding: 12px 0;
+  border-top: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  text-align: center;
+}
+
+.thenNow {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-top: 24px;
+  border-top: 1px solid currentColor;
+}
+
+/* 1, 2 or 4 across, so a photo is never left on its own row. */
+.strip {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 48px 8px;
+}
+
+@media (width >= 560px) {
+  .strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (width >= 1000px) {
+  .strip {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.photo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  text-align: center;
+}
+
+.photoFrame {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  margin-bottom: 8px;
+  overflow: hidden;
+  background: var(--ink);
+}
+
+.photoFrame img {
+  object-fit: cover;
+  transition: scale 0.9s var(--ease);
+}
+
+.photo:hover .photoFrame img {
+  scale: 1.03;
+}
+
+.photoCaption {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.photoCaption .cap {
+  max-width: 30ch;
+  margin: 0 auto;
+}
+
+/* ---------- Quote ---------- */
+
+.quote {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ---------- Dishes ---------- */
+
+.dishBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 32px clamp(16px, 3vw, 48px);
+  border: 1px solid currentColor;
+  text-align: center;
+}
+
+.dishes {
+  max-width: 1120px;
+  margin: 0;
+  font-size: clamp(24px, 2.4vw, 32px);
+  line-height: 1.3;
+  text-wrap: balance;
+}
+
+/* ---------- Come for ---------- */
+
+.come {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.comeGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px 24px;
+  padding-top: 24px;
+  border-top: 1px solid currentColor;
+}
+
+@media (width >= 600px) {
+  .comeGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .comeGrid > :nth-child(2n + 1) {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+
+@media (width >= 1000px) {
+  .comeGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .comeGrid > :nth-child(2n + 1) {
+    padding-left: 24px;
+    border-left: 1px solid var(--soft-rule);
+  }
+
+  .comeGrid > :nth-child(4n + 1) {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+
+.comeGrid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 32px;
+  margin-top: 24px;
+}
+
+/* Paper pill on the red page. */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 0 48px;
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--red-deep);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.more {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 44px;
+  color: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.pill:hover,
+.more:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.pill:focus-visible,
+.more:focus-visible {
+  outline: 2px solid var(--paper);
+  outline-offset: 4px;
+}
+
+/* ---------- Motion ----------
+   Six scroll-driven animations, pure CSS: each follows the scroll position, so scrolling back
+   rewinds it. Browsers without scroll-driven animations, and visitors who ask for reduced
+   motion, get the still page (the stamp stays still too). */
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* 1. Rules draw in, left to right, like type being set. */
+    .sec {
+      position: relative;
+      border-top-color: transparent;
+      view-timeline: --about-sec block;
+    }
+
+    .sec::before {
+      content: "";
+      position: absolute;
+      top: -2px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: currentColor;
+      transform-origin: 0 50%;
+      animation: rule linear both;
+      animation-timeline: --about-sec;
+      animation-range: entry 0% entry 40%;
+    }
+
+    /* 2. Headlines rise into place from behind a mask. */
+    .hl,
+    .qt,
+    .rise {
+      animation: rise linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 30%;
+    }
+
+    /* 3. Old photos develop: pale and soft to sharp, like a print in the tray. */
+    .photoFrame img,
+    .frame img {
+      animation: develop linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 45%;
+    }
+
+    /* 4. The timeline counts up: each year arrives a beat after the last. */
+    .years li {
+      animation: year linear both;
+      animation-timeline: view();
+    }
+
+    .years li:nth-child(1) { animation-range: entry 0% entry 50%; }
+    .years li:nth-child(2) { animation-range: entry 10% entry 60%; }
+    .years li:nth-child(3) { animation-range: entry 20% entry 70%; }
+    .years li:nth-child(4) { animation-range: entry 30% entry 80%; }
+    .years li:nth-child(5) { animation-range: entry 40% entry 90%; }
+    .years li:nth-child(6) { animation-range: entry 50% entry 100%; }
+
+    /* 5. The stamp turns with the scroll instead of on its own. */
+    .ring {
+      animation: stamp linear both;
+      animation-timeline: scroll(root);
+    }
+
+    /* 6. Each dish is underlined as it passes the middle of the screen. */
+    .dish {
+      background: linear-gradient(currentColor, currentColor) 0 100% / 0% 2px no-repeat;
+      animation: dish linear both;
+      animation-timeline: view();
+      animation-range: cover 35% cover 65%;
+    }
+  }
+}
+
+@keyframes rule {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes rise {
+  from { clip-path: inset(-0.3em -0.2em 100% -0.2em); translate: 0 0.35em; }
+  to { clip-path: inset(-0.3em -0.2em -0.2em -0.2em); translate: 0 0; }
+}
+
+@keyframes develop {
+  from { filter: blur(8px) brightness(1.35) saturate(0.2) sepia(0.25); }
+  to { filter: none; }
+}
+
+@keyframes year {
+  from { opacity: 0; translate: 0 16px; }
+  to { opacity: 1; translate: 0 0; }
+}
+
+@keyframes stamp {
+  to { rotate: 540deg; }
+}
+
+@keyframes dish {
+  0% { background-size: 0% 2px; }
+  35%, 65% { background-size: 100% 2px; }
+  100% { background-size: 0% 2px; }
 }
