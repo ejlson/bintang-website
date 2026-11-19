@@ -1,5 +1,4 @@
 import { Hero } from "@/components/Hero";
-import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 
 export default function Home() {
@@ -7,7 +6,6 @@ export default function Home() {
     <main style={{ color: "var(--paper)" }}>
       <SiteHeader variant="overlay" tone="paper" mark="paper" currentHref="/" />
       <Hero />
-      <SiteFooter />
     </main>
   );
 }

@@ -143,8 +143,12 @@ describe("SiteFooter", () => {
     expect(screen.getByRole("group", { name: "Opening hours" })).toBeInTheDocument();
   });
 
+  it("is not on Home, which ends at the hero", () => {
+    render(<Home />);
+    expect(screen.queryByRole("navigation", { name: "More" })).toBeNull();
+  });
+
   it.each([
-    ["Home", Home],
     ["a placeholder page", Contact],
     ["Gallery", Gallery],
   ])("is on %s", (_, Page) => {

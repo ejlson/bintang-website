@@ -40,7 +40,7 @@ web/
 
 ## Home page — behaviour
 
-1. **Full-screen hero (100svh, min 640px)**, with the site footer below it on ink. Background is `hero-loop.mp4` (trimmed 4.5–33.5s, 1920×1080 H.264 CRF 23 ~8.3 MB; portrait screens get a 608×1080 crop ~3.4 MB; no audio), autoplay, muted, loop, playsinline, with a poster. A warm overlay (soft dark fades at top (to 30%) and bottom (to 38%) over an 18% warm wash) sits over it.
+1. **Full-screen hero (100svh, min 640px)**, and nothing below it: Home has no site footer (removed 19 Nov 2026). Background is `hero-loop.mp4` (trimmed 4.5–33.5s, 1920×1080 H.264 CRF 23 ~8.3 MB; portrait screens get a 608×1080 crop ~3.4 MB; no audio), autoplay, muted, loop, playsinline, with a poster. A warm overlay (soft dark fades at top (to 30%) and bottom (to 38%) over an 18% warm wash) sits over it.
 2. **Header** (absolute, paper `#EDE9E9` text, 14px Helvetica, line-height 1.2):
    - Left: About/Tungkol, Menu/Mga Ulam, Gallery/Larawan, Journal/Balita.
    - Centre: lion head in the same paper colour as the links (52px tall), links to `/`, `aria-label="Bintang home"`.
@@ -111,7 +111,7 @@ Designed on the Claude Design canvas "Bintang Website" (Menu artboard); options 
 
 ## Site footer (17 Nov 2026; redesigned 19 Nov 2026)
 
-`components/SiteFooter`, from the "Footer — blurred wordmark" boards on the Claude Design canvas (after the Moah studio site), is the last child of every page's `<main>`.
+`components/SiteFooter`, from the "Footer — blurred wordmark" boards on the Claude Design canvas (after the Moah studio site), is the last child of every page's `<main>` except Home.
 1. **No colour of its own:** the background is the page's, and the lion and type take the page's text colour (so it follows the Menu tab fades too). On Home it sits on ink with paper text. Aquavit only.
 2. **The lion:** the full lion (drawn from `public/brand/lion-full-art.svg#art` by `<use>`, in `currentColor`; see 5), 76px from the top, as wide as the content allows (20px gutters) without outgrowing the screen height. **Fade-out:** it fades away towards the bottom, softening a little as it goes: 3 copies (sharp, then blurred 0.4× and 1× `--lion-blur`: 12px desktop, 6px phone), each shown in its own band and fading out, gone by ~90% of its height so the bottom text stays clear. Each copy is blurred before its band is cut (the other way round smears band edges into streaks). Decorative (`aria-hidden`).
 3. **Top row:** "Since 1987" · small-caps links (Groups, Private hire, Karaoke, email, phone) · a hollow "Book a table" pill to OpenTable (fills red on hover, like the header's).
