@@ -26,9 +26,10 @@ web/
   app/page.tsx            Home
   app/menu/page.tsx       Menu (phase 1b) — components/MenuPage, KaraokeVideo; data in lib/menu.ts
   app/about/page.tsx      About (phase 1c) — components/AboutPage, AboutFilm; media in public/media/about/
-  app/gallery/page.tsx    Gallery — components/GalleryPage, ColourSweep; data in lib/gallery.ts
+  app/gallery/page.tsx    Gallery — components/GalleryPage, PhotoViewer; data and layout in lib/gallery.ts
+  app/contact/karaoke     Karaoke — components/KaraokePage, KaraokeHero; video in public/media/karaoke/, photos from gallery and journal
   app/[...]/page.tsx      placeholders: /journal
-                          /contact /contact/groups /contact/karaoke /contact/private-hire
+                          /contact /contact/groups /contact/private-hire
   components/SiteHeader   bilingual split nav + centred lion head + mobile overlay
   components/Hero         video, warm overlay, pause control, thumbnail, reduced-motion poster
   components/Subtitles    videoke-style English/Tagalog lines with sakuga effects
@@ -80,8 +81,8 @@ Designed on the Claude Design canvas "Bintang Website" (Menu artboard); options 
 6. **Karaoke tab:** a 16:9 muted looping video (the Home hero loop until karaoke footage exists) with yellow karaoke subtitles and a pause button; it starts paused for reduced motion or data saver. The "Karaoke at Bintang" banner links to `/contact/karaoke`.
 7. **Footer:** halal/allergen/service-charge notes on drinks sheets, and a "Book a table" button to `/contact`.
 8. **Spacing:** 8px scale (8/12/16/24/32/48/64/96); title, tabs and sheets share one container (max 1280px, gutter `clamp(16px, 5vw, 80px)`).
-
 9. **Motion (19 Nov 2026, About's motion in CSS, no JS):** on load MENU rises from a mask, the tabs arrive left to right and the menu comes in under them. On the scroll timeline (MENU itself stays put once it has risen in): each band draws its two rules in; section headings rise; sections fade up as they enter (every other one a beat later), settled before the middle of the screen so prices sit still while read; the karaoke card's title rises and lags the page (±8px). Tab switches replay it for the new sheets. None for reduced motion; without scroll-driven animation support only the load entrance plays.
+
 **Open:** Uber Eats / Deliveroo links (URLs needed) · real karaoke footage · karaoke pricing/capacity · Tagalog labels need a native-speaker check · brunch hours (cards say both Sat 11–3 and 11–4; site uses 11–3) · Barbera d’Alba is listed under white wine · "Merlo Basco" spelling.
 
 ## About (rebuilt 19 Nov 2026, from the "About option B — Editorial album" board in the Claude Design canvas)
@@ -97,7 +98,6 @@ Designed on the Claude Design canvas "Bintang Website" (Menu artboard); options 
 7. **Come for:** Dinner, Brunch, Karaoke, Groups; Book a table (OpenTable, new tab) and Groups and private hire.
 8. **Motion (CSS scroll-driven, no JS):** rules draw in; headlines rise from a mask; photos develop from pale and soft; the years arrive one after another; the stamp turns with the scroll; each dish is underlined as it passes the middle of the screen. All still for reduced motion and in browsers without scroll-driven animations.
 9. **Editorial entrance + reveals (CSS, no JS):** on load the page opens on the red ground and the first screen sets itself in about a second (rules draw under the masthead, band and facts; ABOUT US rises from a mask; the stamp, band and facts arrive; the statement rises; the film wipes open; the lion and caption fade in). Below the fold, photos wipe open from the bottom as they scroll in, text arrives in its blocks, and the "Come for" columns and then-and-now photos arrive left to right; these follow the scroll, so nothing can stay blank. None of it for reduced motion; the scroll reveals also need scroll-driven animation support.
-
 10. **Parallax (19 Nov 2026, CSS scroll-driven):** ABOUT US stays put (no sink, by request); the stamp lags 22% over the first 60vh; photos are scaled to 116% inside their frames and drift −6% to +6% as they pass (on the frame's named view timeline, because a clipping frame is its own scroll container); the lion runs 32px ahead of the page and the giant quote lags 20px (keeping its 0.92 squash). Still for reduced motion.
 
 ## Journal motion (19 Nov 2026, About's motion in CSS, no JS)
@@ -106,6 +106,7 @@ Designed on the Claude Design canvas "Bintang Website" (Menu artboard); options 
 2. **Scroll (follows the scroll timeline):** JOURNAL stays put once it has risen in; the Older entries bar draws both rules and its head rises; older stories fade up left to right a beat apart (four to a row); every photo is scaled to 116% and drifts −6% to +6% in its frame; the advert's rule draws, its title rises and lags 14px, its lines and the colophon fade up.
 3. **Tap targets:** nothing between a headline link and its story block (`.front`, `.story`) is clipped or translated, since that would shrink the stretched link.
 4. None for reduced motion; without scroll-driven animation support only the load entrance plays.
+
 **Open:** the Tagalog lines need a native-speaker check · the Maginhawa story page says the group began in "Camden" while Bintang is on Kentish Town Road; the headline follows the story page.
 
 ## Site footer (17 Nov 2026; redesigned 19 Nov 2026)
@@ -120,18 +121,39 @@ Designed on the Claude Design canvas "Bintang Website" (Menu artboard); options 
 
 **Open:** Instagram/Facebook links (handles needed) · it sits inside `<main>` like the header, so it isn't a top-level contentinfo landmark.
 
-## Gallery (17 Nov 2026, option D "Split frame" on the Claude Design canvas)
+## Gallery (rebuilt 19 Nov 2026, option E "Scattered field" on the Claude Design canvas)
 
-From the Claude Design "Gallery option D" board, after two references the client shared (a Japanese ceramics shop's split photo and the TONY restaurant site). `components/GalleryPage`, photos in `public/media/gallery/` (14 JPEGs, 1600×900 or 900×1600), data in `lib/gallery.ts`.
-1. **Header:** ink text and the ink lion (`tone="ink" mark="ink"`). The visible page has no title; a visually hidden H1 stays.
-2. **Hero:** the garden photo (5:4) on the left half; on the right, a small framed photo of today’s shopfront between "Since 1987" and "Kentish Town", one bilingual line, and a deep-red Book a table button (OpenTable, new tab). Stacks below 768px. No lettering over the photo.
-3. **Album (split frame):** a short intro line, then the family album photo (an old family photo held up in the garden) full width (420–640px tall) with a narrow column (240–300px, a little right of centre, overhanging 56px top and bottom) of three album cards: the first shopfront, the old dining room, and the old dining room held up outside today’s shopfront. Each card is captioned with "Album" on the right. Below 768px the cards sit under the photo.
-4. **Rooms:** a red-dot "Gallery" label, then three photos with English / Tagalog labels above: Kitchen / Kusina, Garden / Hardin, Karaoke / Kantahan.
-5. **Nights:** the full karaoke room large on the left; the bar photo, a line about birthdays and leaving dos, a Book a table button and a red-dot "Book" label on the right. The site footer follows.
-6. **Viewer:** every photo is a button that opens a full-screen viewer (all 14 photos, in `PHOTOS` order): Close / Previous / Next buttons, arrow keys step and wrap, Esc closes, Tab stays inside, focus goes to Close on open and back to the photo on close, and the page behind doesn't scroll.
-7. **Colour sweep (Mala Project style), `components/ColourSweep`:** each section names a background colour (`data-sweep`): hero white, album paper, rooms yellow, nights pink (with the footer). The colours sit on a fixed layer behind the page. When a section crosses the middle of the screen, its colour sweeps in as a 200vh band with a soft 50vh leading edge, over 1s on the site's ease-out curve: **down from the top when scrolling down, up from the bottom when scrolling back up.** A new section mid-sweep lands the old colour at once and starts the next. The first colour on load (or after a restored scroll position) is set without a sweep. Reduced motion: the colour just changes. Text stays ink on every colour; red-dot labels keep ink words because red text fails contrast on yellow and pink.
+After a Pinterest pin of the Simon Wheatley ("Don't Call Me Urban") portfolio home page: small photographs scattered across a white screen, tiny labels at the corners, a name in the middle, one photo enlarged on hover. Replaces option D (split frame + colour sweep, 17 Nov), which is in git history. `components/GalleryPage`, `components/PhotoViewer`, data and layout in `lib/gallery.ts`.
+1. **Photos:** 19 — the 14 in `public/media/gallery/` plus five from `public/media/journal/` (archive-family, karaoke, private-hire, brunch, garden; 960×1200). `PHOTOS` is in reading order (left to right, top to bottom); the viewer steps in that order.
+2. **Header:** ink text and the ink lion on white.
+2a. **Title at the back (19 Nov):** "GALLERY" in Aquavit Black, `clamp(120px, 20vw, 400px)`, squished `scaleY(0.85)`, filling the field behind every photo; it is the page’s H1. A small italic line under it, pinned in front of the photos on a white backing (so it never moves the title), reads "Larawan", or the name and "n / 19" of the photo being looked at. Phones: the title sits first at 23vw.
+2b. **Depth (19 Nov):** each photo has a layer in `FIELD` (3 near, 2 middle, 1 far). Near photos are sharp and in front; middle ones are at 94% opacity and far ones at 82%; with a mouse they also blur (1.2px, 3px), since only a mouse can bring a photo back into focus. Hovering or focusing a photo brings it into focus and to the front.
+2c. **Mouse parallax (19 Nov):** with a mouse on wide screens, the field follows the pointer: `--px`/`--py` (−1 to 1) ease towards it (8% a frame) and each layer shifts by up to 32px × 22px times its factor (near 1, middle 0.55, far 0.25); the title drifts 0.2 the other way. Off for touch screens, phones and reduced motion, re-checked if the window crosses the breakpoint.
+3. **Field (768px and up):** one screen (`100svh − 110px`, min 560px), a 6 × 4 grid with the title in the middle four cells. Each photo sits in its own cell (`FIELD` in `lib/gallery.ts`: column, row, horizontal and vertical edge, height as a share of the cell), so nothing overlaps at rest. Cells are size containers: a photo takes its share of the cell's height unless that would make it wider than the cell, then it takes the cell's width; either way it keeps its own shape (never cropped to another).
+4. **Hover / focus:** the photo scales up 2.4× in place, above its neighbours with a soft shadow, growing towards the middle of the screen (transform-origin from its column and row) so it stays in view. The line under the big title swaps "Larawan" for that photo's name and "n / 19" (decorative, `aria-hidden`: each button already carries "Open photo: …"). Only with a mouse (`hover: hover` and `pointer: fine`, so a touchscreen laptop's tap doesn't leave one stuck big). A shrinking photo stays on top until it has finished. The name sits above the photos on a white backing. Mouse and keyboard are tracked apart; mouse focus (a click, or the viewer handing focus back after a mouse close) doesn't name a photo, keyboard focus does.
+5. **Click / tap:** opens `PhotoViewer` — Close / Previous / Next, arrow keys step and wrap, Esc closes, Tab stays inside, focus starts on Close and returns to the photo, the page behind doesn't scroll. Keys are heard on the document so they work after a click leaves focus on `<body>`.
+6. **Corner labels** under the field: "Bintang / Since 1987" and "Kentish Town / London NW1" (no count or hint between them). Then the site footer.
+7. **Phones (< 768px):** the title goes first, then three columns of 140px cells that scroll; each photo keeps its offsets inside its cell. No enlarging; tap opens the viewer.
+8. **Loading:** all 19 load up front (the field is one screen on wide screens). `sizes` 34vw wide (sharp when enlarged), 30vw on phones.
 
-**Open:** real years for the album captions · Tagalog labels need a native-speaker check · more photos (the karaoke and kitchen sets are thin).
+**Open:** real years for the archive captions · more photos would make the field denser, like the reference (it has about 45) · the pin's video (the reference interaction) was behind Pinterest's login, so the hover behaviour is read from the still frame.
+
+## Karaoke (19 Nov 2026, from the "Karaoke — night edition" board in the Claude Design canvas)
+
+`components/KaraokePage` (+ `KaraokeHero`, `KaraokeSnap`) at `/contact/karaoke`. Ink page, yellow for the wordmark, header and information. No scrollbar on this page (`scrollbar-width: none` on `html:has(.page)`; scrolling works as normal). A pinned video; the information scrolls up over it and rests at its foot; then the footer comes up and pushes everything away.
+1. **Pinned stage (sticky, `--stage-h` = max(600px, 100svh), negative bottom margin so the rest of the page lies on top of it):** `karaoke-loop.mp4`, the karaoke scenes cut from the Home film (`bintang-hero.mp4` 14.55–18.12s + 20.80–26.87s, ~9.6s, 1920×1080 H.264 CRF 24, ~2.3 MB, no audio; portrait screens get a 608×1080 crop, ~0.8 MB, swapped on rotation), muted, looping, inline. The poster (the full room) is the stage's background, landscape or portrait. A dark fade at the top and the foot. The Home page's videoke subtitles (`components/Subtitles`, same lines, sakuga effects and score card; see Home §3) play over the foot. One pause button (bottom left, 44px, "Pause video" + `aria-pressed`) stops the video and the subtitles (WCAG 2.2.2). Reduced-motion and data-saver visitors start paused on the poster (`preload="none"`, no download) with the subtitles' still line, as on Home; pressing play starts the video. As the visitor scrolls, the subtitles fade out over the first 35vh and are taken off the page at 40% of a screen (which also wipes their sakuga effects layer, so no effect is left frozen over the information; back at the top they start again) and the room dims to 62% ink over the first 70vh, so the yellow reads. The stage stays pinned until the footer covers it.
+2. **Header and title:** the shared `SiteHeader` in yellow (`variant="overlay" tone="yellow" mark="yellow"`: yellow links, yellow lion `brand/lion-head-yellow.svg`, yellow Book outline; Karaoke current) with "KARAOKE" in yellow across the width under it (FitTitle, H1), in a sticky strip one screen tall (that screen is also the scroll before the information arrives). Clicks pass through its empty space.
+3. **Information, scrolling over the video:** after the strip, so it scrolls up from the bottom like any page, then rests: sticky just under KARAOKE, as tall as the rest of the screen, columns at its foot. Yellow text, no background, a soft shadow behind the letters. Two columns split by a yellow rule (stacked below 900px, tighter type below 600px), from the board. On wide screens an empty space between each column's text and its buttons takes whatever height is left (72–280px), so the buttons sit low:
+   - **01 · Group dining — The sharing feast:** platters at £38 per person, three starters and three mains with jasmine rice, then Buko Pandan; Book a table (yellow pill, OpenTable, new tab) and See the karaoke menu → `/menu#karaoke`.
+   - **02 · Private hire — The whole room:** hire the lower ground floor and the karaoke comes with it; email for room-hire prices and time slots; Enquire (outline pill, email, subject "Karaoke room hire") and the email address.
+   Buttons sit 24–44px below that space. Clicks pass through the information's empty space to the pause button. Below 900px the stacked columns are taller than the space under KARAOKE, so there the header, title and information scroll as a normal page over the pinned video.
+4. **Scroll assistance (`KaraokeSnap`, Lenis snap, "proximity", 45% threshold, 0.9s):** stopping near the top or near the resting view (where the information has just come to rest) eases the page the rest of the way there; free scrolling elsewhere is left alone. Only while Lenis runs (`onLenis` in `SmoothScroll`): not for reduced motion, and touch keeps native scrolling. Snap points are recomputed on resize.
+5. **Parallax (CSS scroll-driven, so it moves with the smooth scroll; still for reduced motion):** the video zooms to 110% and drifts up 3% over the first screen; the subtitles and dim are scroll-linked as above; the two columns rise into place as they enter, the second a beat behind and from further down (80px / 160px). The snap eases out (quint, 1.2s).
+6. **Hold, then footer:** 60vh of scroll with the information at rest, then the shared site footer on yellow with ink text and lion slides up over everything. It sits inside the same group as the header strip and the information, so they stay pinned while it covers them; as it comes up, the title and information drift up 24px and fade out (CSS scroll-driven, on the footer's view timeline `--karaoke-footer`, shared with `timeline-scope`; without support they simply stay put under it).
+
+Facts come from the karaoke sheet in `lib/menu.ts` and the current bintangrestaurant.co.uk Karaoke page. Open mic is left out: the brunch card's "Saturday 5pm – 11pm" runs past Saturday closing (10pm) and isn't on the current site.
+
+**Open:** real karaoke-night footage (the loop reuses the Home film) · room capacity and hire prices · confirm whether open mic still runs (and remove it from the brunch sheet if not) · Tagalog labels need a native-speaker check.
 
 ## Placeholder pages
 

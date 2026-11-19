@@ -1,0 +1,501 @@
+/* Karaoke page, after the "Karaoke — night edition" board.
+   A pinned stage: the video of the room fills the screen and stays put, with the yellow
+   header and KARAOKE across the top and the Home page's subtitles (components/Subtitles).
+   Scrolling fades the subtitles, dims the room and slides the information in on top of
+   the video in yellow, with no background; then the yellow footer slides over everything.
+   Aquavit only (700 display and labels, 400 text); spacing on the
+   site's 8 · 16 · 24 · 32 · 48 · 64 · 96 scale. */
+
+.page {
+  --gutter: clamp(16px, 3vw, 40px);
+  /* The stage's height: a full (small-viewport) screen, at least 600px. */
+  --stage-h: max(600px, 100svh);
+  /* Where KARAOKE ends (its top + its height at full width); the information fades
+     out before it gets there. */
+  --title-top: clamp(84px, 7vw, 104px);
+  --title-bottom: calc(var(--title-top) + (100vw - 2 * var(--gutter)) * 0.17 + 24px);
+  --lit: var(--yellow);
+
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-ui);
+  font-weight: 400;
+}
+
+/* No scrollbar on this page: the video runs edge to edge. Scrolling still works as normal
+   (wheel, trackpad, touch, keyboard). */
+:global(html):has(.page) {
+  scrollbar-width: none;
+}
+
+:global(html):has(.page)::-webkit-scrollbar {
+  display: none;
+}
+
+/* ---------- Type roles ---------- */
+
+.k,
+.pill,
+.more {
+  font-family: var(--font-display);
+}
+
+.k {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.s {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.m {
+  margin: 0;
+  font-size: clamp(18px, 1.5vw, 22px);
+  line-height: 1.45;
+}
+
+.h3 {
+  margin: 0;
+  font-size: clamp(28px, 2.6vw, 40px);
+  font-weight: 400;
+  line-height: 1;
+}
+
+.page strong {
+  font-weight: 700;
+}
+
+/* ---------- The pinned stage ---------- */
+
+/* The stage is sticky for the whole of .scroller, so everything after it scrolls over it,
+   footer included. Its negative bottom margin pulls the group up to the top of the page,
+   on top of the stage, instead of below it. */
+.scroller {
+  position: relative;
+}
+
+.pin {
+  position: sticky;
+  top: 0;
+  z-index: 0;
+  height: var(--stage-h);
+  margin-bottom: calc(-1 * var(--stage-h));
+}
+
+/* The header, KARAOKE, the information and, last, the footer. Because the footer is
+   inside the group, the sticky header strip and information stay pinned while it slides
+   up over them. The footer's view timeline is shared across the group for the lift. */
+.group {
+  position: relative;
+  z-index: 1;
+  timeline-scope: --karaoke-footer;
+}
+
+/* The header and title, stuck to the top. It's a full screen tall: the screen of scroll
+   before the information comes up. Clicks pass through its empty space. */
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  height: var(--stage-h);
+  pointer-events: none;
+}
+
+.bar > * {
+  pointer-events: auto;
+}
+
+/* Marks where the information starts (just after the header strip), for the snap. */
+.spacer {
+  height: 0;
+}
+
+/* How long the information stays at rest before the footer comes. */
+.hold {
+  height: 60vh;
+}
+
+/* The poster is the background, so it shows while the video loads or when it is paused
+   by preference (no download until play). Portrait screens get the 608x1080 crop. */
+.hero {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  background: #1f1d1d url("/media/karaoke/karaoke-poster.jpg") center / cover no-repeat;
+  color: var(--paper);
+}
+
+@media (max-aspect-ratio: 1/1) {
+  .hero {
+    background-image: url("/media/karaoke/karaoke-poster-portrait.jpg");
+  }
+}
+
+.video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Darker at the top for the header and the wordmark, and at the foot for the subtitles. */
+.shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgb(31 29 29 / 0.7),
+    rgb(31 29 29 / 0.15) 38%,
+    rgb(31 29 29 / 0) 55%,
+    rgb(31 29 29 / 0.75)
+  );
+}
+
+/* KARAOKE across the screen, under the header. It stays where it is while the page scrolls. */
+.title {
+  position: absolute;
+  z-index: 2;
+  top: var(--title-top);
+  right: var(--gutter);
+  left: var(--gutter);
+  margin: 0;
+  color: var(--lit);
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 0;
+}
+
+/* The subtitles step aside once the information starts to come in. */
+.subs {
+  position: absolute;
+  inset: 0;
+  transition: opacity 0.4s var(--ease);
+}
+
+.away {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .subs {
+    transition: none;
+  }
+}
+
+.pause {
+  position: absolute;
+  z-index: 4;
+  bottom: 12px;
+  left: calc(var(--gutter) - 12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  background: none;
+  color: var(--paper);
+  cursor: pointer;
+  filter: drop-shadow(0 1px 4px rgb(0 0 0 / 0.5));
+}
+
+.pause:focus-visible {
+  outline: 2px solid var(--paper);
+  outline-offset: -4px;
+}
+
+/* ---------- The information, scrolling over the video ---------- */
+
+/* Darkens the room so the yellow text reads; fades in once the visitor scrolls. */
+.dim {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background: rgb(31 29 29 / 0.62);
+  opacity: 0;
+  transition: opacity 0.6s var(--ease);
+  pointer-events: none;
+}
+
+.dim.in {
+  opacity: 1;
+}
+
+/* Scrolls up from the bottom like any page, then rests: sticky just under KARAOKE, as
+   tall as the rest of the screen, its columns sitting at the foot. Two columns split by a
+   rule (as on the board); yellow text, no background. Clicks pass through its empty space
+   to the video's pause button. */
+.info {
+  position: sticky;
+  top: var(--title-bottom);
+  display: grid;
+  grid-template-columns: 1fr;
+  align-content: end;
+  gap: 56px;
+  box-sizing: border-box;
+  min-height: calc(var(--stage-h) - var(--title-bottom));
+  /* Bottom padding keeps the buttons clear of the pause button (bottom 12–56px). */
+  padding: clamp(48px, 7vh, 80px) var(--gutter) clamp(72px, 9vh, 104px);
+  color: var(--lit);
+  text-shadow: 0 1px 12px rgb(31 29 29 / 0.6);
+  pointer-events: none;
+}
+
+.info > * {
+  pointer-events: auto;
+}
+
+/* Empty space between each column's text and its buttons (where a photo was). Wide
+   screens only: it takes whatever height is left in the resting view (72–280px), so the
+   buttons sit low and the columns always fit under KARAOKE. */
+.shot {
+  display: none;
+}
+
+@media (width >= 900px) {
+  .info {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-content: stretch;
+    gap: 0;
+    height: calc(var(--stage-h) - var(--title-bottom));
+  }
+
+  .way {
+    justify-content: flex-end;
+  }
+
+  .shot {
+    display: block;
+    flex: 1 1 0;
+    min-height: 72px;
+    max-height: 280px;
+    margin-top: 8px;
+  }
+
+  .way + .way {
+    padding-left: clamp(24px, 3vw, 48px);
+    border-left: 1px solid currentColor;
+  }
+
+  .way:first-child {
+    padding-right: clamp(24px, 3vw, 48px);
+  }
+}
+
+/* Narrower screens: the stacked columns are taller than the space under KARAOKE, so
+   nothing is pinned there except the video: the header, title and information scroll as
+   a normal page over it. */
+@media (width < 900px) {
+  .bar {
+    position: relative;
+  }
+
+  .info {
+    position: relative;
+    top: auto;
+    min-height: 0;
+    padding-top: 48px;
+  }
+}
+
+/* Phones: tighter type and spacing for the stacked columns. */
+@media (width < 600px) {
+  .info {
+    gap: 40px;
+  }
+
+  .info .way {
+    gap: 10px;
+  }
+
+  .info .h3 {
+    font-size: 26px;
+  }
+
+  .info .m {
+    font-size: 16px;
+  }
+
+  .actions {
+    gap: 8px 24px;
+    margin-top: 16px;
+  }
+
+  .pill {
+    min-height: 44px;
+    padding: 0 28px;
+  }
+
+  .pillLine {
+    min-height: 42px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dim {
+    transition: none;
+  }
+}
+
+.way {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 32px;
+  margin-top: clamp(24px, 4vh, 44px);
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 0 40px;
+  border-radius: 999px;
+  background: var(--lit);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-decoration: none;
+  text-shadow: none;
+  text-transform: uppercase;
+}
+
+.pillLine {
+  min-height: 50px;
+  border: 1px solid currentColor;
+  background: none;
+  color: inherit;
+}
+
+.more {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 44px;
+  color: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  overflow-wrap: anywhere;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.pill:hover,
+.more:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.pill:focus-visible,
+.more:focus-visible {
+  outline: 2px solid var(--lit);
+  outline-offset: 4px;
+}
+
+/* ---------- Parallax: everything follows the scroll, not a timer ---------- */
+
+/* Tied to the scroll position (scrolling back rewinds it), so with the smooth scroll it
+   moves as one continuous glide. Still for reduced motion; browsers without scroll-driven
+   animations keep the plain fades above. */
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* The room drifts up and leans in as the information arrives. */
+    .video {
+      animation: drift linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 100vh;
+    }
+
+    /* The subtitles fade and the room dims with the first scroll, not on a switch. */
+    .subs {
+      animation: fadeAway linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 35vh;
+    }
+
+    .dim {
+      animation: dimIn linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 70vh;
+    }
+
+    /* The columns rise at different speeds as they come up, the second a beat behind. */
+    .way {
+      animation: rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 100%;
+    }
+
+    .way + .way {
+      animation-name: riseLate;
+    }
+
+    /* As the footer slides over, the title and information drift up a touch and fade. */
+    .title,
+    .info {
+      animation: lift linear both;
+      animation-timeline: --karaoke-footer;
+      animation-range: entry 0% entry 100%;
+    }
+  }
+}
+
+@keyframes lift {
+  to {
+    opacity: 0;
+    translate: 0 -24px;
+  }
+}
+
+@keyframes drift {
+  from { transform: scale(1) translateY(0); }
+  to { transform: scale(1.1) translateY(-3%); }
+}
+
+@keyframes fadeAway {
+  to { opacity: 0; }
+}
+
+@keyframes dimIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes rise {
+  from { opacity: 0; translate: 0 80px; }
+  to { opacity: 1; translate: 0 0; }
+}
+
+@keyframes riseLate {
+  0%, 15% { opacity: 0; translate: 0 160px; }
+  100% { opacity: 1; translate: 0 0; }
+}
+
+/* ---------- Scroll room, then the footer ---------- */
+
+
+/* Yellow, like the wordmark, with ink text and lion; slides over the pinned video. */
+.footer {
+  position: relative;
+  z-index: 4;
+  view-timeline: --karaoke-footer block;
+  background: var(--yellow);
+  color: var(--ink);
+}

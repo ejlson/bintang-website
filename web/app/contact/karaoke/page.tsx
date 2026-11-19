@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
-import { Placeholder } from "@/components/Placeholder";
+import { KaraokePage } from "@/components/KaraokePage";
 
-export const metadata: Metadata = { title: "Karaoke" };
+export const metadata: Metadata = {
+  title: "Karaoke",
+  description:
+    "Karaoke at Bintang: complimentary with every private hire of our lower ground floor on Kentish Town Road, with a £38 sharing set menu for groups.",
+};
 
 export default function Page() {
-  return <Placeholder title="Karaoke" tl="Kantahan" href="/contact/karaoke" background="var(--yellow)" tone="ink" />;
+  return <KaraokePage />;
 }

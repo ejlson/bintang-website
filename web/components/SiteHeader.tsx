@@ -11,9 +11,9 @@ type Props = {
   /** "overlay" floats over a hero; "page" sits in normal flow. */
   variant?: "overlay" | "page";
   /** Text colour of the bar. */
-  tone?: "paper" | "ink";
+  tone?: "paper" | "ink" | "yellow";
   /** Which lion head to show in the centre. */
-  mark?: "red" | "paper" | "ink";
+  mark?: "red" | "paper" | "ink" | "yellow";
   /** Highlights the current page's link. */
   currentHref?: string;
 };
@@ -25,6 +25,7 @@ const MARK_SRC = {
   red: "/brand/lion-head-red.svg",
   paper: "/brand/lion-head-paper.svg",
   ink: "/brand/lion-head-ink.svg",
+  yellow: "/brand/lion-head-yellow.svg",
 } as const;
 
 function NavItem({ link, current, onClick }: { link: NavLink; current: boolean; onClick?: () => void }) {

@@ -31,6 +31,10 @@
   color: var(--ink);
 }
 
+.yellow {
+  color: var(--yellow);
+}
+
 /* Two 22px lines = 44px, the Book pill's height, so the row reads as one band. */
 .list {
   display: flex;
@@ -63,6 +67,10 @@
 
 .ink {
   --book-line: var(--ink);
+}
+
+.yellow {
+  --book-line: var(--yellow);
 }
 
 .book,

@@ -3,7 +3,6 @@ import { render, screen } from "@testing-library/react";
 import { Placeholder } from "@/components/Placeholder";
 import Contact from "@/app/contact/page";
 import Groups from "@/app/contact/groups/page";
-import Karaoke from "@/app/contact/karaoke/page";
 import PrivateHire from "@/app/contact/private-hire/page";
 import { allLinks } from "@/lib/nav";
 
@@ -33,7 +32,6 @@ describe("Placeholder", () => {
   });
 
   it.each([
-    [Karaoke, "/contact/karaoke"],
     [Contact, "/contact"],
   ])("placeholder route %# (%s) renders its own nav label as title and marks itself current", (Page, href) => {
     const link = allLinks.find((l) => l.href === href)!;

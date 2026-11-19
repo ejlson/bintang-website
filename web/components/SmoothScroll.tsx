@@ -6,10 +6,28 @@ import { useEffect } from "react";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 
 let instance: Lenis | null = null;
+const listeners = new Set<(lenis: Lenis | null) => void>();
+
+function setInstance(next: Lenis | null) {
+  instance = next;
+  listeners.forEach((fn) => fn(next));
+}
 
 /** The running Lenis instance, or null (server, reduced motion, before mount). */
 export function getLenis(): Lenis | null {
   return instance;
+}
+
+/**
+ * Call `fn` with the running Lenis instance now and whenever it changes (it starts after
+ * the page has mounted, and stops for reduced motion). Returns an unsubscribe function.
+ */
+export function onLenis(fn: (lenis: Lenis | null) => void): () => void {
+  listeners.add(fn);
+  fn(instance);
+  return () => {
+    listeners.delete(fn);
+  };
 }
 
 /**
@@ -33,10 +51,10 @@ export function SmoothScroll() {
   useEffect(() => {
     if (reduced !== false) return;
     const lenis = new Lenis({ autoRaf: true, anchors: true, lerp: 0.1 });
-    instance = lenis;
+    setInstance(lenis);
     return () => {
+      if (instance === lenis) setInstance(null);
       lenis.destroy();
-      if (instance === lenis) instance = null;
     };
   }, [reduced]);
 
