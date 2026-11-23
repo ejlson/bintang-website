@@ -6,13 +6,7 @@ import { act as reactAct } from "react";
 import { renderToString } from "react-dom/server";
 import { hydrateRoot, type Root } from "react-dom/client";
 import { HERO_LANDSCAPE, HERO_PORTRAIT, Hero, PORTRAIT_QUERY } from "@/components/Hero";
-import { lineSchedule } from "@/lib/karaoke";
-import { subtitleLines } from "@/lib/nav";
 import { fireMediaChange, mediaListeners, motion } from "../vitest.setup";
-
-// next/font only works inside the Next compiler; the subtitles' effects core is optional.
-vi.mock("next/font/google", () => ({ Yuji_Boku: () => ({ style: { fontFamily: "x" } }) }));
-vi.mock("@/lib/sakuga", () => ({ loadSakuga: () => Promise.resolve(null) }));
 
 const play = HTMLMediaElement.prototype.play as unknown as ReturnType<typeof vi.fn>;
 const pause = HTMLMediaElement.prototype.pause as unknown as ReturnType<typeof vi.fn>;
@@ -20,14 +14,9 @@ const pause = HTMLMediaElement.prototype.pause as unknown as ReturnType<typeof v
 const heroVideo = () => screen.getByTestId("hero-video") as HTMLVideoElement;
 const thumbVideo = () => screen.getByRole("link", { name: "Watch our story" }).querySelector("video") as HTMLVideoElement;
 const pauseButton = () => screen.getByRole("button", { name: /background video/ });
-const subtitleEn = () => screen.getByTestId("subtitle-en").textContent;
-const subtitleView = () => screen.getByTestId("subtitles").dataset.view;
 
-/**
- * Seconds of animation that take the subtitles from the first line to the second:
- * the first line's schedule, plus slack for the start frame and loop latency.
- */
-const FIRST_LINE = lineSchedule(subtitleLines[0].en, subtitleLines[0].tl).end + 0.2;
+/** Seconds of animation/timers to run in "stays paused" checks (several former subtitle lines' worth). */
+const A_WHILE = 6;
 
 /** Run requestAnimationFrame frames for `seconds`, one act() per 16ms frame so React renders between them. */
 async function animate(seconds: number) {
@@ -68,19 +57,41 @@ beforeEach(() => {
   });
   play.mockClear();
   pause.mockClear();
+  // Hero renders HomeTitle, which records the intro on <html> and in sessionStorage.
+  delete document.documentElement.dataset.homeIntro;
+  sessionStorage.clear();
 });
 afterEach(() => {
   vi.useRealTimers();
   motion.reduce = false;
+  delete document.documentElement.dataset.homeIntro;
+  sessionStorage.clear();
 });
 
 describe("Hero", () => {
   it("has a visually hidden H1 with the restaurant message", () => {
     render(<Hero />);
     const h1 = screen.getByRole("heading", { level: 1 });
-    expect(h1).toHaveTextContent("Bintang — London’s oldest Filipino restaurant, Camden Town since 1987");
+    expect(h1).toHaveTextContent("Welcome to Bintang — London’s oldest Filipino restaurant, Kentish Town since 1987");
+    expect(h1).not.toHaveTextContent(/Camden/);
     expect(h1).toHaveClass("sr-only");
-    expect(screen.getByRole("region", { name: /Bintang/ })).toContainElement(h1);
+    expect(screen.getByRole("region", { name: /Welcome to Bintang/ })).toContainElement(h1);
+  });
+
+  it("does not render the karaoke subtitles (they live on the Karaoke page only)", () => {
+    render(<Hero />);
+    expect(screen.queryByTestId("subtitles")).toBeNull();
+    expect(screen.queryByTestId("subtitle-en")).toBeNull();
+    expect(serverMarkup().querySelector('[data-testid="subtitles"]')).toBeNull();
+  });
+
+  it("renders the decorative HomeTitle poster inside the hero region", () => {
+    render(<Hero />);
+    const title = screen.getByTestId("home-title");
+    expect(title).toHaveAttribute("aria-hidden", "true");
+    expect(screen.getByRole("region", { name: /Welcome to Bintang/ })).toContainElement(title);
+    // Only one H1: the poster's words are decorative paragraphs.
+    expect(screen.getAllByRole("heading")).toHaveLength(1);
   });
 
   it("renders a looping, inline, decorative hero video with no poster attribute (CSS background is the poster)", () => {
@@ -156,11 +167,8 @@ describe("Hero", () => {
     expect(pauseButton()).toHaveAccessibleName("Pause background video");
   });
 
-  it("pause button pauses both videos, flips aria-pressed (fixed label) and freezes subtitles", async () => {
+  it("pause button pauses both videos and flips aria-pressed (fixed label)", async () => {
     render(<Hero />);
-    await animate(FIRST_LINE);
-    expect(subtitleEn()).toBe(subtitleLines[1].en);
-
     play.mockClear();
     fireEvent.click(pauseButton());
 
@@ -171,12 +179,13 @@ describe("Hero", () => {
     expect(pause.mock.contexts).toContain(thumbVideo());
     expect(play).not.toHaveBeenCalled();
 
-    await animate(FIRST_LINE * 4);
-    expect(subtitleEn()).toBe(subtitleLines[1].en);
-    expect(subtitleView()).toBe("line");
+    // Stays paused: nothing restarts playback on its own.
+    await animate(A_WHILE);
+    expect(play).not.toHaveBeenCalled();
+    expect(pauseButton()).toHaveAttribute("aria-pressed", "true");
   });
 
-  it("pressing again resumes both videos and subtitle cycling", async () => {
+  it("pressing again resumes both videos", async () => {
     render(<Hero />);
     fireEvent.click(pauseButton());
     play.mockClear();
@@ -188,24 +197,6 @@ describe("Hero", () => {
     expect(play.mock.contexts).toContain(heroVideo());
     expect(play.mock.contexts).toContain(thumbVideo());
     expect(pause).not.toHaveBeenCalled();
-
-    await animate(FIRST_LINE);
-    expect(subtitleEn()).toBe(subtitleLines[1].en);
-  });
-
-  it("pausing mid-line and resuming continues from the frozen line", async () => {
-    render(<Hero />);
-    await animate(FIRST_LINE);
-    expect(subtitleEn()).toBe(subtitleLines[1].en);
-
-    fireEvent.click(pauseButton());
-    await animate(FIRST_LINE * 4);
-    expect(subtitleEn()).toBe(subtitleLines[1].en);
-
-    fireEvent.click(pauseButton());
-    const second = lineSchedule(subtitleLines[1].en, subtitleLines[1].tl).end;
-    await animate(second + 0.2);
-    expect(subtitleEn()).toBe(subtitleLines[2].en);
   });
 
   it("attaches a catch handler to play() so autoplay rejections are swallowed", () => {
@@ -227,9 +218,8 @@ describe("Hero", () => {
     expect(pauseButton()).toHaveAttribute("aria-pressed", "true");
     expect(pause.mock.contexts).toContain(heroVideo());
     expect(pause.mock.contexts).toContain(thumbVideo());
-    await animate(FIRST_LINE * 3);
-    expect(subtitleEn()).toBe(subtitleLines[0].en);
-    expect(subtitleView()).toBe("still");
+    await animate(A_WHILE);
+    expect(pauseButton()).toHaveAttribute("aria-pressed", "true");
 
     // The visitor can still try again: pressing resumes.
     play.mockClear();
@@ -238,15 +228,15 @@ describe("Hero", () => {
     expect(play.mock.contexts).toContain(heroVideo());
   });
 
-  it("ignores AbortError from play(): stays playing and subtitles keep cycling", async () => {
+  it("ignores AbortError from play(): stays playing", async () => {
     play.mockReturnValueOnce(Promise.reject(new DOMException("interrupted", "AbortError")));
     render(<Hero />);
     await flush();
 
     expect(pauseButton()).toHaveAttribute("aria-pressed", "false");
     expect(pause).not.toHaveBeenCalled();
-    await animate(FIRST_LINE);
-    expect(subtitleEn()).toBe(subtitleLines[1].en);
+    await animate(A_WHILE);
+    expect(pauseButton()).toHaveAttribute("aria-pressed", "false");
   });
 
   it("treats a plain Error rejection as blocked: shows paused state", async () => {
@@ -263,9 +253,8 @@ describe("Hero", () => {
     await flush();
     expect(pauseButton()).toHaveAttribute("aria-pressed", "true");
     expect(pause.mock.contexts).toContain(heroVideo());
-    await animate(FIRST_LINE * 2);
-    expect(subtitleEn()).toBe(subtitleLines[0].en);
-    expect(subtitleView()).toBe("still");
+    await animate(A_WHILE);
+    expect(pauseButton()).toHaveAttribute("aria-pressed", "true");
   });
 
   it("only ignores AbortError when it is a DOMException (plain Error named AbortError blocks)", async () => {
@@ -388,19 +377,18 @@ describe("Hero", () => {
       expect(pause.mock.contexts).toContain(heroVideo());
       expect(pause.mock.contexts).toContain(thumbVideo());
       expect(pauseButton()).toHaveAttribute("aria-pressed", "true");
-      await animate(FIRST_LINE * 3);
-      expect(subtitleEn()).toBe(subtitleLines[0].en);
-      expect(subtitleView()).toBe("still");
+      await animate(A_WHILE);
+      expect(play).not.toHaveBeenCalled();
+      expect(pauseButton()).toHaveAttribute("aria-pressed", "true");
     });
 
-    it("lets the visitor opt in to playback, which starts the subtitles", async () => {
+    it("lets the visitor opt in to playback", async () => {
       stubConnection(true);
       render(<Hero />);
       fireEvent.click(pauseButton());
       expect(pauseButton()).toHaveAttribute("aria-pressed", "false");
       expect(play.mock.contexts).toContain(heroVideo());
-      await animate(FIRST_LINE);
-      expect(subtitleEn()).toBe(subtitleLines[1].en);
+      expect(play.mock.contexts).toContain(thumbVideo());
     });
 
     it("plays when saveData is false", () => {
@@ -443,22 +431,24 @@ describe("Hero", () => {
       expect(pauseButton()).toHaveAccessibleName("Pause background video");
     });
 
-    it("shows the first subtitle line without cycling", async () => {
+    it("stays paused over time (nothing autoplays later)", async () => {
       render(<Hero />);
-      await animate(FIRST_LINE * 5);
-      expect(subtitleEn()).toBe(subtitleLines[0].en);
-      expect(subtitleView()).toBe("still");
+      await animate(A_WHILE);
+      expect(play).not.toHaveBeenCalled();
+      expect(pauseButton()).toHaveAttribute("aria-pressed", "true");
     });
 
-    it("lets the visitor opt in to playback, but the subtitles stay still", async () => {
+    it("lets the visitor opt in to playback", () => {
       render(<Hero />);
       fireEvent.click(pauseButton());
       expect(pauseButton()).toHaveAttribute("aria-pressed", "false");
       expect(play.mock.contexts).toContain(heroVideo());
-      // SPEC item 6: reduced motion always shows the still first line, even when the video plays.
-      await animate(FIRST_LINE * 2);
-      expect(subtitleEn()).toBe(subtitleLines[0].en);
-      expect(subtitleView()).toBe("still");
+      expect(play.mock.contexts).toContain(thumbVideo());
+    });
+
+    it("skips the Home title intro", () => {
+      render(<Hero />);
+      expect(document.documentElement.dataset.homeIntro).toBe("skip");
     });
   });
 });
@@ -498,9 +488,9 @@ describe("Hero hydration", () => {
     expect(pause.mock.contexts).toContain(thumb);
     expect(container.querySelector("button")).toHaveAttribute("aria-pressed", "true");
 
-    await animate(FIRST_LINE * 3);
-    expect(container.querySelector('[data-testid="subtitle-en"]')).toHaveTextContent(subtitleLines[0].en);
-    expect(container.querySelector('[data-testid="subtitles"]')).toHaveAttribute("data-view", "still");
+    await animate(A_WHILE);
+    expect(play).not.toHaveBeenCalled();
+    expect(container.querySelector("button")).toHaveAttribute("aria-pressed", "true");
   });
 
   it("never calls play() on either video for a data-saver visitor", async () => {
@@ -515,9 +505,9 @@ describe("Hero hydration", () => {
       expect(pause.mock.contexts).toContain(thumb);
       expect(container.querySelector("button")).toHaveAttribute("aria-pressed", "true");
 
-      await animate(FIRST_LINE * 3);
+      await animate(A_WHILE);
       expect(play).not.toHaveBeenCalled();
-      expect(container.querySelector('[data-testid="subtitles"]')).toHaveAttribute("data-view", "still");
+      expect(container.querySelector("button")).toHaveAttribute("aria-pressed", "true");
     } finally {
       unstubConnection();
     }
@@ -533,8 +523,7 @@ describe("Hero hydration", () => {
     expect(play.mock.contexts).toContain(thumb);
     expect(pause).not.toHaveBeenCalled();
     expect(container.querySelector("button")).toHaveAttribute("aria-pressed", "false");
-
-    await animate(FIRST_LINE);
-    expect(container.querySelector('[data-testid="subtitle-en"]')).toHaveTextContent(subtitleLines[1].en);
+    expect(container.querySelector('[data-testid="subtitles"]')).toBeNull();
+    expect(container.querySelector('[data-testid="home-title"]')).toHaveAttribute("aria-hidden", "true");
   });
 });

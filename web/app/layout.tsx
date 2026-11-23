@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { HistoryWipe } from "@/components/PageTransition";
 import { SmoothScroll } from "@/components/SmoothScroll";
+import { INTRO_SCRIPT } from "@/lib/homeIntro";
 import { hours, site } from "@/lib/site";
 import "lenis/dist/lenis.css";
 import "./globals.css";
@@ -53,8 +54,11 @@ const restaurantJsonLd = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en-GB">
+    // suppressHydrationWarning: INTRO_SCRIPT sets data-home-intro on <html> before hydration.
+    <html lang="en-GB" suppressHydrationWarning>
       <head>
+        {/* Decides the Home title intro before first paint (lib/homeIntro). */}
+        <script dangerouslySetInnerHTML={{ __html: INTRO_SCRIPT }} />
         {/* Adobe Fonts kit: Aquavit (700 = Black, 400 = Regular), used for all text.
             Preconnect: font files come from use.typekit.net over CORS; the kit CSS
             @imports p.typekit.net without CORS, so that one gets no crossOrigin. */}

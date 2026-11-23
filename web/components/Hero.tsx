@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 import { useSaveData } from "@/lib/useSaveData";
-import { Subtitles } from "./Subtitles";
+import { HomeTitle, introClasses } from "./HomeTitle";
 import styles from "./Hero.module.css";
 
 export const HERO_LANDSCAPE = "/media/hero-loop.mp4";
@@ -85,14 +85,14 @@ export function Hero() {
   return (
     <section className={styles.hero} aria-labelledby="home-title">
       <h1 id="home-title" className="sr-only">
-        Bintang — London’s oldest Filipino restaurant, Camden Town since 1987
+        Welcome to Bintang — London’s oldest Filipino restaurant, Kentish Town since 1987
       </h1>
 
       {/* No poster attribute: the video is transparent until it has a frame,
           so the orientation-aware CSS background on .hero acts as the poster. */}
       <video
         ref={heroRef}
-        className={styles.video}
+        className={`${styles.video} ${introClasses.film}`}
         muted
         loop
         playsInline
@@ -106,12 +106,10 @@ export function Hero() {
       </video>
       <div className={styles.scrim} aria-hidden="true" />
 
-      <Subtitles paused={paused} />
-
       {/* Fixed label + aria-pressed: "Pause background video, pressed" = paused. */}
       <button
         type="button"
-        className={styles.pause}
+        className={`${styles.pause} ${introClasses.hud}`}
         aria-pressed={paused}
         aria-label="Pause background video"
         onClick={() => setUserPaused(!paused)}
@@ -128,7 +126,7 @@ export function Hero() {
         )}
       </button>
 
-      <Link href="/about" className={styles.thumb} aria-label="Watch our story">
+      <Link href="/about" className={`${styles.thumb} ${introClasses.hud}`} aria-label="Watch our story">
         <video
           ref={thumbRef}
           src="/media/about-thumb.mp4"
@@ -141,6 +139,8 @@ export function Hero() {
           tabIndex={-1}
         />
       </Link>
+
+      <HomeTitle />
     </section>
   );
 }

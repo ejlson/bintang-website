@@ -20,10 +20,12 @@ import styles from "./SiteFooter.module.css";
  * into view (35% visible, coming in, not going out), and when a mouse moves onto
  * it. A trigger mid-swing is ignored, so it never snaps back. None with reduced
  * motion.
+ *
+ * The drawing, clips and pivot are shared with the Home loader (HomeTitle).
  */
 
-const ART = "/brand/lion-full-art.svg#art";
-const VIEWBOX = "218.17 174.79 156.29 116.77";
+export const ART = "/brand/lion-full-art.svg#art";
+export const VIEWBOX = "218.17 174.79 156.29 116.77";
 
 /**
  * Tail outline, in the drawing's units: it follows the gap between tail and body,
@@ -31,11 +33,11 @@ const VIEWBOX = "218.17 174.79 156.29 116.77";
  * the tail piece reaches down to y=270, overlapping the rump.
  */
 const tailOutline = (baseY: number) => `306,174 376,174 376,${baseY} 361,${baseY} 356,240 348,228 336,218 322,212 306,210`;
-const BODY_CLIP = `M210 170H380V300H210Z M${tailOutline(262).split(" ").join(" L")}Z`;
-const TAIL_CLIP = tailOutline(270);
+export const BODY_CLIP = `M210 170H380V300H210Z M${tailOutline(262).split(" ").join(" L")}Z`;
+export const TAIL_CLIP = tailOutline(270);
 
 /** The tail turns around the middle of its base. */
-const PIVOT = [366, 262] as const;
+export const PIVOT = [366, 262] as const;
 
 /**
  * The band masks reach EXT px above the lion so the tail can swing up without
