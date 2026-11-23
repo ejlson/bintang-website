@@ -110,25 +110,11 @@ export function AboutPage() {
       <SiteHeader variant="page" tone="paper" mark="paper" currentHref="/about" />
 
       <div className={styles.wrap}>
-        {/* ---------- Masthead: title + stamp, band, ruled facts ---------- */}
+        {/* ---------- Masthead: title, band, ruled facts ---------- */}
         <div className={styles.masthead}>
           <h1 className={styles.title}>
             <FitTitle text="About us" />
           </h1>
-          <div className={styles.stamp} aria-hidden="true">
-            <svg className={styles.ring} viewBox="0 0 200 200">
-              <defs>
-                <path id="about-stamp-ring" d="M100,100 m-80,0 a80,80 0 1,1 160,0 a80,80 0 1,1 -160,0" />
-              </defs>
-              <circle cx="100" cy="100" r="96" fill="none" stroke="currentColor" strokeWidth="2" />
-              <text fill="currentColor">
-                <textPath href="#about-stamp-ring" textLength="496" lengthAdjust="spacing">
-                  LONDON’S OLDEST FILIPINO RESTAURANT · SINCE 1987 ·
-                </textPath>
-              </text>
-            </svg>
-            <span className={styles.stampMark} />
-          </div>
         </div>
 
         <p className={styles.band}>London’s oldest Filipino restaurant · Since 1987</p>

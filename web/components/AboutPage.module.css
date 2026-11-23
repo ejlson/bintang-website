@@ -151,35 +151,6 @@
   line-height: 0;
 }
 
-.stamp {
-  position: relative;
-  flex: 0 0 auto;
-  width: clamp(96px, 12vw, 176px);
-  aspect-ratio: 1;
-}
-
-.ring {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-
-.ring text {
-  font-family: var(--font-display);
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 2px;
-}
-
-.stampMark {
-  position: absolute;
-  inset: 32%;
-  background: currentColor;
-  mask: url("/brand/lion-head-paper.svg") center / contain no-repeat;
-}
-
 .band {
   margin: 0;
   padding: 12px 0;
@@ -676,7 +647,7 @@
 /* ---------- Motion ----------
    Six scroll-driven animations, pure CSS: each follows the scroll position, so scrolling back
    rewinds it. Browsers without scroll-driven animations, and visitors who ask for reduced
-   motion, get the still page (the stamp stays still too). */
+   motion, get the still page. */
 
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
@@ -731,13 +702,7 @@
     .years li:nth-child(5) { animation-range: entry 40% entry 90%; }
     .years li:nth-child(6) { animation-range: entry 50% entry 100%; }
 
-    /* 5. The stamp turns with the scroll instead of on its own. */
-    .ring {
-      animation: stamp linear both;
-      animation-timeline: scroll(root);
-    }
-
-    /* 6. Each dish is underlined as it passes the middle of the screen. */
+    /* 5. Each dish is underlined as it passes the middle of the screen. */
     .dish {
       background: linear-gradient(currentColor, currentColor) 0 100% / 0% 2px no-repeat;
       animation: dish linear both;
@@ -767,10 +732,6 @@
   to { opacity: 1; translate: 0 0; }
 }
 
-@keyframes stamp {
-  to { rotate: 540deg; }
-}
-
 @keyframes dish {
   0% { background-size: 0% 2px; }
   35%, 65% { background-size: 100% 2px; }
@@ -779,7 +740,7 @@
 
 /* ---------- Editorial entrance + wipe reveals ----------
    The page opens on the red ground and the first screen sets itself in about a second:
-   rules draw across, ABOUT US rises from behind a mask, the stamp and facts arrive, the
+   rules draw across, ABOUT US rises from behind a mask, the facts arrive, the
    statement comes in and the film wipes open. It plays once, on load. Everything below
    then appears out of the blank page as it scrolls in: photos wipe open from the bottom,
    text arrives in its blocks, columns arrive left to right. The wipes follow the scroll,
@@ -813,10 +774,6 @@
 
   .title svg {
     animation: rise 1s var(--ease) 0.1s both;
-  }
-
-  .stamp {
-    animation: stampIn 0.9s var(--ease) 0.35s both;
   }
 
   .band {
@@ -912,15 +869,9 @@
   to { clip-path: inset(0 0 0 0); }
 }
 
-@keyframes stampIn {
-  from { opacity: 0; scale: 0.85; }
-  to { opacity: 1; scale: 1; }
-}
-
 /* ---------- Parallax ----------
    Layers move at different speeds as the page scrolls, all on the scroll timeline (so it
    rewinds with the scroll):
-   - The stamp lags behind the masthead as the first screen leaves (ABOUT US stays put).
    - Photos sit a little deeper than their frames: each image is scaled up and drifts
      against the frame as it passes, so the page reads as a print laid over them.
    - The lion runs slightly ahead of the page, and the giant quote lags behind it.
@@ -928,13 +879,6 @@
 
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
-    .stamp {
-      --sink: 22%;
-      animation: stampIn 0.9s var(--ease) 0.35s both, sink linear both;
-      animation-timeline: auto, scroll(root);
-      animation-range: normal, 0 60vh;
-    }
-
     /* The frames clip (overflow: hidden), which makes them scroll containers, so a plain
        view() on the image would track the frame; images follow their frame's timeline. */
     .frame,
@@ -969,11 +913,6 @@
       animation-range: entry 10% cover 30%, cover 0% cover 100%;
     }
   }
-}
-
-/* Lags behind the page by --sink of its own height. */
-@keyframes sink {
-  to { transform: translateY(var(--sink, 55%)); }
 }
 
 /* An image drifting inside its frame; the image is scaled up so its edges never show. */
