@@ -144,28 +144,33 @@ async function pullMenus() {
     return {
       id: m.id,
       title: m.title,
-      sections: m.sections.map((s) =>
-        clean({
-          part: s.part,
-          title: s.title,
-          subtitle: s.subtitle,
-          intro: s.intro,
-          priceLabel: s.priceLabel,
-          foot: s.foot,
-          boxed: s.boxed || undefined,
-          wide: s.wide || undefined,
-          items: s.items.map((i) =>
-            clean({
-              name: i.name,
-              price: i.price,
-              description: i.description,
-              note: i.note,
-              dietary: i.dietary?.length ? i.dietary : undefined,
-              hide: i.hide || undefined,
-            }),
-          ),
-        }),
-      ),
+      /* A dish ticked "Hide for now" never reaches the snapshot: it is
+         committed and the menu ships in the page's public JavaScript, where a
+         hidden dish would be readable. A section left empty goes too. */
+      sections: m.sections
+        .map((s) => ({ ...s, items: s.items.filter((i) => !i.hide) }))
+        .filter((s) => s.items.length > 0)
+        .map((s) =>
+          clean({
+            part: s.part,
+            title: s.title,
+            subtitle: s.subtitle,
+            intro: s.intro,
+            priceLabel: s.priceLabel,
+            foot: s.foot,
+            boxed: s.boxed || undefined,
+            wide: s.wide || undefined,
+            items: s.items.map((i) =>
+              clean({
+                name: i.name,
+                price: i.price,
+                description: i.description,
+                note: i.note,
+                dietary: i.dietary?.length ? i.dietary : undefined,
+              }),
+            ),
+          }),
+        ),
     };
   });
 }
