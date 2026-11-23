@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fireEvent, render, screen, within } from "@testing-library/react";
-import { arrange, matches } from "@/components/OlderEntries";
+import { render, screen, within } from "@testing-library/react";
 import { JournalPage, JournalPostArticle, JournalPostShell } from "@/components/JournalPage";
 import JournalNotFound from "@/app/journal/[slug]/not-found";
 import JournalRoute, { metadata } from "@/app/journal/page";
@@ -30,6 +29,14 @@ describe("JournalPage", () => {
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
   });
 
+  it("sizes the JOURNAL title like GALLERY: full width, outside the content column, squished 0.95", () => {
+    render(<JournalPage />);
+    const h1 = screen.getByRole("heading", { level: 1, name: "Journal" });
+    expect(h1.querySelector("svg text")).toHaveAttribute("transform", "scale(1 0.95)");
+    // Not inside the content column, so it spans the screen like the Gallery title.
+    expect(h1.closest(".wrap")).toBeNull();
+  });
+
   it("links every post exactly once, by its headline, in front-page order", () => {
     render(<JournalPage />);
     const links = postLinks();
@@ -49,18 +56,36 @@ describe("JournalPage", () => {
     expect(t.getByText("Read the story")).toHaveAttribute("aria-hidden", "true");
   });
 
-  it("puts the headline and summary on the left, and the photo and Read the story on the right", () => {
+  it("puts the kicker, headline and summary on the left, and the photo and Read the story on the right", () => {
     render(<JournalPage />);
     const top = screen.getByRole("region", { name: "Top story" });
     const [text, media] = Array.from(top.children) as HTMLElement[];
+    expect(text).toHaveTextContent(`Latest · ${front.lead.label}`);
+    expect(text.querySelector("time")).toHaveAttribute("datetime", front.lead.date);
+    expect(text.querySelector("time")).toHaveTextContent(formatLongDate(front.lead.date));
     expect(within(text).getByRole("heading", { level: 2, name: front.lead.title })).toBeInTheDocument();
     expect(text).toHaveTextContent(front.lead.excerpt);
     expect(text.querySelector("img")).toBeNull();
     expect(media.querySelector("img")).not.toBeNull();
     expect(media.lastElementChild).toHaveTextContent("Read the story");
     expect(media.lastElementChild).toHaveAttribute("aria-hidden", "true");
+    expect(media.lastElementChild?.querySelector("svg")).not.toBeNull();
     expect(within(top).getAllByRole("link")).toHaveLength(1);
     expect(screen.queryByRole("complementary", { name: "In brief" })).not.toBeInTheDocument();
+  });
+
+  it("sets the lead and every older entry as cells of one stories grid, the lead first", () => {
+    render(<JournalPage />);
+    const top = screen.getByRole("region", { name: "Top story" });
+    const older = screen.getByRole("region", { name: "Older entries" });
+    // Same parent, lead first: the next older entry takes the cell beside it.
+    expect(older.parentElement).toBe(top.parentElement);
+    expect(top.nextElementSibling).toBe(older);
+    expect(top.parentElement).toHaveClass("stories");
+    expect(top).toHaveClass("front");
+    // The section and list are display: contents; role="list" keeps them a list.
+    expect(older).toHaveClass("olderSection");
+    expect(within(older).getByRole("list")).toHaveClass("older");
   });
 
   it("lists every other post under Older entries: title, label and date, photo, description", () => {
@@ -69,6 +94,8 @@ describe("JournalPage", () => {
     expect(section.compareDocumentPosition(screen.getByRole("region", { name: "Top story" }))).toBe(
       Node.DOCUMENT_POSITION_PRECEDING,
     );
+    // Its heading is for screen readers only: there is no visible Older entries bar.
+    expect(within(section).getByRole("heading", { level: 2, name: "Older entries" })).toHaveClass("sr-only");
     const items = within(section).getAllByRole("listitem");
     expect(items).toHaveLength(front.older.length);
     items.forEach((li, i) => {
@@ -82,59 +109,35 @@ describe("JournalPage", () => {
       // Read more is a visual cue; the headline is the card's only link.
       expect(li.lastElementChild).toHaveTextContent("Read more");
       expect(li.lastElementChild).toHaveAttribute("aria-hidden", "true");
+      // The same thin arrow as Read the story, right after the words.
+      expect(li.lastElementChild?.querySelector("svg")).not.toBeNull();
       expect(within(li).getAllByRole("link")).toHaveLength(1);
     });
   });
 
-  it("filters Older entries as you type, and can show them all again", () => {
+  it("has no search box, Show or Sort controls", () => {
     render(<JournalPage />);
-    const section = screen.getByRole("region", { name: "Older entries" });
-    const box = within(section).getByRole("searchbox", { name: "Search older entries" });
-    const target = front.older[front.older.length - 1];
-
-    fireEvent.change(box, { target: { value: target.title.toUpperCase() } });
-    expect(within(section).getAllByRole("listitem").map((li) => li.querySelector("h3")?.textContent)).toContain(target.title);
-    expect(within(section).getAllByRole("listitem").length).toBeLessThan(front.older.length);
-    expect(section).toHaveTextContent(/entr(y|ies) found/);
-
-    fireEvent.change(box, { target: { value: "zzzz-nothing" } });
-    expect(within(section).queryAllByRole("listitem")).toHaveLength(0);
-    expect(section).toHaveTextContent("No entries match “zzzz-nothing”.");
-    fireEvent.click(within(section).getByRole("button", { name: "Show all entries" }));
-    expect(within(section).getAllByRole("listitem")).toHaveLength(front.older.length);
-    expect(box).toHaveValue("");
+    expect(screen.queryByRole("searchbox")).not.toBeInTheDocument();
+    expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
+    expect(document.querySelector("search")).toBeNull();
   });
 
-  it("matches every typed word against title, label and summary, ignoring case and accents", () => {
-    const p = { ...front.older[0], title: "Café pastries", label: "Kitchen", excerpt: "Ube croissants on the counter." };
-    expect(matches(p, "")).toBe(true);
-    expect(matches(p, "  ")).toBe(true);
-    expect(matches(p, "cafe")).toBe(true);
-    expect(matches(p, "KITCHEN ube")).toBe(true);
-    expect(matches(p, "ube pizza")).toBe(false);
+  it("draws Book a table without side rules, filling with ink on hover like the header's Book", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { join } = await import("node:path");
+    const css = readFileSync(join(process.cwd(), "components", "JournalPage.module.css"), "utf8");
+    expect(css).toMatch(/\.advert :global\(\.cine-book\)::before,\s*\.advert :global\(\.cine-book\)::after,\s*\.cta :global\(\.cine-book\)::before,\s*\.cta :global\(\.cine-book\)::after \{\s*display: none;/);
+    // Not page-wide: the footer's small Book keeps its rules.
+    expect(css).not.toMatch(/\.page :global\(\.cine/);
+    expect(css).toMatch(/\.cta :global\(\.cine-frame\) \{\s*background: linear-gradient\(var\(--ink\), var\(--ink\)\) left \/ 0 100% no-repeat;/);
+    expect(css).toMatch(/:global\(\.cine-book:hover \.cine-frame\)[^{]*\{[^}]*background-size: 100% 100%;[^}]*-webkit-text-fill-color: var\(--newsprint\);/);
+    // color stays ink, so the global focus ring (currentColor) stays visible.
+    expect(css).not.toMatch(/:global\(\.cine-book:(hover|focus-visible) \.cine-frame\)[^{]*\{[^}]*(?<![-\w])color: var\(--newsprint\)/);
   });
 
-  it("arranges entries: type filter, then newest, oldest or A–Z", () => {
-    const o = front.older;
-    expect(arrange(o, "", "all", "newest")).toEqual(o);
-    expect(arrange(o, "", "all", "oldest")).toEqual([...o].reverse());
-    const az = arrange(o, "", "all", "az").map((p) => p.title.toLowerCase());
-    expect(az).toEqual([...az].sort((a, b) => a.localeCompare(b)));
-    expect(arrange(o, "", "press", "newest").every((p) => p.kind === "press")).toBe(true);
-    expect(arrange(o, "", "stories", "newest").every((p) => p.kind !== "press")).toBe(true);
-    expect(arrange(o, "", "press", "newest").length + arrange(o, "", "stories", "newest").length).toBe(o.length);
-    // Never reorders the list it was given.
-    expect(front.older).toBe(o);
-  });
-
-  it("the Show and Sort dropdowns change which entries appear and in what order", () => {
+  it("has no colophon line under the advert", () => {
     render(<JournalPage />);
-    const section = screen.getByRole("region", { name: "Older entries" });
-    const titles = () => within(section).queryAllByRole("listitem").map((li) => li.querySelector("h3")?.textContent);
-    fireEvent.change(within(section).getByRole("combobox", { name: "Sort" }), { target: { value: "oldest" } });
-    expect(titles()).toEqual([...front.older].reverse().map((p) => p.title));
-    fireEvent.change(within(section).getByRole("combobox", { name: "Show" }), { target: { value: "press" } });
-    expect(titles()).toEqual(arrange(front.older, "", "press", "oldest").map((p) => p.title));
+    expect(screen.queryByText(/open since 1987/)).not.toBeInTheDocument();
   });
 
   it("marks the Journal link in the SiteHeader as current and only that one", () => {

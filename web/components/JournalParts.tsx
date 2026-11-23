@@ -4,8 +4,7 @@ import type { JournalPost } from "@/lib/journal";
 import { OPEN_POST } from "./PageTransition";
 import styles from "./JournalPage.module.css";
 
-/* Pieces shared by the Journal's server page and its client Older entries
-   search. No "use client" here: each side renders them in its own world. */
+/* Pieces shared by the Journal index (lead and story cards) and its post pages. */
 
 /** Long thin arrow for Read links. */
 export function Arrow() {

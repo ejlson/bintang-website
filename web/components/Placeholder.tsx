@@ -17,7 +17,7 @@ type Props = {
 /** Stand-in for pages not built yet, in the page's own colour. */
 export function Placeholder({ title, tl, href, background, tone }: Props) {
   return (
-    <main className={styles.page} style={{ background, color: tone === "paper" ? "var(--paper)" : "var(--ink)" }}>
+    <main className={styles.page} style={{ background, ["--ground" as string]: background, color: tone === "paper" ? "var(--paper)" : "var(--ink)" }}>
       <SiteHeader variant="page" tone={tone} mark={tone === "paper" ? "paper" : "ink"} currentHref={href} />
       <section className={styles.body}>
         <h1 className={styles.title}>

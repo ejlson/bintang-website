@@ -15,6 +15,8 @@
   min-height: 100vh;
   min-height: 100svh;
   background: var(--newsprint);
+  /* The footer's Book a table writes its words in this on hover. */
+  --ground: var(--newsprint);
   color: var(--ink);
   font-family: var(--sans);
 }
@@ -27,11 +29,15 @@
 
 /* ---------- Masthead ---------- */
 
-/* Spans the full content width (FitTitle), squished vertically, 24px under
-   the header: the same title as About and Menu. */
+/* The same size as the GALLERY title: it spans the screen, not the content
+   column, with the Gallery's 1.4vw at each side (its ink is 97.2vw wide), and
+   sits 8px under the header, between two rules as wide as the word. The SVG
+   is cropped to the ink, so the padding is the exact gap to each rule. */
 .title {
-  margin: 0;
-  padding: 24px 0 clamp(20px, 2.4vw, 32px);
+  margin: 8px 1.4vw clamp(20px, 2.4vw, 32px);
+  padding: clamp(8px, 1vw, 14px) 0;
+  border-top: var(--rule);
+  border-bottom: var(--rule);
   font-family: var(--font-display);
   font-weight: 700;
   line-height: 0;
@@ -140,52 +146,106 @@
   }
 
   .front:hover .readMore .arrow,
+  .story:hover .storyMore .arrow,
   .line:hover .arrow {
     transform: translateX(10px);
   }
 }
 
-/* ---------- Lead story ---------- */
+/* ---------- Stories grid ---------- */
 
-/* Headline left, photo right with the summary under it; stacked on phones. */
-.front {
+/* One four-column grid under the rule: the latest story takes three columns
+   on an ink panel, the next older story sits in the fourth, and the rest run
+   four to a row underneath, all on the same columns. Two columns on tablets
+   (the latest full width), one on phones. */
+.stories {
+  --cols: 4;
   position: relative;
   display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  gap: 0 24px;
+  padding: 0 0 8px;
+}
+
+/* The section and list only group the cards for assistive tech; the cards
+   themselves are cells of .stories. */
+.olderSection,
+.older {
+  display: contents;
+}
+
+.older {
+  list-style: none;
+}
+
+/* ---------- Lead story ---------- */
+
+/* An ink panel three columns wide, as tall as the card beside it (it spans
+   that card's five rows). The margin matches the card's bottom padding, so
+   the panel ends level with the card's Read more. Headline left, photo
+   right; stacked under 900px. */
+.front {
+  position: relative;
+  grid-column: span 3;
+  grid-row: span 5;
+  display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 32px clamp(32px, 4vw, 64px);
-  /* Both columns take the row's height, so the summary can sit on the same
-     baseline as the bottom of Read the story. */
+  gap: 24px clamp(24px, 2.6vw, 40px);
   align-items: stretch;
-  padding: clamp(20px, 2vw, 28px) 0 clamp(24px, 2.4vw, 32px);
-  /* The rule between the JOURNAL title and the latest story. */
-  border-top: var(--rule);
+  margin-bottom: 48px;
+  padding: clamp(20px, 2.2vw, 32px);
+  background: var(--ink);
+  color: var(--newsprint);
 }
 
 .leadText {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  gap: 24px;
+}
+
+.leadHead {
+  display: flex;
+  flex-direction: column;
   gap: 20px;
-  max-width: 640px;
+}
+
+.leadKicker {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 16px;
+  margin: 0;
+  padding: 8px 0;
+  border-top: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
 }
 
 .leadTitle {
   margin: 0;
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: clamp(30px, 3vw, 46px);
+  font-size: clamp(30px, 3.2vw, 50px);
   line-height: 0.92;
   text-transform: uppercase;
   text-wrap: balance;
 }
 
 .leadMedia {
-  justify-self: end;
-  width: 100%;
-  max-width: 560px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+/* The photo grows to fill the panel's height, never shorter than 4:3. */
+.leadMedia .photo {
+  flex: 1 0 auto;
+  background: color-mix(in srgb, var(--newsprint) 12%, var(--ink));
 }
 
 .standfirst {
@@ -195,164 +255,56 @@
   line-height: 1.4;
 }
 
+/* With no older entries beside it, the lead takes the whole row. */
+.front:only-child {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 1099px) {
+  .stories {
+    --cols: 2;
+  }
+
+  .front {
+    grid-column: 1 / -1;
+  }
+}
+
 @media (max-width: 899px) {
   .front {
     grid-template-columns: minmax(0, 1fr);
   }
+
+  /* Narrow screens stack it: photo, then the words, then Read the story. */
+  .leadMedia {
+    display: contents;
+  }
+
+  .leadMedia .photo {
+    order: -1;
+  }
+
+  .readMore {
+    order: 1;
+  }
 }
 
-/* ---------- Older entries ---------- */
+@media (max-width: 599px) {
+  .stories {
+    --cols: 1;
+  }
 
-/* "Older entries" on the left and the search box on the right, between two rules. */
-.dividerBar {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px 32px;
-  padding: 10px 0;
-  border-top: var(--rule);
-  border-bottom: var(--rule);
+  /* The panel runs to the screen's edges on phones. */
+  .front {
+    margin-inline: calc(-1 * var(--gutter));
+    padding-inline: var(--gutter);
+  }
 }
 
-.divider {
-  margin: 0;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(24px, 2.6vw, 36px);
-  line-height: 1;
-  text-transform: uppercase;
-}
+/* ---------- Older stories ---------- */
 
-/* Show, Sort and Search, right of the heading; they wrap under it on phones. */
-.tools {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 20px;
-}
-
-.selectWrap {
-  position: relative;
-}
-
-/* A chevron drawn in ink, since the native one ignores the page colour. */
-.selectWrap::after {
-  content: "";
-  position: absolute;
-  right: 4px;
-  top: 50%;
-  width: 7px;
-  height: 7px;
-  border-right: 1.6px solid var(--ink);
-  border-bottom: 1.6px solid var(--ink);
-  transform: translateY(-70%) rotate(45deg);
-  pointer-events: none;
-}
-
-.select {
-  min-height: 44px;
-  padding: 8px 24px 8px 0;
-  border: 0;
-  border-bottom: 1px solid var(--ink);
-  border-radius: 0;
-  background: transparent;
-  color: var(--ink);
-  font: inherit;
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  appearance: none;
-  cursor: pointer;
-}
-
-.select:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 4px;
-}
-
-.search {
-  position: relative;
-  flex: none;
-  width: clamp(180px, 20vw, 280px);
-}
-
-.searchInput {
-  box-sizing: border-box;
-  width: 100%;
-  min-height: 44px;
-  padding: 8px 32px 8px 0;
-  border: 0;
-  border-bottom: 1px solid var(--ink);
-  border-radius: 0;
-  background: transparent;
-  color: var(--ink);
-  font: inherit;
-  font-size: 16px;
-  appearance: none;
-}
-
-.searchInput::placeholder {
-  color: var(--ink);
-  opacity: 0.7;
-}
-
-.searchInput:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 4px;
-}
-
-/* The native clear button would sit under the icon. */
-.searchInput::-webkit-search-cancel-button {
-  appearance: none;
-}
-
-.searchIcon {
-  position: absolute;
-  right: 4px;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-}
-
-.noResults {
-  margin: 0;
-  padding: 48px 0 64px;
-  font-family: var(--font-serif);
-  font-size: 20px;
-  text-align: center;
-}
-
-.clear {
-  min-height: 44px;
-  padding: 0 4px;
-  border: 0;
-  background: none;
-  color: inherit;
-  font: inherit;
-  text-decoration: underline;
-  text-underline-offset: 4px;
-  cursor: pointer;
-}
-
-.clear:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 2px;
-}
-
-/* Four to a row, like a magazine's back-issue index. Each entry spans five
-   rows of a shared subgrid, so photos, titles, labels and text of a row
-   start on the same lines. */
-.older {
-  list-style: none;
-  margin: 0;
-  padding: 32px 0 56px;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0 24px;
-}
-
+/* Each card spans five rows of the stories grid as a subgrid, so photos,
+   titles, labels and text of a row start on the same lines. */
 .story {
   position: relative;
   display: grid;
@@ -365,18 +317,28 @@
   font-family: var(--font-ui);
 }
 
-/* Headline in sentence case, as in an index of features. */
+/* Headline in sentence case, as in an index of features, over a hairline;
+   the label under it closes with a second. They sit on the shared subgrid
+   rows, so each line runs level across a row of cards. */
 .storyTitle {
-  margin: 16px 0 0;
+  margin: 14px 0 0;
+  padding: 0 0 6px;
+  border-bottom: 1px solid var(--ink);
   font-family: var(--font-display);
   font-weight: 700;
   font-size: clamp(20px, 1.6vw, 24px);
   line-height: 1.1;
-  text-wrap: balance;
+  /* Justified, like a column of newsprint: every line but the last runs the
+     card's full width. (No text-wrap: balance, which would shorten the lines
+     and leave wide gaps between words.) Hyphenation keeps those gaps small. */
+  text-align: justify;
+  hyphens: auto;
 }
 
 .storyLabel {
-  margin: 12px 0 0;
+  margin: 0;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--ink);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.16em;
@@ -385,7 +347,7 @@
 
 /* Three lines at most, so every card in a row keeps the same height. */
 .storyExcerpt {
-  margin: 8px 0 0;
+  margin: 10px 0 0;
   font-weight: 400;
   font-size: 14px;
   line-height: 1.45;
@@ -396,77 +358,131 @@
   overflow: hidden;
 }
 
-/* Read more sits on the last shared row, under a hairline, so every card's cue lines up. */
+/* Read more sits on the last shared row, between hairlines, so every card's
+   cue lines up. Hovering the card (or focusing its link) sweeps ink down
+   through the bar from the top and turns the words newsprint, so they stay
+   readable on the fill. The fill sits behind the words (isolation + z-index -1). */
 .storyMore {
+  position: relative;
+  isolation: isolate;
   align-self: end;
-  margin-top: 12px;
-  padding-top: 8px;
-  border-top: 1px solid var(--ink);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
-
-/* Read more on the lead story: a full-width bar between rules. */
-.readMore {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  min-height: 44px;
-  margin-top: 4px;
+  gap: 12px;
+  min-height: 36px;
+  margin-top: 12px;
   padding: 0 4px;
   border-top: 1px solid var(--ink);
   border-bottom: 1px solid var(--ink);
   font-size: 13px;
   font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  transition:
-    background-color 0.3s var(--ease),
-    color 0.3s var(--ease);
+  letter-spacing: 0.04em;
+  transition: color 0.35s var(--ease);
 }
 
-/* Fills with ink when the card is hovered or its link has focus. */
-.front:focus-within .readMore {
+.storyMore::before {
+  content: "";
+  position: absolute;
+  /* Over the bar's lines too, so no hairline seam shows between line and fill
+     when the bar sits on a fractional pixel. */
+  inset: -1px 0;
+  z-index: -1;
   background: var(--ink);
-  color: var(--newsprint);
+  transform: scaleY(0);
+  transform-origin: 50% 0;
+  transition: transform 0.45s var(--ease);
+}
+
+/* Read the story on the lead: a full-width bar between rules. */
+/* The arrow sits right after the words, so its 10px hover slide stays inside
+   the bar (at the far end it slid off the fill onto the ink panel and vanished). */
+.readMore {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 16px;
+  min-height: 44px;
+  padding: 0 4px;
+  border-top: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  position: relative;
+  isolation: isolate;
+  transition: color 0.35s var(--ease);
+}
+
+/* Newsprint sweeps down through the bar from the top (the panel inverted)
+   when the lead is hovered or its link has focus; the words turn ink so they
+   stay readable. Same sweep as the cards' Read more. */
+.readMore::before {
+  content: "";
+  position: absolute;
+  /* Over the bar's lines too, so no hairline seam shows between line and fill
+     when the bar sits on a fractional pixel. */
+  inset: -1px 0;
+  z-index: -1;
+  background: var(--newsprint);
+  transform: scaleY(0);
+  transform-origin: 50% 0;
+  transition: transform 0.45s var(--ease);
+}
+
+.front:focus-within .readMore {
+  color: var(--ink);
+}
+
+.front:focus-within .readMore::before {
+  transform: scaleY(1);
 }
 
 .story:focus-within .storyMore {
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  color: var(--newsprint);
+}
+
+.story:focus-within .storyMore::before {
+  transform: scaleY(1);
 }
 
 @media (hover: hover) {
   .front:hover .readMore {
-    background: var(--ink);
-    color: var(--newsprint);
+    color: var(--ink);
+  }
+
+  .front:hover .readMore::before {
+    transform: scaleY(1);
   }
 
   .story:hover .storyMore {
-    text-decoration: underline;
-    text-underline-offset: 3px;
+    color: var(--newsprint);
+  }
+
+  .story:hover .storyMore::before {
+    transform: scaleY(1);
   }
 }
 
-@media (max-width: 1099px) {
-  .older {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 599px) {
-  .older {
-    grid-template-columns: minmax(0, 1fr);
+/* Reduced motion: the bar fills at once, no sweep. */
+@media (prefers-reduced-motion: reduce) {
+  .storyMore,
+  .storyMore::before,
+  .readMore,
+  .readMore::before {
+    transition: none;
   }
 }
 
 /* ---------- Back-page advert ---------- */
 
+/* Outside the content column, with the title's 1.4vw at each side, so its
+   rules run exactly as wide as the rules around JOURNAL. */
 .advert {
-  padding: 40px 0 36px;
+  margin: 0 1.4vw 48px;
+  padding: 40px var(--gutter) 40px;
   border-top: var(--rule);
+  border-bottom: var(--rule);
   text-align: center;
 }
 
@@ -497,14 +513,57 @@
   margin-top: 36px;
 }
 
-.colophon {
-  margin: 0;
-  padding: 16px 0 48px;
-  border-top: var(--rule);
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1.5;
-  text-align: center;
+/* ---------- Book a table (Journal) ----------
+   The shared cinematic button without its side rules: on hover (or keyboard
+   focus) the frame fills with ink from the left and the words turn newsprint,
+   like the header's Book button. The advert and the post foot only: the
+   footer's small one keeps its rules, as on every other page. */
+
+.advert :global(.cine-book),
+.cta :global(.cine-book) {
+  gap: 0;
+}
+
+.advert :global(.cine-book)::before,
+.advert :global(.cine-book)::after,
+.cta :global(.cine-book)::before,
+.cta :global(.cine-book)::after {
+  display: none;
+}
+
+.advert :global(.cine-frame),
+.cta :global(.cine-frame) {
+  background: linear-gradient(var(--ink), var(--ink)) left / 0 100% no-repeat;
+  transition:
+    border-color 0.5s var(--ease),
+    background-size 0.5s var(--ease),
+    -webkit-text-fill-color 0.35s var(--ease);
+}
+
+/* The words are recoloured with -webkit-text-fill-color, not color, so the
+   global focus ring (currentColor) stays ink and visible around the fill. */
+.advert :global(.cine-book:focus-visible .cine-frame),
+.cta :global(.cine-book:focus-visible .cine-frame) {
+  border-color: var(--ink);
+  background-size: 100% 100%;
+  -webkit-text-fill-color: var(--newsprint);
+}
+
+/* Mouse only, so a tap on a phone doesn't leave it filled. */
+@media (hover: hover) {
+  .advert :global(.cine-book:hover .cine-frame),
+  .cta :global(.cine-book:hover .cine-frame) {
+    border-color: var(--ink);
+    background-size: 100% 100%;
+    -webkit-text-fill-color: var(--newsprint);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .advert :global(.cine-frame),
+  .cta :global(.cine-frame) {
+    transition: none;
+  }
 }
 
 /* ---------- Book CTA ---------- */
@@ -589,9 +648,8 @@
 
 /* ---------- Motion ----------
    The same motion as About (AboutPage.module.css), set for the newspaper.
-   On load, the front page sets itself: JOURNAL rises from behind a mask, the rule under
-   it draws across, the lead story arrives and its photo wipes open, then the Older entries
-   bar sets itself and its cards arrive left to right a beat apart. They are never tied to
+   On load, the front page sets itself: JOURNAL rises from behind a mask, the lead story arrives and its photo wipes open, the card beside it
+   follows, then the rows under them arrive left to right a beat apart. They are never tied to
    the scroll, so a card at the bottom of the first screen is never caught half faded.
    Below that, everything follows the scroll (so scrolling back rewinds it): rules draw in,
    headlines rise, and photos drift inside their frames.
@@ -606,20 +664,7 @@
   }
 
   .front {
-    border-top-color: transparent;
     animation: fadeUp 0.8s var(--ease) 0.35s both;
-  }
-
-  .front::before {
-    content: "";
-    position: absolute;
-    top: -2px;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: currentColor;
-    transform-origin: 0 50%;
-    animation: rule 0.9s var(--ease) 0.2s both;
   }
 
   .front .photo {
@@ -630,42 +675,8 @@
     animation: fadeUp 0.7s var(--ease) 0.9s both;
   }
 
-  /* Older entries, on load: the bar's rules draw, its head rises, then the cards. */
-  .dividerBar {
-    position: relative;
-    border-top-color: transparent;
-    border-bottom-color: transparent;
-  }
-
-  .dividerBar::before,
-  .dividerBar::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: currentColor;
-    transform-origin: 0 50%;
-    animation: rule 0.9s var(--ease) 0.6s both;
-  }
-
-  .dividerBar::before {
-    top: -2px;
-  }
-
-  .dividerBar::after {
-    bottom: -2px;
-    animation-delay: 0.75s;
-  }
-
-  .divider {
-    animation: rise 0.9s var(--ease) 0.7s both;
-  }
-
-  .tools {
-    animation: fadeUp 0.7s var(--ease) 0.8s both;
-  }
-
+  /* The card beside the lead arrives just after it; then each row of the
+     rest, left to right a beat apart. */
   .story {
     animation: fadeUp 0.7s var(--ease) 0.95s both;
   }
@@ -674,10 +685,13 @@
     .story:nth-child(2n + 2) { animation-delay: 1.05s; }
   }
 
+  /* Four columns: the first card sits beside the lead, so it arrives with it;
+     the rows under them start at the second card. */
   @media (min-width: 1100px) {
-    .story:nth-child(4n + 2) { animation-delay: 1.03s; }
-    .story:nth-child(4n + 3) { animation-delay: 1.11s; }
-    .story:nth-child(4n + 4) { animation-delay: 1.19s; }
+    .story:first-child { animation-delay: 0.5s; }
+    .story:nth-child(4n + 3) { animation-delay: 1.03s; }
+    .story:nth-child(4n + 4) { animation-delay: 1.11s; }
+    .story:nth-child(4n + 5) { animation-delay: 1.19s; }
   }
 
   /* Post page: the same entrance. */
@@ -717,23 +731,17 @@
       animation-range: cover 0% cover 100%;
     }
 
-    /* Rules draw in, left to right, like type being set. */
-    .advert,
-    .colophon {
+    /* Rules draw in, left to right, like type being set: the advert's top rule
+       as it enters, its bottom rule as it finishes entering. */
+    .advert {
       position: relative;
       border-top-color: transparent;
-    }
-
-    .advert {
+      border-bottom-color: transparent;
       view-timeline: --journal-advert block;
     }
 
-    .colophon {
-      view-timeline: --journal-colophon block;
-    }
-
     .advert::before,
-    .colophon::before {
+    .advert::after {
       content: "";
       position: absolute;
       left: 0;
@@ -742,27 +750,22 @@
       background: currentColor;
       transform-origin: 0 50%;
       animation: rule linear both;
-    }
-
-    .advert::before,
-    .colophon::before {
-      top: -2px;
+      animation-timeline: --journal-advert;
     }
 
     .advert::before {
-      animation-timeline: --journal-advert;
+      top: -2px;
       animation-range: entry 0% entry 40%;
     }
 
-    .colophon::before {
-      animation-timeline: --journal-colophon;
-      animation-range: entry 0% entry 100%;
+    .advert::after {
+      bottom: -2px;
+      animation-range: entry 60% entry 100%;
     }
 
     /* Text arrives in its blocks. */
     .advertLine,
     .advertLinks,
-    .colophon,
     .cta {
       animation: fadeUp linear both;
       animation-timeline: view();

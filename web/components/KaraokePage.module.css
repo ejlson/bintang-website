@@ -17,6 +17,8 @@
   --lit: var(--yellow);
 
   background: var(--ink);
+  /* The footer's Book a table writes its words in this on hover. */
+  --ground: var(--ink);
   color: var(--paper);
   font-family: var(--font-ui);
   font-weight: 400;
@@ -458,5 +460,6 @@
   z-index: 4;
   view-timeline: --karaoke-footer block;
   background: var(--yellow);
+  --ground: var(--yellow);
   color: var(--ink);
 }

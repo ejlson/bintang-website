@@ -153,6 +153,64 @@
 .book {
   justify-self: end;
   --cine-accent: currentColor;
+  gap: 0;
+}
+
+/* Book a table fills like the header's Book: no side rules; on hover (or
+   keyboard focus) the page's text colour sweeps in from the left and the words
+   take the page's ground (--ground, set by each page next to its background),
+   so they read on every page. The words are recoloured with
+   -webkit-text-fill-color, which leaves currentColor alone for the fill. */
+.book::before,
+.book::after {
+  display: none;
+}
+
+.book :global(.cine-frame) {
+  position: relative;
+  isolation: isolate;
+  transition:
+    border-color 0.5s var(--ease),
+    -webkit-text-fill-color 0.35s var(--ease);
+}
+
+.book :global(.cine-frame)::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.5s var(--ease);
+}
+
+.footer .book:focus-visible :global(.cine-frame) {
+  border-color: currentColor;
+  -webkit-text-fill-color: var(--ground, #0e0b0a);
+}
+
+.footer .book:focus-visible :global(.cine-frame)::before {
+  transform: scaleX(1);
+}
+
+/* Mouse only, so a tap on a phone doesn't leave it filled. */
+@media (hover: hover) {
+  .footer .book:hover :global(.cine-frame) {
+    border-color: currentColor;
+    -webkit-text-fill-color: var(--ground, #0e0b0a);
+  }
+
+  .footer .book:hover :global(.cine-frame)::before {
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .book :global(.cine-frame),
+  .book :global(.cine-frame)::before {
+    transition: none;
+  }
 }
 
 .bottom {

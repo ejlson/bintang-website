@@ -13,14 +13,16 @@ const SIZE = 100;
 type Box = { x: number; y: number; w: number; h: number };
 
 /** First-paint guess for an uppercase word in Aquavit Black (~0.68em per letter, ~0.7em cap height). */
-function estimate(text: string): Box {
-  return { x: 0, y: -70 * SQUISH, w: Math.max(1, text.length) * 68, h: 70 * SQUISH };
+function estimate(text: string, squish: number): Box {
+  return { x: 0, y: -70 * squish, w: Math.max(1, text.length) * 68, h: 70 * squish };
 }
 
 type Props = {
   /** The title. It's shown uppercase; screen readers get it as written. */
   text: string;
   className?: string;
+  /** Vertical scale of the letters; 1 is the font as drawn. Defaults to the MENU title's squish. */
+  squish?: number;
 };
 
 /**
@@ -28,9 +30,9 @@ type Props = {
  * The word is measured in its real font and the SVG viewBox is cropped to the
  * ink, so nothing is stretched and there's no empty band above the letters.
  */
-export function FitTitle({ text, className }: Props) {
+export function FitTitle({ text, className, squish = SQUISH }: Props) {
   const textRef = useRef<SVGTextElement>(null);
-  const [box, setBox] = useState<Box>(() => estimate(text));
+  const [box, setBox] = useState<Box>(() => estimate(text, squish));
 
   useIsoLayoutEffect(() => {
     const el = textRef.current;
@@ -48,14 +50,14 @@ export function FitTitle({ text, className }: Props) {
       const ascent = m.actualBoundingBoxAscent ?? SIZE * 0.7;
       const descent = m.actualBoundingBoxDescent ?? 0;
       if (!(right + left > 0) || !(ascent + descent > 0)) return;
-      setBox({ x: -left, y: -ascent * SQUISH, w: left + right, h: (ascent + descent) * SQUISH });
+      setBox({ x: -left, y: -ascent * squish, w: left + right, h: (ascent + descent) * squish });
     };
     measure();
     void document.fonts?.ready.then(measure);
     return () => {
       cancelled = true;
     };
-  }, [text]);
+  }, [text, squish]);
 
   return (
     <svg
@@ -67,7 +69,7 @@ export function FitTitle({ text, className }: Props) {
     >
       <text
         ref={textRef}
-        transform={`scale(1 ${SQUISH})`}
+        transform={`scale(1 ${squish})`}
         fill="currentColor"
         aria-hidden="true"
         style={{ fontSize: SIZE, textTransform: "uppercase" }}

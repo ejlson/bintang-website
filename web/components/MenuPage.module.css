@@ -28,6 +28,8 @@
   min-height: 100vh;
   min-height: 100svh;
   background: var(--bg);
+  /* The footer's Book a table writes its words in this on hover. */
+  --ground: var(--bg);
   color: var(--acc);
   font-family: var(--sans);
 }

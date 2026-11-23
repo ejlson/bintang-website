@@ -6,12 +6,27 @@ import Gallery from "@/app/gallery/page";
 import Contact from "@/app/contact/page";
 import { BOOKING_URL } from "@/lib/nav";
 import { hours, site } from "@/lib/site";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
 // next/font only works inside the Next compiler (Home pulls in lib/sakuga); effects are optional.
 vi.mock("next/font/google", () => ({ Yuji_Boku: () => ({ style: { fontFamily: "x" } }) }));
 vi.mock("@/lib/sakuga", () => ({ loadSakuga: () => Promise.resolve(null) }));
 
 describe("SiteFooter", () => {
+  it("fills Book a table like the header's Book: no side rules, the page colour sweeping in, words in the page's ground", () => {
+    const css = readFileSync(join(process.cwd(), "components", "SiteFooter.module.css"), "utf8");
+    expect(css).toMatch(/\.book::before,\s*\.book::after \{\s*display: none;/);
+    expect(css).toMatch(/\.book :global\(\.cine-frame\)::before \{[^}]*background: currentColor;[^}]*transform: scaleX\(0\);[^}]*transform-origin: left;/);
+    expect(css).toMatch(/\.footer \.book:hover :global\(\.cine-frame\) \{[^}]*-webkit-text-fill-color: var\(--ground/);
+    expect(css).toMatch(/\.footer \.book:focus-visible :global\(\.cine-frame\) \{[^}]*-webkit-text-fill-color: var\(--ground/);
+    // Every page that shows the footer names its ground, next to its background.
+    for (const f of ["AboutPage", "ContactPage", "GalleryPage", "JournalPage", "KaraokePage", "MenuPage"]) {
+      const page = readFileSync(join(process.cwd(), "components", `${f}.module.css`), "utf8");
+      expect(page, f).toMatch(/\.page \{[^}]*--ground: /);
+    }
+  });
+
   it("links to the enquiry pages, email and phone, in English only", () => {
     const { container } = render(<SiteFooter />);
     const nav = screen.getByRole("navigation", { name: "More" });
