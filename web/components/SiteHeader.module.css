@@ -60,20 +60,25 @@
 
 /* Book: a plain link to OpenTable (components/BookButton), drawn as the
    site's cinematic button (SPEC.md › Buttons): Aquavit caps in a 1px frame,
-   no fill, no click effect. The frame rests at 60% strength and comes up to
-   full on hover (0.7s), so it reads on every bar colour, red pages included.
+   no click effect. The frame rests at 60% strength. On hover (or keyboard
+   focus) it fills with the bar's colour, wiping in from the left, and the
+   word turns to --book-on, the contrasting colour (ink on a light fill,
+   paper on an ink one), so it stays clear on every bar.
    Letter-spacing also trails the last letter, so the left pads by the same
    amount and the word sits in the middle. */
 .paper {
   --book-line: var(--paper);
+  --book-on: var(--ink);
 }
 
 .ink {
   --book-line: var(--ink);
+  --book-on: var(--paper);
 }
 
 .yellow {
   --book-line: var(--yellow);
+  --book-on: var(--ink);
 }
 
 .book {
@@ -86,6 +91,7 @@
   min-height: 44px;
   padding: 0 var(--book-pad) 0 calc(var(--book-pad) + var(--book-track));
   border: 1px solid color-mix(in srgb, var(--book-line) 60%, transparent);
+  background: linear-gradient(var(--book-line), var(--book-line)) left / 0 100% no-repeat;
   color: var(--book-line);
   font-family: var(--font-ui);
   font-size: 12px;
@@ -94,11 +100,17 @@
   letter-spacing: var(--book-track);
   text-decoration: none;
   text-transform: uppercase;
-  transition: border-color 0.7s var(--ease);
+  transition:
+    border-color 0.5s var(--ease),
+    background-size 0.5s var(--ease),
+    color 0.35s var(--ease);
 }
 
-.book:hover {
+.book:hover,
+.book:focus-visible {
   border-color: var(--book-line);
+  background-size: 100% 100%;
+  color: var(--book-on, var(--ink));
 }
 
 .sr {
@@ -230,6 +242,7 @@
 @media (768px <= width < 1024px) {
   .list {
     column-gap: 20px;
+  --book-on: var(--ink);
     font-size: 15px;
   }
 

@@ -209,7 +209,8 @@ export function MenuPage() {
           "--acc": menu.accent,
           "--bg": menu.background,
           // Cream on Karaoke's red is only ~3.9:1, so its tabs aren't dimmed (SPEC › Buttons).
-          ...(menu.id === "karaoke" && { "--tab-dim": "100%" }),
+          // …and its Book fills cream on hover, so the word turns ink, not red (~3.9:1).
+          ...(menu.id === "karaoke" && { "--tab-dim": "100%", "--menu-book-on": "var(--ink)" }),
         } as CSSProperties
       }
     >

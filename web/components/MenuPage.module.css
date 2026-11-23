@@ -46,6 +46,7 @@
 .page > header {
   color: inherit;
   --book-line: var(--acc);
+  --book-on: var(--menu-book-on, var(--bg));
 }
 
 /* ---------- Title + tabs ---------- */
