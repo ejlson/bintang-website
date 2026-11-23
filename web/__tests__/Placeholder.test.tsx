@@ -1,10 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { Placeholder } from "@/components/Placeholder";
-import Contact from "@/app/contact/page";
 import Groups from "@/app/contact/groups/page";
 import PrivateHire from "@/app/contact/private-hire/page";
-import { allLinks } from "@/lib/nav";
 
 describe("Placeholder", () => {
   it("renders title, Tagalog line, coming-soon note and a back link", () => {
@@ -29,18 +27,6 @@ describe("Placeholder", () => {
   ] as const)("uses the %s mark for tone %s", (tone, src) => {
     render(<Placeholder title="X" tl="x" href="/x" background="red" tone={tone} />);
     expect(screen.getByRole("link", { name: "Bintang home" }).querySelector("img")).toHaveAttribute("src", src);
-  });
-
-  it.each([
-    [Contact, "/contact"],
-  ])("placeholder route %# (%s) renders its own nav label as title and marks itself current", (Page, href) => {
-    const link = allLinks.find((l) => l.href === href)!;
-    render(<Page />);
-    expect(screen.getByRole("heading", { level: 1 })).toHaveProperty("textContent", link.en);
-    expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
-    expect(screen.getByText(link.tl, { selector: "p" })).toBeInTheDocument();
-    const current = screen.getAllByRole("link").filter((a) => a.getAttribute("aria-current") === "page");
-    expect(current.map((a) => a.getAttribute("href"))).toEqual([href]);
   });
 
   it.each([

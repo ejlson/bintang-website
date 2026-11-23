@@ -1,0 +1,359 @@
+/* Contact us. Yellow page, ink type, same content column as Menu and Journal.
+   Header, title, photo and details fit one screen; the footer is the next.
+   Spacing on the 8px scale: 4 8 12 16 24 32 48 64 96. */
+
+.page {
+  --gutter: clamp(12px, 3vw, 40px);
+  --max: 1600px;
+  --rule: color-mix(in srgb, var(--ink) 28%, transparent);
+  /* Row padding shrinks on short screens so the list always fits. */
+  --row-y: clamp(12px, 2vh, 20px);
+
+  background: var(--yellow);
+  color: var(--ink);
+  font-family: var(--font-ui);
+}
+
+/* One screen, the same height as the footer's; it grows rather than spill
+   into the footer on a very short window. */
+.screen {
+  min-height: max(560px, 100svh);
+  display: flex;
+  flex-direction: column;
+}
+
+.wrap {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  max-width: var(--max);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  padding: 16px var(--gutter) clamp(16px, 4vh, 48px);
+}
+
+/* Spans the full width (FitTitle), squished like MENU. */
+.title {
+  flex: none;
+  width: 100%;
+  margin: 0 0 clamp(16px, 3vh, 32px);
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 0;
+  text-align: center;
+}
+
+/* Photo left, the index right; the photo takes all the height left under the title. */
+.grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: clamp(24px, 4vw, 64px);
+}
+
+.photo {
+  position: relative;
+  min-height: 240px;
+  margin: 0;
+}
+
+.photo video {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.photo figcaption {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--yellow);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.list {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* The first row's capitals start level with the top of the photo. */
+.row:first-child {
+  padding-top: 0;
+}
+
+/* Pause control (WCAG 2.2.2), bottom right, clear of the caption. */
+.pause {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  background: var(--yellow);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.pause:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+/* Each row: number · label · value, split by a rule. */
+.row {
+  display: grid;
+  grid-template-columns: 32px 120px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+  padding: var(--row-y) 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.k {
+  margin: 0;
+  line-height: 1;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+.h {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.h span {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--font-serif);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  opacity: 0.92;
+}
+
+.v {
+  min-width: 0;
+}
+
+.big {
+  display: inline-block;
+  color: inherit;
+  font-family: var(--font-display);
+  font-size: clamp(20px, min(2.2vw, 3.6vh), 32px);
+  font-weight: 700;
+  line-height: 1.1;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+  background: linear-gradient(currentColor, currentColor) 0 100% / 0 2px no-repeat;
+  transition: background-size 0.4s var(--ease);
+}
+
+.big:hover,
+.big:focus-visible {
+  background-size: 100% 2px;
+}
+
+.note {
+  margin: 4px 0 0;
+  font-family: var(--font-serif);
+  font-size: 16px;
+  line-height: 1.3;
+}
+
+/* Each row's number, label and value line up on the tops of their capitals
+   (trims the space a line keeps above its letters). */
+.k,
+.h,
+.big,
+.hours dt,
+.hours dd {
+  text-box: trim-start cap alphabetic;
+}
+
+/* Two columns of days so the hours take two lines, not four. */
+.hours {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 220px));
+  gap: 4px 32px;
+}
+
+.hours div {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0 12px;
+  padding-bottom: 2px;
+  border-bottom: 1px dotted var(--rule);
+}
+
+.hours dt {
+  font-weight: 700;
+}
+
+.hours dd {
+  margin: 0;
+  font-family: var(--font-serif);
+}
+
+/* At the foot of the column, level with the bottom of the photo. */
+.actions {
+  margin-top: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 32px;
+  padding-top: 24px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 0 40px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--yellow);
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.more {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: inherit;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.more svg {
+  transition: translate 0.3s var(--ease);
+}
+
+.more:hover svg {
+  translate: 6px 0;
+}
+
+.more:hover,
+.pill:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.pill:focus-visible,
+.more:focus-visible,
+.big:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 4px;
+}
+
+/* ---------- Tablet / phone: the details alone, the photo goes ---------- */
+
+@media (max-width: 900px) {
+  .screen {
+    height: auto;
+    min-height: 100svh;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+
+  .photo {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .row {
+    grid-template-columns: 24px 1fr;
+    gap: 4px 12px;
+  }
+
+  .v,
+  .hours {
+    grid-column: 2;
+  }
+
+  .hours {
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 16px;
+    font-size: 14px;
+  }
+
+  .pill {
+    padding: 0 28px;
+  }
+}
+
+/* ---------- Motion: rises in on load, like Menu and About ---------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  .title {
+    clip-path: inset(-0.2em -0.2em 0 -0.2em);
+  }
+
+  .title > * {
+    animation: rise 0.9s var(--ease) both;
+  }
+
+  .photo {
+    animation: fadeUp 0.8s var(--ease) 0.2s both;
+  }
+
+  .row,
+  .actions {
+    animation: fadeUp 0.7s var(--ease) both;
+  }
+
+  .row:nth-child(1) { animation-delay: 0.3s; }
+  .row:nth-child(2) { animation-delay: 0.37s; }
+  .row:nth-child(3) { animation-delay: 0.44s; }
+  .row:nth-child(4) { animation-delay: 0.51s; }
+  .actions { animation-delay: 0.58s; }
+}
+
+@keyframes rise {
+  from { translate: 0 100%; }
+  to { translate: 0 0; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; translate: 0 24px; }
+  to { opacity: 1; translate: 0 0; }
+}

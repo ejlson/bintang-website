@@ -29,7 +29,8 @@ web/
   app/gallery/page.tsx    Gallery — components/GalleryPage, PhotoViewer; data and layout in lib/gallery.ts
   app/contact/karaoke     Karaoke — components/KaraokePage, KaraokeHero; video in public/media/karaoke/, photos from gallery and journal
   app/[...]/page.tsx      placeholders: /journal
-                          /contact /contact/groups /contact/private-hire
+                          /contact/groups /contact/private-hire
+  app/contact             Contact us — components/ContactPage
   components/SiteHeader   bilingual split nav + centred lion head + mobile overlay
   components/Hero         video, warm overlay, pause control, thumbnail, reduced-motion poster
   components/Subtitles    videoke-style English/Tagalog lines with sakuga effects
@@ -159,9 +160,17 @@ Facts come from the karaoke sheet in `lib/menu.ts` and the current bintangrestau
 
 **Open:** real karaoke-night footage (the loop reuses the Home film) · room capacity and hire prices · confirm whether open mic still runs (and remove it from the brunch sheet if not) · Tagalog labels need a native-speaker check.
 
+## Contact us (23 Nov 2026)
+
+`components/ContactPage` at `/contact`. Yellow page, ink type, after typographic restaurant contact pages on Awwwards (Root Food, UVE, Les Burgers de Colette). No Tagalog subtitle under the title.
+1. **One screen:** (`min-height`, so a very short window grows instead of spilling into the footer) header, "CONTACT US" (FitTitle, H1) and the details fit `max(560px, 100svh)`; the footer is the next screen.
+2. **Body:** a film (left, 5/12, fills the height, caption pill over its foot; `components/ContactFilm`): the Home film's portrait loop `hero-loop-portrait.mp4` with its portrait poster, cropped to cover, muted, looping, with a 44px yellow pause button bottom right (WCAG 2.2.2). Reduced-motion and data-saver visitors start paused on the poster with nothing downloaded; at 900px and below, where the column is hidden, it never loads. beside four numbered rows split by rules: 01 Visit (address → Google Maps), 02 Call (`tel:`), 03 Write (`mailto:`, "Groups, private hire and karaoke nights."), 04 Hours (2×2). Facts from `lib/site.ts`. The rows sit close together (20px padding, number, label and value cap-aligned at the top; the first row's capitals level with the photo's top; no rule above the first row), "Book a table" (ink pill → OpenTable) and "Karaoke & private hire →" at the foot of the column, level with the bottom of the photo, which takes all the height under the title.
+3. **≤ 900px:** the film goes and the rows stack; **≤ 600px:** the value sits under the label.
+4. **Motion:** the title rises from a mask, then the film and rows fade up in turn. None for reduced motion.
+
 ## Placeholder pages
 
-Each one uses its page's v2 colour ( Menu green, Journal pink, Contact yellow). They show the shared header, a big Aquavit title, "Coming soon / Malapit na", and a link back home.
+Each one uses its page's v2 colour (Journal pink, Contact yellow). They show the shared header, a big Aquavit title, "Coming soon / Malapit na", and a link back home.
 
 ## Done means
 
