@@ -9,5 +9,15 @@
   "postHomes": {
     "bunso": { "name": "BUNSO", "url": "https://www.bybunso.com" },
     "cafemama": { "name": "Café Mama & Sons", "url": "https://cafemamasons.com" }
+  },
+  "menus": {
+    "ids": [
+      "menu-bintang-carte",
+      "menu-bintang-brunch",
+      "menu-bintang-desserts",
+      "menu-bintang-karaoke"
+    ],
+    "query": "*[_type == \"menu\" && _id in $ids]{ \"id\": _id, restaurant, title, sections[]{ part, title, subtitle, intro, priceLabel, foot, boxed, wide, items[]{ name, price, description, note, dietary, hide } } }",
+    "snapshot": "lib/menu.snapshot.json"
   }
 }
