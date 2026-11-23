@@ -144,7 +144,6 @@
   }
 
   .front:hover .readMore .arrow,
-  .story:hover .readMore .arrow,
   .line:hover .arrow {
     transform: translateX(4px);
   }
@@ -346,8 +345,9 @@
   outline-offset: 2px;
 }
 
-/* Four to a row. Each entry spans five rows of a shared subgrid, so the
-   titles, labels, photos and text of a row start on the same lines. */
+/* Four to a row, like a magazine's back-issue index. Each entry spans five
+   rows of a shared subgrid, so photos, titles, labels and text of a row
+   start on the same lines. */
 .older {
   list-style: none;
   margin: 0;
@@ -362,33 +362,56 @@
   display: grid;
   grid-row: span 5;
   grid-template-rows: subgrid;
-  row-gap: 12px;
+  row-gap: 0;
   align-content: start;
   padding-bottom: 48px;
+  /* The site's face, Aquavit: 700 for the headline and labels, 400 for text. */
+  font-family: var(--font-ui);
 }
 
+/* Headline in sentence case, as in an index of features. */
 .storyTitle {
-  align-self: end;
-  margin: 0;
+  margin: 16px 0 0;
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: clamp(24px, 2vw, 30px);
-  line-height: 1;
-  text-transform: uppercase;
+  font-size: clamp(20px, 1.6vw, 24px);
+  line-height: 1.1;
   text-wrap: balance;
 }
 
-.story .photo {
-  margin-top: 4px;
+.storyLabel {
+  margin: 12px 0 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 
-.excerpt {
-  margin: 4px 0 0;
-  font-size: 16px;
+/* Three lines at most, so every card in a row keeps the same height. */
+.storyExcerpt {
+  margin: 8px 0 0;
+  font-weight: 400;
+  font-size: 14px;
   line-height: 1.45;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
 }
 
-/* Read more sits on the last shared row, so every card's button lines up. */
+/* Read more sits on the last shared row, under a hairline, so every card's cue lines up. */
+.storyMore {
+  align-self: end;
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* Read more on the lead story: a full-width bar between rules. */
 .readMore {
   display: flex;
   align-items: center;
@@ -409,17 +432,25 @@
 }
 
 /* Fills with ink when the card is hovered or its link has focus. */
-.front:focus-within .readMore,
-.story:focus-within .readMore {
+.front:focus-within .readMore {
   background: var(--ink);
   color: var(--newsprint);
 }
 
+.story:focus-within .storyMore {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 @media (hover: hover) {
-  .front:hover .readMore,
-  .story:hover .readMore {
+  .front:hover .readMore {
     background: var(--ink);
     color: var(--newsprint);
+  }
+
+  .story:hover .storyMore {
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 }
 
@@ -589,9 +620,11 @@
 /* ---------- Motion ----------
    The same motion as About (AboutPage.module.css), set for the newspaper.
    On load, the front page sets itself: JOURNAL rises from behind a mask, the rule under
-   it draws across, the lead story arrives and its photo wipes open. Below that, everything
-   follows the scroll (so scrolling back rewinds it): rules draw in, headlines rise, the
-   older entries arrive left to right a beat apart, and photos drift inside their frames.
+   it draws across, the lead story arrives and its photo wipes open, then the Older entries
+   bar sets itself and its cards arrive left to right a beat apart. They are never tied to
+   the scroll, so a card at the bottom of the first screen is never caught half faded.
+   Below that, everything follows the scroll (so scrolling back rewinds it): rules draw in,
+   headlines rise, and photos drift inside their frames.
    One rule here: never clip or translate anything between a story's headline link and its
    block (.front, .story). The link's ::after covers the block, and a clip-path or
    transform on an ancestor in between would shrink that tap target.
@@ -625,6 +658,56 @@
 
   .front .readMore {
     animation: fadeUp 0.7s var(--ease) 0.9s both;
+  }
+
+  /* Older entries, on load: the bar's rules draw, its head rises, then the cards. */
+  .dividerBar {
+    position: relative;
+    border-top-color: transparent;
+    border-bottom-color: transparent;
+  }
+
+  .dividerBar::before,
+  .dividerBar::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: currentColor;
+    transform-origin: 0 50%;
+    animation: rule 0.9s var(--ease) 0.6s both;
+  }
+
+  .dividerBar::before {
+    top: -2px;
+  }
+
+  .dividerBar::after {
+    bottom: -2px;
+    animation-delay: 0.75s;
+  }
+
+  .divider {
+    animation: rise 0.9s var(--ease) 0.7s both;
+  }
+
+  .tools {
+    animation: fadeUp 0.7s var(--ease) 0.8s both;
+  }
+
+  .story {
+    animation: fadeUp 0.7s var(--ease) 0.95s both;
+  }
+
+  @media (min-width: 600px) and (max-width: 1099px) {
+    .story:nth-child(2n + 2) { animation-delay: 1.05s; }
+  }
+
+  @media (min-width: 1100px) {
+    .story:nth-child(4n + 2) { animation-delay: 1.03s; }
+    .story:nth-child(4n + 3) { animation-delay: 1.11s; }
+    .story:nth-child(4n + 4) { animation-delay: 1.19s; }
   }
 
   /* Post page: the same entrance. */
@@ -665,16 +748,10 @@
     }
 
     /* Rules draw in, left to right, like type being set. */
-    .dividerBar,
     .advert,
     .colophon {
       position: relative;
       border-top-color: transparent;
-    }
-
-    .dividerBar {
-      border-bottom-color: transparent;
-      view-timeline: --journal-bar block;
     }
 
     .advert {
@@ -685,8 +762,6 @@
       view-timeline: --journal-colophon block;
     }
 
-    .dividerBar::before,
-    .dividerBar::after,
     .advert::before,
     .colophon::before {
       content: "";
@@ -699,24 +774,9 @@
       animation: rule linear both;
     }
 
-    .dividerBar::before,
     .advert::before,
     .colophon::before {
       top: -2px;
-    }
-
-    .dividerBar::after {
-      bottom: -2px;
-    }
-
-    .dividerBar::before,
-    .dividerBar::after {
-      animation-timeline: --journal-bar;
-      animation-range: entry 0% entry 100%;
-    }
-
-    .dividerBar::after {
-      animation-range: entry 30% cover 40%;
     }
 
     .advert::before {
@@ -729,15 +789,7 @@
       animation-range: entry 0% entry 100%;
     }
 
-    /* The section head rises into place from behind a mask (it holds no story link). */
-    .divider {
-      animation: rise linear both;
-      animation-timeline: view();
-      animation-range: entry 10% cover 30%;
-    }
-
     /* Text arrives in its blocks. */
-    .tools,
     .advertLine,
     .advertLinks,
     .colophon,
@@ -745,23 +797,6 @@
       animation: fadeUp linear both;
       animation-timeline: view();
       animation-range: entry 0% cover 25%;
-    }
-
-    /* Older entries arrive left to right, a beat apart (four or two to a row; one on phones). */
-    .story {
-      animation: fadeUp linear both;
-      animation-timeline: view();
-      animation-range: entry 0% cover 20%;
-    }
-
-    @media (min-width: 600px) and (max-width: 1099px) {
-      .story:nth-child(2n + 2) { animation-range: entry 8% cover 26%; }
-    }
-
-    @media (min-width: 1100px) {
-      .story:nth-child(4n + 2) { animation-range: entry 8% cover 26%; }
-      .story:nth-child(4n + 3) { animation-range: entry 16% cover 32%; }
-      .story:nth-child(4n + 4) { animation-range: entry 24% cover 38%; }
     }
 
     /* The advert's title lags the page a little, like a poster pasted further back. */

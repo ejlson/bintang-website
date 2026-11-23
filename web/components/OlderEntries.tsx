@@ -53,25 +53,28 @@ export function arrange(
   return kept;
 }
 
-/** An older entry. Its five parts sit on a shared grid, so titles, photos and text line up across the row. */
+/**
+ * An older entry, set like a magazine index card: photo, headline, label,
+ * a short excerpt, then a quiet Read more under a hairline. Its five parts
+ * sit on a shared grid, so photos, titles and text line up across the row.
+ */
 function Story({ post }: { post: JournalPost }) {
   return (
     <li className={styles.story}>
-      <h3 className={styles.storyTitle}>
-        <Headline post={post} />
-      </h3>
-      <p className={styles.label}>
-        {post.label} · <time dateTime={post.date}>{formatDate(post.date)}</time>
-      </p>
       <Photo
         post={post}
         sizes="(min-width: 1600px) 370px, (min-width: 1100px) 24vw, (min-width: 600px) 48vw, 100vw"
       />
-      <p className={styles.excerpt}>{post.excerpt}</p>
+      <h3 className={styles.storyTitle}>
+        <Headline post={post} />
+      </h3>
+      <p className={styles.storyLabel}>
+        {post.label} · <time dateTime={post.date}>{formatDate(post.date)}</time>
+      </p>
+      <p className={styles.storyExcerpt}>{post.excerpt}</p>
       {/* A cue, not a second link: the headline's link already covers the card. */}
-      <span className={styles.readMore} aria-hidden="true">
+      <span className={styles.storyMore} aria-hidden="true">
         Read more
-        <Arrow />
       </span>
     </li>
   );

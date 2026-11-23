@@ -73,8 +73,8 @@ describe("JournalPage", () => {
     expect(items).toHaveLength(front.older.length);
     items.forEach((li, i) => {
       const p = front.older[i];
-      // Same four parts in the same order in every entry, so the subgrid lines them up.
-      expect(Array.from(li.children).map((c) => c.tagName)).toEqual(["H3", "P", "DIV", "P", "SPAN"]);
+      // Same five parts in the same order in every entry (photo first), so the subgrid lines them up.
+      expect(Array.from(li.children).map((c) => c.tagName)).toEqual(["DIV", "H3", "P", "P", "SPAN"]);
       expect(within(li).getByRole("heading", { level: 3, name: p.title })).toBeInTheDocument();
       expect(li.querySelector("time")).toHaveTextContent(formatDate(p.date));
       expect(li.querySelectorAll("img")).toHaveLength(1);

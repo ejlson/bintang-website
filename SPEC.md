@@ -107,8 +107,8 @@ Designed on the Claude Design canvas "Bintang Website" (Menu artboard); options 
 
 ## Journal motion (19 Nov 2026, About's motion in CSS, no JS)
 
-1. **Load:** JOURNAL rises from a mask, the rule under it draws across, the lead story fades up and its photo wipes open, then Read the story arrives. The post page sets itself the same way (back link and kicker, title, photo wipe, lede).
-2. **Scroll (follows the scroll timeline):** JOURNAL stays put once it has risen in; the Older entries bar draws both rules and its head rises; older stories fade up left to right a beat apart (four to a row); every photo is scaled to 116% and drifts −6% to +6% in its frame; the advert's rule draws, its title rises and lags 14px, its lines and the colophon fade up.
+1. **Load:** JOURNAL rises from a mask, the rule under it draws across, the lead story fades up and its photo wipes open, then Read the story arrives. The Older entries bar then draws both rules and its head rises, and the older stories fade up left to right a beat apart (23 Nov: on load, not on scroll, so the first screen never shows a card half faded). The post page sets itself the same way (back link and kicker, title, photo wipe, lede).
+2. **Scroll (follows the scroll timeline):** JOURNAL stays put once it has risen in; every photo is scaled to 116% and drifts −6% to +6% in its frame; the advert's rule draws, its title rises and lags 14px, its lines and the colophon fade up.
 3. **Tap targets:** nothing between a headline link and its story block (`.front`, `.story`) is clipped or translated, since that would shrink the stretched link.
 4. None for reduced motion; without scroll-driven animation support only the load entrance plays.
 
