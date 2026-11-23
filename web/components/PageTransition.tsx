@@ -7,18 +7,26 @@ import { ViewTransition, useEffect, useLayoutEffect, useRef, type ReactNode, typ
 /** Transition type set on links that open a journal post (see JournalPage). */
 export const OPEN_POST = "open-post";
 
+/** The wipe shapes in app/globals.css ("Page transitions"), set as data-wipe on <html>. */
+export type WipeShape = "down" | "split" | "slant" | "iris";
+
+const isMenu = (path: string) => path === "/menu" || path.startsWith("/menu/");
+
 /**
- * Film-cut page wipe (after MáLà Project): the outgoing page is masked away to
- * reveal the new one already sitting underneath. The wipe is chosen by the page
- * being left, so each page exits in its own way:
- *  - /menu           → slanted wipe
- *  - everything else → top-to-bottom wipe (bottom-to-top on phones, in CSS)
- * Opening a journal post from the list is an iris instead (OPEN_POST type).
- * Keyframes live in app/globals.css under "Page transitions".
+ * Film-cut page wipe (after MáLà Project): the outgoing page is masked away at
+ * a steady pace to reveal the new one, already finished, underneath. As on
+ * their site the cut depends on the move:
+ *  - opening a journal post from the list → iris from the centre (OPEN_POST)
+ *  - leaving Home                          → split from the centre outwards
+ *  - to or from the Menu                   → soft diagonal from the top-right
+ *  - anything else                         → top-to-bottom wipe
+ * Phones get a bottom-to-top wipe for everything but the iris (in CSS).
  */
-export function exitWipeFor(pathname: string): string {
-  if (pathname === "/menu" || pathname.startsWith("/menu/")) return "wipe-slant";
-  return "wipe-down";
+export function wipeShapeFor(from: string, to: string, types: readonly string[] = []): WipeShape {
+  if (types.includes(OPEN_POST)) return "iris";
+  if (from === "/") return "split";
+  if (isMenu(from) || isMenu(to)) return "slant";
+  return "down";
 }
 
 /** The Y translation of a computed `transform` (matrix or matrix3d); 0 for none. */
@@ -51,19 +59,79 @@ export function alignWipeToScreen(instance: ViewTransitionInstance): void {
  * layout: Next mounts a template per route segment and keeps recent routes
  * alive but hidden for back/forward, so each page gets a real exit + enter
  * without throwing that saved state away.
+ *
+ * The shape is picked in onExit, when both ends are known: `pathname` is still
+ * this (outgoing) page's, and the address bar already shows the destination.
+ * At that moment every shape is still fully opaque, so nothing flashes.
  */
 export function PageTransition({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   return (
     <ViewTransition
-      exit={{ [OPEN_POST]: "wipe-iris", default: exitWipeFor(pathname) }}
+      exit="page-out"
       enter="page-under"
       default="none"
-      onExit={alignWipeToScreen}
+      onExit={(instance, types) => {
+        alignWipeToScreen(instance);
+        document.documentElement.dataset.wipe = wipeShapeFor(pathname, window.location.pathname, types);
+      }}
     >
       {children}
     </ViewTransition>
   );
+}
+
+/** Length of the wipe in app/globals.css (page-wipe and friends run 0.8s). */
+const WIPE_MS = 800;
+
+/** Until when (performance.now()) content that streams in late is settled too. */
+let settleWindowEnd = Number.NEGATIVE_INFINITY;
+
+/**
+ * Whether a page wipe is under way: we're inside its update or it's animating.
+ * document.activeViewTransition says so exactly where the browser has it;
+ * otherwise fall back to whether the browser can run one at all.
+ */
+export function wipeRunning(doc: Document = document): boolean {
+  const active = (doc as Document & { activeViewTransition?: unknown }).activeViewTransition;
+  if (active !== undefined) return active !== null;
+  return typeof (doc as Document & { startViewTransition?: unknown }).startViewTransition === "function";
+}
+
+/**
+ * Put inside a Suspense boundary on a page: content that streams in while the
+ * wipe is still running (e.g. a journal post whose article wasn't prefetched)
+ * is shown finished too, instead of building itself under the iris. Content
+ * that arrives after the wipe keeps its entrance.
+ */
+export function SettleOnReveal() {
+  useLayoutEffect(() => {
+    if (performance.now() < settleWindowEnd) settleEntrances();
+  }, []);
+  return null;
+}
+
+/**
+ * Fast-forwards the timed entrance animations of a page that has just arrived
+ * by in-app navigation, so the wipe uncovers a finished page as on MáLà's site
+ * rather than an empty one that then builds itself. Called in the commit that
+ * shows the page, before its snapshot is taken. Only touches CSS animations on
+ * the document timeline that are finite and have only just started: the
+ * scroll-driven reveals, endless loops and anything mid-flight are left alone.
+ * A first visit or a reload never calls this, so those still get the entrance.
+ */
+export function settleEntrances(doc: Document = document): void {
+  if (typeof doc.getAnimations !== "function") return;
+  for (const animation of doc.getAnimations()) {
+    if (animation.constructor.name !== "CSSAnimation") continue;
+    if (animation.timeline !== doc.timeline) continue;
+    const effect = animation.effect as KeyframeEffect | null;
+    if (!effect || effect.pseudoElement?.startsWith("::view-transition")) continue;
+    if (effect.getComputedTiming().iterations === Infinity) continue;
+    const elapsed = Number(animation.currentTime ?? 0);
+    if (elapsed > 50 || animation.playState === "finished") continue;
+    animation.finish();
+  }
 }
 
 type NavigationLike = {
@@ -196,6 +264,18 @@ export function useHistoryWipe() {
       stateRef.current = null;
     };
   }, []);
+
+  // On a route change with a wipe under way, show the new page finished.
+  // Compared against the last path rather than a first-render flag so React's
+  // development double-run on mount can't settle a first visit's entrance.
+  const settledPath = useRef(pathname);
+  useLayoutEffect(() => {
+    if (settledPath.current === pathname) return;
+    settledPath.current = pathname;
+    if (!wipeRunning()) return; // no wipe (old browser, swiped back): keep the entrance
+    settleEntrances();
+    settleWindowEnd = performance.now() + WIPE_MS + 200;
+  }, [pathname]);
 
   // Runs in the commit that shows the new page, inside the view transition's
   // update, so the incoming snapshot is taken at the restored position.

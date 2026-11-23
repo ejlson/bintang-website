@@ -5,9 +5,12 @@ import {
   OPEN_POST,
   PageTransition,
   HistoryWipe,
+  SettleOnReveal,
+  wipeRunning,
   alignWipeToScreen,
-  exitWipeFor,
+  settleEntrances,
   translateYOf,
+  wipeShapeFor,
 } from "@/components/PageTransition";
 import { JournalPage } from "@/components/JournalPage";
 import { posts } from "@/lib/journal";
@@ -50,17 +53,42 @@ afterEach(() => {
   recorded.link.length = 0;
 });
 
-describe("exitWipeFor", () => {
-  it.each(["/menu", "/menu/", "/menu/drinks", "/menu/a/b"])("uses the slanted wipe when leaving %s", (path) => {
-    expect(exitWipeFor(path)).toBe("wipe-slant");
+describe("wipeShapeFor", () => {
+  it.each([
+    ["/about", "/journal"],
+    ["/journal", "/about"],
+    ["/journal/karaoke-nights", "/journal"],
+    ["/contact", "/gallery"],
+    ["/about", "/"],
+    ["/journal", "/"],
+  ])("%s → %s is the top-to-bottom wipe", (from, to) => {
+    expect(wipeShapeFor(from, to)).toBe("down");
   });
 
-  it.each(["/", "/about", "/journal", "/journal/karaoke-nights", "/contact/groups", "/gallery"])(
-    "uses the top-to-bottom wipe when leaving %s",
-    (path) => {
-      expect(exitWipeFor(path)).toBe("wipe-down");
-    },
-  );
+  it.each([
+    ["/", "/about"],
+    ["/", "/journal"],
+    ["/", "/contact"],
+    // Leaving Home wins over the menu rule.
+    ["/", "/menu"],
+    ["/", "/menu/drinks"],
+    // Same-page navigations off Home are still "leaving Home" to this helper.
+    ["/", "/"],
+  ])("%s → %s splits from the centre (leaving Home)", (from, to) => {
+    expect(wipeShapeFor(from, to)).toBe("split");
+  });
+
+  it.each([
+    ["/menu", "/about"],
+    ["/menu/drinks", "/journal"],
+    ["/menu/", "/"],
+    ["/about", "/menu"],
+    ["/journal/karaoke-nights", "/menu/drinks"],
+    ["/menu", "/menu/drinks"],
+    ["/menu/drinks", "/menu"],
+  ])("%s → %s is the slanted wipe (to or from the Menu)", (from, to) => {
+    expect(wipeShapeFor(from, to)).toBe("slant");
+  });
 
   it.each([
     // Prefix lookalikes are different routes, not the menu.
@@ -76,8 +104,24 @@ describe("exitWipeFor", () => {
     // Not a pathname Next would hand us, but must not throw.
     "",
     "menu",
-  ])("does not treat %j as the menu", (path) => {
-    expect(exitWipeFor(path)).toBe("wipe-down");
+  ])("does not treat %j as the menu, from either end", (path) => {
+    expect(wipeShapeFor(path, "/about")).toBe("down");
+    expect(wipeShapeFor("/about", path)).toBe("down");
+  });
+
+  it.each([
+    ["/journal", "/journal/karaoke-nights"],
+    ["/", "/journal/karaoke-nights"],
+    ["/menu", "/journal/karaoke-nights"],
+    ["/about", "/menu"],
+  ])("OPEN_POST makes %s → %s an iris, over every other rule", (from, to) => {
+    expect(wipeShapeFor(from, to, [OPEN_POST])).toBe("iris");
+    expect(wipeShapeFor(from, to, ["other", OPEN_POST])).toBe("iris");
+  });
+
+  it("ignores unrelated transition types", () => {
+    expect(wipeShapeFor("/about", "/journal", ["something-else"])).toBe("down");
+    expect(wipeShapeFor("/", "/about", [])).toBe("split");
   });
 });
 
@@ -109,19 +153,20 @@ describe("PageTransition", () => {
     expect([...container.children].map((el) => el.outerHTML)).toEqual(["<p>one</p>", "<p>two</p>"]);
   });
 
-  it.each([
-    ["/", "wipe-down"],
-    ["/journal", "wipe-down"],
-    ["/menu", "wipe-slant"],
-    ["/menu/drinks", "wipe-slant"],
-  ])("on %s passes exit/enter/default classes to ViewTransition (default exit %s)", (path, wipe) => {
-    nav.pathname = path;
-    render(<PageTransition>x</PageTransition>);
-    const props = lastViewTransition();
-    expect(props.exit).toEqual({ [OPEN_POST]: "wipe-iris", default: wipe });
-    expect(props.enter).toBe("page-under");
-    expect(props.default).toBe("none");
-  });
+  it.each(["/", "/journal", "/menu", "/menu/drinks"])(
+    "on %s passes exit/enter/default classes to ViewTransition",
+    (path) => {
+      nav.pathname = path;
+      render(<PageTransition>x</PageTransition>);
+      const props = lastViewTransition();
+      expect(props.exit).toBe("page-out");
+      expect(props.enter).toBe("page-under");
+      expect(props.default).toBe("none");
+      expect(props.update).toBeUndefined();
+      expect(props.share).toBeUndefined();
+      expect(typeof props.onExit).toBe("function");
+    },
+  );
 
   it("keeps the page mounted across pathname changes (route templates do the remounting)", () => {
     // Keying by pathname here would throw away the routes Next keeps alive for
@@ -149,7 +194,7 @@ describe("PageTransition", () => {
     );
     expect(mounts).toBe(1);
     expect(screen.getByText("journal")).toBeInTheDocument();
-    expect(lastViewTransition().exit).toEqual({ [OPEN_POST]: "wipe-iris", default: "wipe-slant" });
+    expect(lastViewTransition().exit).toBe("page-out");
   });
 });
 
@@ -184,9 +229,154 @@ describe("alignWipeToScreen", () => {
     expect(root.style.getPropertyValue("--vt-y")).toBe("0px");
   });
 
-  it("is wired to the ViewTransition's onExit", () => {
+});
+
+describe("PageTransition onExit", () => {
+  const root = document.documentElement;
+  type OnExit = NonNullable<VTProps["onExit"]>;
+  const instance = (transform: string) =>
+    ({ name: "_t_0_", group: { getComputedStyle: () => ({ transform }) } }) as unknown as Parameters<OnExit>[0];
+  // The address bar already shows the destination when onExit runs.
+  const setLocation = (path: string) => window.history.replaceState(window.history.state, "", path);
+  const exitFrom = (from: string) => {
+    nav.pathname = from;
     render(<PageTransition>x</PageTransition>);
-    expect(lastViewTransition().onExit).toBe(alignWipeToScreen);
+    return lastViewTransition().onExit as OnExit;
+  };
+  afterEach(() => {
+    delete root.dataset.wipe;
+    root.style.removeProperty("--vt-y");
+    setLocation("/");
+  });
+
+  it.each([
+    ["/about", "/journal", [], "down"],
+    ["/", "/about", [], "split"],
+    ["/", "/menu", [], "split"],
+    ["/menu", "/about", [], "slant"],
+    ["/about", "/menu/drinks", [], "slant"],
+    ["/about", "/menu-specials", [], "down"],
+    ["/journal", "/journal/karaoke-nights", [OPEN_POST], "iris"],
+    ["/", "/journal/karaoke-nights", [OPEN_POST], "iris"],
+  ] as const)("%s → %s with types %j sets data-wipe=%s", (from, to, types, shape) => {
+    const onExit = exitFrom(from);
+    setLocation(to);
+    onExit(instance("matrix(1, 0, 0, 1, 0, -800)"), [...types]);
+    expect(root.dataset.wipe).toBe(shape);
+    expect(root.getAttribute("data-wipe")).toBe(shape);
+    expect(root.style.getPropertyValue("--vt-y")).toBe("800px");
+  });
+
+  it("aligns the mask to the screen too (--vt-y from the snapshot group)", () => {
+    const onExit = exitFrom("/journal");
+    setLocation("/about");
+    onExit(instance("matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, -640, 0, 1)"), []);
+    expect(root.style.getPropertyValue("--vt-y")).toBe("640px");
+    expect(root.dataset.wipe).toBe("down");
+  });
+
+  it("reads the destination from window.location at exit time, not at render", () => {
+    setLocation("/journal");
+    const onExit = exitFrom("/about");
+    setLocation("/menu"); // navigation happens after render
+    onExit(instance("none"), []);
+    expect(root.dataset.wipe).toBe("slant");
+    expect(root.style.getPropertyValue("--vt-y")).toBe("0px");
+  });
+
+  it("overwrites the previous navigation's shape", () => {
+    root.dataset.wipe = "iris";
+    const onExit = exitFrom("/about");
+    setLocation("/journal");
+    onExit(instance("none"), []);
+    expect(root.dataset.wipe).toBe("down");
+  });
+});
+
+describe("settleEntrances", () => {
+  // jsdom has no Web Animations API, so drive it with fakes. A class named
+  // CSSAnimation gives the constructor.name the real ones have.
+  const docTimeline = { kind: "document" };
+  type Init = {
+    timeline?: unknown;
+    pseudoElement?: string | null;
+    iterations?: number;
+    currentTime?: number | null;
+    playState?: string;
+    effect?: null;
+  };
+  class CSSAnimation {
+    finish = vi.fn();
+    timeline: unknown;
+    currentTime: number | null;
+    playState: string;
+    effect: { pseudoElement: string | null; getComputedTiming: () => { iterations: number } } | null;
+    constructor(init: Init = {}) {
+      this.timeline = "timeline" in init ? init.timeline : docTimeline;
+      this.currentTime = "currentTime" in init ? (init.currentTime ?? null) : 0;
+      this.playState = init.playState ?? "running";
+      this.effect =
+        "effect" in init
+          ? null
+          : { pseudoElement: init.pseudoElement ?? null, getComputedTiming: () => ({ iterations: init.iterations ?? 1 }) };
+    }
+  }
+  class CSSTransition extends CSSAnimation {}
+  class Animation extends CSSAnimation {}
+  const fakeDoc = (animations: CSSAnimation[]) =>
+    ({ timeline: docTimeline, getAnimations: () => animations }) as unknown as Document;
+
+  it("finishes a finite CSS animation on the document timeline that has just started", () => {
+    const a = new CSSAnimation();
+    const b = new CSSAnimation({ currentTime: 50, iterations: 3 });
+    const c = new CSSAnimation({ currentTime: null }); // pending: not started yet
+    const d = new CSSAnimation({ pseudoElement: "::before" });
+    settleEntrances(fakeDoc([a, b, c, d]));
+    for (const x of [a, b, c, d]) expect(x.finish).toHaveBeenCalledTimes(1);
+  });
+
+  it.each<[string, () => CSSAnimation]>([
+    ["a CSS transition", () => new CSSTransition()],
+    ["a script (Web Animations) animation", () => new Animation()],
+    ["a scroll-driven animation (other timeline)", () => new CSSAnimation({ timeline: { kind: "scroll" } })],
+    ["an animation with no timeline", () => new CSSAnimation({ timeline: null })],
+    ["an animation with no effect", () => new CSSAnimation({ effect: null })],
+    ["a ::view-transition pseudo-element", () => new CSSAnimation({ pseudoElement: "::view-transition-old(root)" })],
+    ["the ::view-transition root", () => new CSSAnimation({ pseudoElement: "::view-transition" })],
+    ["an endless loop", () => new CSSAnimation({ iterations: Infinity })],
+    ["one already mid-flight (> 50ms)", () => new CSSAnimation({ currentTime: 51 })],
+    ["one well under way", () => new CSSAnimation({ currentTime: 800 })],
+    ["one already finished", () => new CSSAnimation({ playState: "finished" })],
+  ])("leaves %s alone", (_, make) => {
+    const skipped = make();
+    const settled = new CSSAnimation();
+    settleEntrances(fakeDoc([skipped, settled]));
+    expect(skipped.finish).not.toHaveBeenCalled();
+    expect(settled.finish).toHaveBeenCalledTimes(1);
+  });
+
+  it("does nothing (and does not throw) without document.getAnimations", () => {
+    expect(() => settleEntrances({ timeline: docTimeline } as unknown as Document)).not.toThrow();
+    expect(() => settleEntrances(document)).not.toThrow(); // jsdom itself
+  });
+
+  it("copes with an empty animation list", () => {
+    expect(() => settleEntrances(fakeDoc([]))).not.toThrow();
+  });
+
+  it("defaults to the global document", () => {
+    const a = new CSSAnimation();
+    const getAnimations = vi.fn(() => [a]);
+    Object.defineProperty(document, "getAnimations", { value: getAnimations, configurable: true });
+    Object.defineProperty(document, "timeline", { value: docTimeline, configurable: true });
+    try {
+      settleEntrances();
+      expect(getAnimations).toHaveBeenCalledTimes(1);
+      expect(a.finish).toHaveBeenCalledTimes(1);
+    } finally {
+      delete (document as { getAnimations?: unknown }).getAnimations;
+      delete (document as { timeline?: unknown }).timeline;
+    }
   });
 });
 
@@ -390,6 +580,100 @@ describe("HistoryWipe (Back/Forward wipes)", () => {
     render(<HistoryWipe />);
     expect(scrollTo).toHaveBeenCalledWith({ top: 321 });
   });
+
+  describe("settling entrances on route change", () => {
+    let getAnimations: ReturnType<typeof vi.fn>;
+    const spyAnimations = () => {
+      getAnimations = vi.fn(() => []);
+      Object.defineProperty(document, "getAnimations", { value: getAnimations, configurable: true });
+    };
+    // jsdom has no view transitions; say whether one is under way.
+    const wipeActive = (active: boolean) =>
+      Object.defineProperty(document, "activeViewTransition", { value: active ? {} : null, configurable: true });
+    afterEach(() => {
+      delete (document as { getAnimations?: unknown }).getAnimations;
+      delete (document as { timeline?: unknown }).timeline;
+      delete (document as { activeViewTransition?: unknown }).activeViewTransition;
+    });
+
+    it("keeps the entrance when no wipe is running (old browsers, a swipe-back the browser animated)", () => {
+      setup();
+      wipeActive(false);
+      spyAnimations();
+      const { rerender } = render(<HistoryWipe />);
+      setPath("/menu");
+      rerender(<HistoryWipe />);
+      expect(getAnimations).not.toHaveBeenCalled();
+    });
+
+    it("a repeat of the mount effect for the same page (Strict Mode) does not settle", () => {
+      setup();
+      wipeActive(true);
+      spyAnimations();
+      const { unmount } = render(<HistoryWipe />);
+      unmount();
+      render(<HistoryWipe />);
+      expect(getAnimations).not.toHaveBeenCalled();
+    });
+
+    it("does not settle on the first render (first visits and reloads keep the entrance)", () => {
+      setup();
+      spyAnimations();
+      render(<HistoryWipe />);
+      expect(getAnimations).not.toHaveBeenCalled();
+    });
+
+    it("settles once per pathname change, and not on re-renders of the same page", () => {
+      setup();
+      wipeActive(true);
+      spyAnimations();
+      const { rerender } = render(<HistoryWipe />);
+      rerender(<HistoryWipe />);
+      expect(getAnimations).not.toHaveBeenCalled();
+
+      setPath("/menu");
+      rerender(<HistoryWipe />);
+      expect(getAnimations).toHaveBeenCalledTimes(1);
+      rerender(<HistoryWipe />);
+      expect(getAnimations).toHaveBeenCalledTimes(1);
+
+      setPath("/about");
+      rerender(<HistoryWipe />);
+      expect(getAnimations).toHaveBeenCalledTimes(2);
+    });
+
+    it("settles even without the Navigation API", () => {
+      setup();
+      wipeActive(true);
+      delete (window as { navigation?: unknown }).navigation;
+      spyAnimations();
+      const { rerender } = render(<HistoryWipe />);
+      setPath("/menu");
+      rerender(<HistoryWipe />);
+      expect(getAnimations).toHaveBeenCalledTimes(1);
+    });
+
+    it("finishes the new page's just-started entrance animations", () => {
+      setup();
+      const timeline = {};
+      class CSSAnimation {
+        timeline = timeline;
+        currentTime = 0;
+        playState = "running";
+        effect = { pseudoElement: null, getComputedTiming: () => ({ iterations: 1 }) };
+        finish = vi.fn();
+      }
+      const entrance = new CSSAnimation();
+      wipeActive(true);
+      Object.defineProperty(document, "timeline", { value: timeline, configurable: true });
+      Object.defineProperty(document, "getAnimations", { value: () => [entrance], configurable: true });
+      const { rerender } = render(<HistoryWipe />);
+      expect(entrance.finish).not.toHaveBeenCalled();
+      setPath("/journal/the-garden");
+      rerender(<HistoryWipe />);
+      expect(entrance.finish).toHaveBeenCalledTimes(1);
+    });
+  });
 });
 
 describe("JournalPage transition types", () => {
@@ -412,3 +696,54 @@ describe("JournalPage transition types", () => {
     for (const p of others) expect(p.transitionTypes).toBeUndefined();
   });
 });
+
+describe("wipeRunning", () => {
+  it("uses document.activeViewTransition where the browser has it", () => {
+    expect(wipeRunning({ activeViewTransition: {} } as unknown as Document)).toBe(true);
+    expect(wipeRunning({ activeViewTransition: null } as unknown as Document)).toBe(false);
+  });
+  it("otherwise falls back to whether view transitions exist at all", () => {
+    expect(wipeRunning({ startViewTransition: () => {} } as unknown as Document)).toBe(true);
+    expect(wipeRunning({} as Document)).toBe(false);
+  });
+});
+
+describe("SettleOnReveal (content streamed in during the wipe)", () => {
+  afterEach(() => {
+    delete (document as { getAnimations?: unknown }).getAnimations;
+    delete (document as { activeViewTransition?: unknown }).activeViewTransition;
+    vi.useRealTimers();
+  });
+
+  it("does nothing when no navigation has happened recently (e.g. a first visit)", () => {
+    // Earlier tests navigate; move the clock well past any window they opened.
+    vi.useFakeTimers({ toFake: ["performance"] });
+    vi.advanceTimersByTime(1e9);
+    const getAnimations = vi.fn(() => []);
+    Object.defineProperty(document, "getAnimations", { value: getAnimations, configurable: true });
+    render(<SettleOnReveal />);
+    expect(getAnimations).not.toHaveBeenCalled();
+  });
+
+  it("settles content revealed while the wipe runs, but not content that arrives after it", () => {
+    vi.useFakeTimers({ toFake: ["performance"] });
+    Object.defineProperty(document, "activeViewTransition", { value: {}, configurable: true });
+    const getAnimations = vi.fn(() => []);
+    Object.defineProperty(document, "getAnimations", { value: getAnimations, configurable: true });
+    nav.pathname = "/journal";
+    const { rerender } = render(<HistoryWipe />);
+    nav.pathname = "/journal/a-post"; // navigation with a wipe: opens the window
+    rerender(<HistoryWipe />);
+    getAnimations.mockClear();
+
+    vi.advanceTimersByTime(500);
+    render(<SettleOnReveal />);
+    expect(getAnimations).toHaveBeenCalledTimes(1);
+
+    vi.advanceTimersByTime(1000);
+    getAnimations.mockClear();
+    render(<SettleOnReveal />);
+    expect(getAnimations).not.toHaveBeenCalled();
+  });
+});
+

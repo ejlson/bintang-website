@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { JournalPostArticle, JournalPostShell } from "@/components/JournalPage";
+import { SettleOnReveal } from "@/components/PageTransition";
 import { getPost, posts } from "@/lib/journal";
 
 // Every post is prerendered. Unknown slugs hit notFound() below (dynamicParams
@@ -43,6 +44,7 @@ export default function Page({ params }: PageProps<"/journal/[slug]">) {
     <JournalPostShell>
       <Suspense fallback={<div style={{ minHeight: "80svh" }} />}>
         <Post params={params} />
+        <SettleOnReveal />
       </Suspense>
     </JournalPostShell>
   );
