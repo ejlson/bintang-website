@@ -1,0 +1,34 @@
+// Cloudflare preview of the Bintang site (OpenNext), same setup as Café Mama's.
+// workers.dev only: no routes and no custom domain, so it never answers for
+// bintangrestaurant.co.uk. Every response carries `X-Robots-Tag: noindex`
+// (pages: next.config.ts; static files: scripts/preview-noindex.mjs), so
+// search engines leave it alone.
+//
+//   npm run preview:build     CMS pull + OpenNext build into .open-next/
+//   npm run preview:deploy    upload it as the `bintang-preview` Worker
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "main": ".open-next/worker.js",
+  "name": "bintang-preview",
+  "compatibility_date": "2026-07-23",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "workers_dev": true,
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "bintang-preview"
+    }
+  ],
+  "images": {
+    "binding": "IMAGES"
+  },
+  "observability": {
+    "enabled": true
+  }
+}

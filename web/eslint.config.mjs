@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Cloudflare preview build output (OpenNext) and wrangler state.
+    ".open-next/**",
+    ".wrangler/**",
     // Vendored third-party code (Sakuga VFX core, MIT).
     "lib/vendor/**",
   ]),
