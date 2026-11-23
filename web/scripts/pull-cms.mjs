@@ -113,9 +113,13 @@ function checkMenu(m) {
   const where = `pull-cms: menu "${m.id}"`;
   if (m.restaurant !== "bintang") throw new Error(`${where} belongs to ${JSON.stringify(m.restaurant)}, not bintang`);
   if (!Array.isArray(m.sections) || m.sections.length === 0) throw new Error(`${where} has no sections`);
+  /* The printed sheets this site has a karaoke line and legal notes for
+     (SHEETS in lib/menu.ts, which a test keeps in step with cms.json). */
+  const parts = cms.menus.parts[m.id] ?? [];
   m.sections.forEach((s, si) => {
     const at = `${where}, section ${si + 1} (${JSON.stringify(s?.title)})`;
     if (!isText(s?.part)) throw new Error(`${at} has no part`);
+    if (!parts.includes(s.part)) throw new Error(`${at} is in part ${JSON.stringify(s.part)}; this site knows ${parts.join(", ")}`);
     if (!isText(s.title)) throw new Error(`${at} has no heading`);
     for (const f of ["subtitle", "intro", "priceLabel", "foot"]) if (!optText(s[f])) throw new Error(`${at}: ${f} is not text`);
     for (const f of ["boxed", "wide"]) if (!optBool(s[f])) throw new Error(`${at}: ${f} is not true/false`);
@@ -129,6 +133,13 @@ function checkMenu(m) {
         throw new Error(`${it} has unknown marks ${JSON.stringify(i.dietary)}`);
     });
   });
+  /* Each sheet keeps a visible dish: the allergen, halal and service-charge
+     notes and the karaoke line hang off a sheet, and an empty sheet is not
+     printed, so hiding all of one would silently drop them. */
+  for (const part of parts) {
+    const shown = m.sections.some((s) => s.part === part && s.items.some((i) => !i.hide));
+    if (!shown) throw new Error(`${where}: every dish on its ${JSON.stringify(part)} sheet is hidden. Show at least one.`);
+  }
 }
 
 /** The four menus, in cms.menus.ids order, as plain JSON for lib/menu.ts. */

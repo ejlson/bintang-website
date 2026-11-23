@@ -18,6 +18,12 @@
       "menu-bintang-karaoke"
     ],
     "query": "*[_type == \"menu\" && _id in $ids]{ \"id\": _id, restaurant, title, sections[]{ part, title, subtitle, intro, priceLabel, foot, boxed, wide, items[]{ name, price, description, note, dietary, hide } } }",
-    "snapshot": "lib/menu.snapshot.json"
+    "snapshot": "lib/menu.snapshot.json",
+    "parts": {
+      "menu-bintang-carte": ["Food", "Drinks"],
+      "menu-bintang-brunch": ["Food", "Drinks"],
+      "menu-bintang-desserts": ["Panghimagas"],
+      "menu-bintang-karaoke": ["Sharing set menu"]
+    }
   }
 }

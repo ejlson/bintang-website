@@ -1,0 +1,873 @@
+{
+  "menus": [
+    {
+      "id": "menu-bintang-carte",
+      "title": "À la carte",
+      "sections": [
+        {
+          "part": "Food",
+          "title": "Small plates",
+          "items": [
+            {
+              "name": "Pandesal",
+              "price": "6",
+              "description": "Two toasted pandesal served with truffle butter"
+            },
+            {
+              "name": "Okoy Fritters",
+              "price": "7",
+              "description": "Shredded root vegetables, spiced vinegar",
+              "dietary": [
+                "gf",
+                "ve"
+              ]
+            },
+            {
+              "name": "Lumpiang Cigarillos",
+              "description": "Beef mince and water chestnut spring rolls, sweet chilli sauce and spiced vinegar",
+              "note": "3pc £6 or 6pc £10"
+            },
+            {
+              "name": "Calamansi Hot Honey Wings",
+              "price": "8",
+              "description": "Crispy fried chicken wings tossed in calamansi hot honey"
+            },
+            {
+              "name": "Calamansi Hot Honey King Prawns",
+              "price": "14",
+              "description": "Prawn tempura, garlic, hot honey calamansi sauce",
+              "dietary": [
+                "gf"
+              ]
+            },
+            {
+              "name": "Pandesal Slider",
+              "price": "10",
+              "description": "Beef patty in a pandesal bun, with American cheese, toyomansi onions and bagoong aioli"
+            }
+          ]
+        },
+        {
+          "part": "Food",
+          "title": "Grill & skillet",
+          "items": [
+            {
+              "name": "Oak Smoked Chicken Inasal",
+              "price": "16",
+              "description": "Oak smoked and grilled thigh marinated in classic Filipino aromatics"
+            },
+            {
+              "name": "Spicy Beef Sisig",
+              "price": "17.5",
+              "description": "Sizzling beef brisket, chilli, soy, calamansi, coconut vinegar, chicharon"
+            },
+            {
+              "name": "Inasal Platter",
+              "price": "32",
+              "description": "Oak smoked whole grilled chicken on the bone marinated in classic Filipino aromatics, served with toyomansi",
+              "note": "Suitable for 2–3 guests"
+            }
+          ]
+        },
+        {
+          "part": "Food",
+          "title": "Noodles",
+          "items": [
+            {
+              "name": "Bintang Noodles (V opt)",
+              "price": "17",
+              "description": "Egg noodles stir fried in Bintang sauce. Choice between chicken (+£1) or tofu & aubergine"
+            },
+            {
+              "name": "Seafood Palabok",
+              "price": "17",
+              "description": "Filipino noodle dish, shrimp sauce, topped with shrimp, squid, crab meat and smoked mackerel"
+            }
+          ]
+        },
+        {
+          "part": "Food",
+          "title": "Ulam",
+          "subtitle": "Curries & stews",
+          "items": [
+            {
+              "name": "Filipino Lamb Curry",
+              "price": "18",
+              "description": "Slow cooked lamb, coconut lemongrass curry",
+              "dietary": [
+                "gf"
+              ]
+            },
+            {
+              "name": "Oxtail Kare Kare",
+              "price": "19",
+              "description": "Oxtail peanut stew served with sautéed shrimp paste",
+              "dietary": [
+                "pn"
+              ]
+            },
+            {
+              "name": "Ulek Curry (VE opt)",
+              "description": "Mangosteen & Naga chilli-based curry with choice of chicken (£17), tofu + aubergine (£16) or prawns (£18)"
+            },
+            {
+              "name": "Bintang Curry (VE opt)",
+              "description": "Creamy coconut & our signature blend of herbs & spices, with a choice of chicken (£17), tofu + aubergine (£16) or prawns (£18)"
+            },
+            {
+              "name": "Chicken Adobo",
+              "price": "16.5",
+              "description": "Boneless leg, marinated in soy, vinegar, bay leaf, black pepper, served with soft boiled egg"
+            }
+          ]
+        },
+        {
+          "part": "Food",
+          "title": "Greens & salads",
+          "items": [
+            {
+              "name": "Garlic Fried Green Beans",
+              "price": "5.5"
+            },
+            {
+              "name": "Laing",
+              "price": "7",
+              "description": "Taro leaves cooked in coconut milk, chilli, fish sauce"
+            },
+            {
+              "name": "Talong and Mango Ensalada",
+              "price": "7.5",
+              "description": "Smoked aubergine, bagoong, mango, onion, coriander"
+            },
+            {
+              "name": "Papaya Salad",
+              "price": "10",
+              "description": "Papaya, calamansi, Asian herbs, dried shrimp & fish sauce",
+              "dietary": [
+                "pn"
+              ]
+            }
+          ]
+        },
+        {
+          "part": "Food",
+          "title": "Sides",
+          "items": [
+            {
+              "name": "Jasmine Rice",
+              "price": "4",
+              "dietary": [
+                "gf",
+                "ve"
+              ]
+            },
+            {
+              "name": "Garlic Fried Rice",
+              "price": "5",
+              "dietary": [
+                "ve"
+              ]
+            },
+            {
+              "name": "Fried Potato Salad",
+              "price": "6",
+              "description": "Fried potatoes, feta cheese, bagoong aioli"
+            },
+            {
+              "name": "Bagoong Fried Rice",
+              "price": "8.5",
+              "description": "Fermented shrimp paste, egg, mango, tomato, onion, coriander"
+            },
+            {
+              "name": "Plain Roti",
+              "price": "3",
+              "dietary": [
+                "ve"
+              ]
+            }
+          ]
+        },
+        {
+          "part": "Drinks",
+          "title": "Cocktails",
+          "items": [
+            {
+              "name": "Ube Colada",
+              "price": "12.5",
+              "description": "House clarified ube rum, coconut water, pineapple"
+            },
+            {
+              "name": "Picante",
+              "price": "12",
+              "description": "Tequila, lime, agave, chilli"
+            },
+            {
+              "name": "Kuya Tommy",
+              "price": "12",
+              "description": "Tarsier Taipei Old Tom gin, calamansi, tonic"
+            },
+            {
+              "name": "Pandan Old Fashioned",
+              "price": "12",
+              "description": "Whiskey, pandan, Angostura, orange essence"
+            },
+            {
+              "name": "Margarita",
+              "price": "11",
+              "description": "Tequila, triple sec, lime"
+            },
+            {
+              "name": "Negroni",
+              "price": "11",
+              "description": "Gin, Campari, sweet vermouth"
+            },
+            {
+              "name": "Lychee Coconut Daiquiri",
+              "price": "12",
+              "description": "Rum, coconut, lychee, lime, sugar"
+            }
+          ]
+        },
+        {
+          "part": "Drinks",
+          "title": "0% Alcohol",
+          "items": [
+            {
+              "name": "Calamansi-ade",
+              "price": "8",
+              "description": "Calamansi, lemon, soda, sugar"
+            },
+            {
+              "name": "Passion Fruit Fizz",
+              "price": "12",
+              "description": "Passion fruit, lime, vanilla, soda"
+            },
+            {
+              "name": "Lychee Moquiri",
+              "price": "9",
+              "description": "Lychee, lime, sugar, mint"
+            }
+          ]
+        },
+        {
+          "part": "Drinks",
+          "title": "Soft drinks",
+          "items": [
+            {
+              "name": "Coke",
+              "price": "4"
+            },
+            {
+              "name": "Diet Coke",
+              "price": "4"
+            },
+            {
+              "name": "Sprite",
+              "price": "4"
+            },
+            {
+              "name": "Ting",
+              "price": "4"
+            },
+            {
+              "name": "Ginger Beer",
+              "price": "4"
+            }
+          ]
+        },
+        {
+          "part": "Drinks",
+          "title": "Beers",
+          "items": [
+            {
+              "name": "Tiger Beer · 4.8% ABV",
+              "price": "6"
+            },
+            {
+              "name": "San Miguel · 5% ABV",
+              "price": "5.5"
+            },
+            {
+              "name": "Lucky Saint · 0.05% ABV",
+              "price": "6.5"
+            }
+          ]
+        },
+        {
+          "part": "Drinks",
+          "title": "Red wine",
+          "priceLabel": "BOTTLE / GLASS",
+          "items": [
+            {
+              "name": "Côtes du Rhône",
+              "price": "40 / 10",
+              "description": "Soft and fruity French red wine"
+            },
+            {
+              "name": "Merlo Basco",
+              "price": "32 / 8",
+              "description": "Full-bodied, dark berry, sweet spice and noble tannins"
+            }
+          ]
+        },
+        {
+          "part": "Drinks",
+          "title": "White wine",
+          "priceLabel": "BOTTLE / GLASS",
+          "items": [
+            {
+              "name": "Barbera d’Alba",
+              "price": "32 / 8",
+              "description": "Bright acidity, luscious dark cherry and plum fruit flavours, and soft tannins"
+            },
+            {
+              "name": "Sauvignon Blanc",
+              "price": "35 / 9",
+              "description": "Fresh, dry and crisp Spanish wine, aromas of apple, pear and citrus"
+            }
+          ]
+        },
+        {
+          "part": "Drinks",
+          "title": "Sparkling / rosé",
+          "priceLabel": "BOTTLE / GLASS",
+          "items": [
+            {
+              "name": "Prosecco Superiore",
+              "price": "32 / 8",
+              "description": "Refined, complex aromas of apple, pear and white flowers, and a crisp finish"
+            },
+            {
+              "name": "Marcel Hubert Rosé",
+              "price": "30 / 8",
+              "description": "A delicate rosé combining summer berry aromas and a sweet tangy flavour of strawberries and raspberries"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "menu-bintang-brunch",
+      "title": "Brunch",
+      "sections": [
+        {
+          "part": "Food",
+          "title": "Starters",
+          "foot": "See the specials board for more",
+          "items": [
+            {
+              "name": "Okoy Fritters",
+              "price": "7",
+              "description": "Shredded root vegetables, spiced vinegar",
+              "dietary": [
+                "gf",
+                "ve"
+              ]
+            },
+            {
+              "name": "Calamansi Hot Honey Wings",
+              "price": "7",
+              "description": "Garlic, calamansi, chillies, fish sauce honey"
+            },
+            {
+              "name": "Lumpiang Cigarillos",
+              "description": "Beef mince and water chestnut spring rolls, sweet chilli sauce and spiced vinegar",
+              "note": "3pc £6 or 6pc £10"
+            },
+            {
+              "name": "Calamansi Hot Honey King Prawns",
+              "price": "13.5",
+              "description": "Prawn tempura, garlic, hot honey calamansi sauce",
+              "dietary": [
+                "gf"
+              ]
+            }
+          ]
+        },
+        {
+          "part": "Food",
+          "title": "Brunch plates",
+          "items": [
+            {
+              "name": "Tapa Steak, Eggs n’ Tats",
+              "price": "18",
+              "description": "Sweet cured picanha, fried eggs, smashed tats"
+            },
+            {
+              "name": "Longanisa Shakshuka Skillet",
+              "price": "18",
+              "description": "Longanisa (lamb & beef mince) and eggs cooked in spiced tomato stew, served with pandesal"
+            },
+            {
+              "name": "Inasal & Kanin Plate",
+              "price": "29",
+              "description": "Whole chicken, jasmine rice, toyomansi",
+              "note": "Suitable for 2"
+            },
+            {
+              "name": "Seafood Palabok",
+              "price": "17",
+              "description": "Filipino noodle dish, shrimp sauce, topped with shrimp, squid and smoked mackerel"
+            },
+            {
+              "name": "Oxtail Kare Kare",
+              "price": "19",
+              "description": "Oxtail peanut stew served with sautéed shrimp paste",
+              "dietary": [
+                "pn"
+              ]
+            },
+            {
+              "name": "Filipino Lamb Curry",
+              "price": "18",
+              "description": "Slow cooked lamb, coconut lemongrass curry",
+              "dietary": [
+                "gf"
+              ]
+            }
+          ]
+        },
+        {
+          "part": "Food",
+          "title": "Silogs",
+          "intro": "Silogs are classic Filipino breakfast meals made with garlic fried rice, served with a fried egg, cherry tomatoes, pickles and Bintang pinakurat",
+          "boxed": true,
+          "items": [
+            {
+              "name": "Laingsilog",
+              "price": "15",
+              "description": "Taro leaves cooked in coconut milk, chilli, fish sauce"
+            },
+            {
+              "name": "Bangsilog",
+              "price": "16.5",
+              "description": "Shallow-fried, lightly battered milkfish (bangus)"
+            },
+            {
+              "name": "Longsilog",
+              "price": "16",
+              "description": "Longanisa: sweet, garlicky, lamb & beef sausages"
+            },
+            {
+              "name": "Tocsilog",
+              "price": "16.5",
+              "description": "Boneless chicken tocino: sweet and garlicky"
+            }
+          ]
+        },
+        {
+          "part": "Food",
+          "title": "Sides",
+          "items": [
+            {
+              "name": "Jasmine Rice",
+              "price": "4",
+              "dietary": [
+                "gf",
+                "ve"
+              ]
+            },
+            {
+              "name": "Garlic Rice",
+              "price": "5"
+            },
+            {
+              "name": "Smashed Tats",
+              "price": "5",
+              "description": "Fried baby potatoes, fried onions, bagoong aioli, nori seaweed powder"
+            }
+          ]
+        },
+        {
+          "part": "Food",
+          "title": "Greens & salad",
+          "items": [
+            {
+              "name": "Atchara",
+              "price": "4",
+              "description": "Pickled papaya, carrot, red onion, red pepper"
+            },
+            {
+              "name": "Garlic Fried Green Beans",
+              "price": "5.5"
+            },
+            {
+              "name": "Laing",
+              "price": "6.5",
+              "description": "Taro leaves cooked in coconut milk, chilli, fish sauce"
+            },
+            {
+              "name": "Talong and Mango Ensalada",
+              "price": "7.5",
+              "description": "Smoked aubergine, bagoong, mango, cucumber, red pepper, onion, coriander"
+            }
+          ]
+        },
+        {
+          "part": "Food",
+          "title": "Extras",
+          "items": [
+            {
+              "name": "Pandesal",
+              "price": "1",
+              "description": "1pc fresh Filipino bread"
+            },
+            {
+              "name": "Milk Fish (Bangus)",
+              "price": "8.5",
+              "description": "Shallow fried, lightly battered"
+            },
+            {
+              "name": "Chicken Tocino",
+              "price": "7.5",
+              "description": "Sweet garlicky grilled chicken"
+            },
+            {
+              "name": "Longanisa",
+              "price": "7.5",
+              "description": "3pcs sweet Filipino sausage (lamb & beef mince)"
+            },
+            {
+              "name": "Fried Egg",
+              "price": "3"
+            }
+          ]
+        },
+        {
+          "part": "Drinks",
+          "title": "Cocktails",
+          "items": [
+            {
+              "name": "Ube Colada",
+              "price": "12.5",
+              "description": "House clarified ube rum, coconut water, pineapple"
+            },
+            {
+              "name": "Mimosa",
+              "price": "9",
+              "description": "Superiore prosecco, orange juice"
+            },
+            {
+              "name": "Superiore Prosecco",
+              "price": "8",
+              "description": "Or request a bottle (£32)"
+            },
+            {
+              "name": "Lychee Daiquiri",
+              "price": "11",
+              "description": "Rum, lychee, lime, sugar"
+            },
+            {
+              "name": "Kuya Tommy",
+              "price": "12",
+              "description": "Tarsier Taipei Old Tom gin, calamansi, tonic"
+            },
+            {
+              "name": "Margarita",
+              "price": "12",
+              "description": "Calamansi, tequila, triple sec, lime"
+            }
+          ]
+        },
+        {
+          "part": "Drinks",
+          "title": "Milkshakes",
+          "items": [
+            {
+              "name": "Mango Shake",
+              "price": "8",
+              "description": "Mango sorbet, milk, whipped cream"
+            },
+            {
+              "name": "Ube Shake",
+              "price": "8",
+              "description": "Ube ice cream, milk, whipped cream"
+            },
+            {
+              "name": "Milo Shake",
+              "price": "8",
+              "description": "Milo ice cream, milk, whipped cream"
+            }
+          ]
+        },
+        {
+          "part": "Drinks",
+          "title": "Hot drinks",
+          "items": [
+            {
+              "name": "Green Tea",
+              "price": "3"
+            },
+            {
+              "name": "Breakfast / Earl Grey Tea",
+              "price": "2.5"
+            },
+            {
+              "name": "Filter Coffee",
+              "price": "4.5",
+              "description": "Free refills"
+            }
+          ]
+        },
+        {
+          "part": "Drinks",
+          "title": "Non-alcoholic",
+          "items": [
+            {
+              "name": "Calamansi-ade",
+              "price": "8",
+              "description": "Calamansi juice, soda, sugar"
+            },
+            {
+              "name": "Passion Fruit Fizz",
+              "price": "8",
+              "description": "Passion fruit, lime, vanilla, soda"
+            },
+            {
+              "name": "Ting",
+              "price": "3",
+              "description": "Sparkling grapefruit"
+            },
+            {
+              "name": "Coke",
+              "price": "4"
+            },
+            {
+              "name": "Sprite",
+              "price": "4"
+            },
+            {
+              "name": "Diet Coke",
+              "price": "4"
+            },
+            {
+              "name": "Orange Juice",
+              "price": "4"
+            }
+          ]
+        },
+        {
+          "part": "Drinks",
+          "title": "Bottomless drinks",
+          "intro": "Choose from the unlimited cocktails or bubbles below for just £23 per person.",
+          "foot": "Bottomless deal is not shareable and lasts a maximum of 1.5 hours. T&Cs apply.",
+          "wide": true,
+          "items": [
+            {
+              "name": "Lychee Daiquiri",
+              "description": "Rum, lychee, lime, sugar"
+            },
+            {
+              "name": "Mimosa",
+              "description": "Superiore prosecco, orange juice"
+            },
+            {
+              "name": "Calamansi Margarita",
+              "description": "Calamansi, tequila, triple sec, sugar"
+            },
+            {
+              "name": "Superiore Prosecco"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "menu-bintang-desserts",
+      "title": "Desserts",
+      "sections": [
+        {
+          "part": "Panghimagas",
+          "title": "Desserts",
+          "items": [
+            {
+              "name": "Halo-Halo",
+              "price": "10",
+              "description": "Shaved ice, ice-cream of choice & toppings"
+            },
+            {
+              "name": "Ube Leche Flan Cake",
+              "price": "8",
+              "description": "Ube chiffon layered with a caramel pudding & ube cream"
+            },
+            {
+              "name": "Buko Pie",
+              "price": "9",
+              "description": "Coconut filling in a buttery pie crust"
+            },
+            {
+              "name": "Mango Float",
+              "price": "8",
+              "description": "Mango, whipped cream & malted biscuits"
+            },
+            {
+              "name": "Ube Bilog",
+              "price": "9.5",
+              "description": "Toasted pandesal ice-cream sandwich"
+            },
+            {
+              "name": "Ube Brownie",
+              "price": "7"
+            }
+          ]
+        },
+        {
+          "part": "Panghimagas",
+          "title": "Ice cream",
+          "intro": "Ube, pandan, queso, Milo, lychee, mango, calamansi",
+          "items": [
+            {
+              "name": "One scoop",
+              "price": "5.5"
+            },
+            {
+              "name": "Two scoops",
+              "price": "6.7"
+            }
+          ]
+        },
+        {
+          "part": "Panghimagas",
+          "title": "Weekend brunch",
+          "intro": "Sat & Sun brunch only. Our pandesal French toast is made fresh by our sister brand Cafe Mama & Sons",
+          "boxed": true,
+          "items": [
+            {
+              "name": "Ube French Toast",
+              "price": "14",
+              "description": "Pandesal toast, homemade ube halaya, ube ice cream, coconut shavings, ube cream and nata de coco"
+            },
+            {
+              "name": "Halo-Halo for 2",
+              "price": "12",
+              "description": "Classic Filipino shaved ice dessert with sweet mix-ins"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "menu-bintang-karaoke",
+      "title": "Karaoke",
+      "sections": [
+        {
+          "part": "Sharing set menu",
+          "title": "Starters",
+          "items": [
+            {
+              "name": "Bintang Chicken Wings",
+              "description": "Carabao / calamansi honey or BBQ adobo"
+            },
+            {
+              "name": "Okoy Fritters",
+              "description": "Shredded root vegetables, Bintang pinakurat"
+            },
+            {
+              "name": "Lumpiang Shanghai",
+              "description": "Beef mince spring rolls, sweet and spicy sauce"
+            },
+            {
+              "name": "Papaya Salad",
+              "description": "Papaya, green beans, dried shrimp, peanuts, fish sauce"
+            },
+            {
+              "name": "Tofu Bites",
+              "description": "Crispy tofu, sweet adobo glaze"
+            }
+          ]
+        },
+        {
+          "part": "Sharing set menu",
+          "title": "Mains",
+          "items": [
+            {
+              "name": "Beef Sisig",
+              "description": "Brined beef brisket, chilli, egg, served on a sizzling plate"
+            },
+            {
+              "name": "Oak Smoked Chicken Inasal",
+              "description": "½ hen on the bone & boneless thigh, marinated with lemongrass, ginger and soy, and chargrilled"
+            },
+            {
+              "name": "Oxtail Kare-Kare",
+              "description": "Braised in a peanut and fermented shrimp stew with pak choi, green beans, aubergine"
+            },
+            {
+              "name": "Filipino Lamb Rendang",
+              "description": "Slow-cooked lamb, coconut lemongrass curry"
+            },
+            {
+              "name": "Ulek Curry",
+              "description": "Ulek red curry, aubergine, scotch bonnet, mangosteen, coconut milk"
+            }
+          ]
+        },
+        {
+          "part": "Sharing set menu",
+          "title": "Bintang special main",
+          "boxed": true,
+          "items": [
+            {
+              "name": "Pancit Guisado",
+              "description": "Filipino rice noodle dish with stir-fried vegetables",
+              "note": "Can be made gluten free and vegan · £3 per person supplement"
+            }
+          ]
+        },
+        {
+          "part": "Sharing set menu",
+          "title": "Dessert",
+          "items": [
+            {
+              "name": "Buko Pandan",
+              "description": "Pandan jelly, nata de coco in a pandan cream & 1 scoop of ice cream (ube or mango)"
+            }
+          ]
+        },
+        {
+          "part": "Sharing set menu",
+          "title": "Sides",
+          "items": [
+            {
+              "name": "Jasmine Rice",
+              "description": "Included with the set menu"
+            }
+          ]
+        },
+        {
+          "part": "Sharing set menu",
+          "title": "Group dining info",
+          "foot": "Please ask our team if you have any questions.",
+          "boxed": true,
+          "items": [
+            {
+              "name": "3 starters & 3 mains",
+              "description": "Choose three of each, all served in sharing portions. Jasmine rice included."
+            },
+            {
+              "name": "Buko Pandan & a scoop of ice cream",
+              "description": "For every guest. Our dessert includes dairy; please ask about sorbets."
+            },
+            {
+              "name": "Add Pancit Guisado",
+              "description": "Our Bintang main, as an extra sharing dish for the table",
+              "note": "£3 per person supplement"
+            }
+          ]
+        },
+        {
+          "part": "Sharing set menu",
+          "title": "Sharing set menu",
+          "intro": "All dishes are served as platters.",
+          "wide": true,
+          "items": [
+            {
+              "name": "10 or more guests",
+              "price": "38 pp"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
