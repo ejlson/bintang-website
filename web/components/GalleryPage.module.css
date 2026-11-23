@@ -1,229 +1,213 @@
-/* Gallery (option E on the Claude Design canvas, after the Simon Wheatley
-   portfolio pin), with depth: a big GALLERY title at the back, photos at
-   three distances in front of it, and the whole field moving with the mouse.
-   White page, ink text. Spacing follows the 8px scale: 4 8 12 16 24 32 48 64 96. */
+/* Gallery: one bento grid on the loading screen's warm black, 4px apart and
+   4px in from the sides. No rounded corners anywhere. */
 
 .page {
-  --zoom: 2.4;
-  /* How far the nearest layer travels with the mouse, edge to centre. */
-  --travel-x: 32px;
-  --travel-y: 22px;
-
   min-height: 100vh;
   min-height: 100svh;
-  /* Near photos at the screen edge travel past it with the mouse. */
-  overflow-x: clip;
-  background: #fff;
+  /* The Home loader's black (HomeTitle .black). */
+  background: #0e0b0a;
   /* The footer's Book a table writes its words in this on hover. */
-  --ground: #fff;
-  color: var(--ink);
+  --ground: #0e0b0a;
+  /* Red type throughout, like the title: the footer takes this colour too. */
+  color: var(--red);
   font-family: var(--font-serif);
 }
 
-/* ---------- The field ---------- */
-
-/* Phones: the title first, then three columns of 140px cells that scroll. */
-.field {
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  /* The title and its name line size to their content; photos get 140px rows. */
-  grid-template-rows: auto auto;
-  grid-auto-rows: 140px;
-  gap: 12px 16px;
-  padding: 8px 16px 24px;
-}
-
-/* ---------- The title at the back ---------- */
-
-.backdrop {
-  grid-column: 1 / -1;
+/* The title: GALLERY across the page in red Aquavit Black, squashed like the
+   old field title. Sticky at the top of the screen and under the grid, so the
+   photos scroll up over it (and it shows through the gaps). */
+.title {
+  position: sticky;
+  top: 0;
+  z-index: 0;
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
+  overflow: hidden;
+  /* 1.4vw at the sides, so the rules are as wide as the word's ink (97.2vw),
+     the same as the Journal title's. */
+  padding: 8px 1.4vw 16px;
   pointer-events: none;
 }
 
-.bigTitle {
+/* Red rules above and below the word, like the Journal title's, with the
+   same gap to the letters: clamp(8px, 1vw, 14px). The word's line box doesn't
+   hug its ink (measured in Aquavit Black at 25.5vw, squashed 0.85: the caps
+   start 1.125vw below its top, and the ink ends 0.57vw above its bottom), so
+   .titleText's margins take those back. */
+.titleRule {
+  --rule-gap: clamp(8px, 1vw, 14px);
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  border-top: 2px solid var(--red);
+  border-bottom: 2px solid var(--red);
+}
+
+.titleText {
   margin: 0;
+  color: var(--red);
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 23vw;
+  font-size: 25.5vw;
   line-height: 0.8;
   letter-spacing: -0.03em;
   text-transform: uppercase;
+  white-space: nowrap;
   transform: scaleY(0.85);
+  transform-origin: top;
+  /* Take back the height the squash leaves empty, then set the gap to each rule. */
+  margin-top: calc(var(--rule-gap) - 1.125vw);
+  margin-bottom: calc(-0.12em + var(--rule-gap) - 0.57vw);
 }
 
-.titleSub {
-  grid-column: 1 / -1;
-  justify-self: center;
-  max-width: 40ch;
-  margin: 0;
-  padding: 0 6px;
-  background: #fff;
-  font-size: 15px;
-  line-height: 1.3;
-  font-style: italic;
-  text-align: center;
+/* Scrolling up, the title (rules too) darkens into the black and is gone just
+   as the grid's top reaches the top of the screen and covers it: that is the
+   76px header + the title's 24px padding + its two 2px rules + its 17.34vw of
+   type, less the 1.695vw its margins take back, plus a rule gap each side. Follows the scroll
+   (no timer); browsers without scroll timelines keep it as it is. */
+@supports (animation-timeline: scroll()) {
+  /* The whole title, rules too. */
+  .title {
+    animation: title-dim linear both;
+    animation-timeline: scroll(root);
+    animation-range: 0 calc(104px + 15.645vw + 2 * clamp(8px, 1vw, 14px));
+  }
 }
 
-/* ---------- Depth layers ---------- */
+@keyframes title-dim {
+  to {
+    opacity: 0;
+  }
+}
 
-/* --f: how much a layer follows the mouse. Far photos are soft-focus and a
-   little paler; near ones are sharp. Each cell is a size container, so a
-   photo can measure itself against it. */
-.cell {
-  --f: 1;
-  --blur: 0px;
-  --fade: 1;
-
+/* Measures the page width for the square rows (100cqw), without making
+   <main> a container: that would trap the fixed viewer inside it. */
+.wrap {
   position: relative;
-  z-index: 3;
-  display: flex;
-  min-width: 0;
-  min-height: 0;
-  container-type: size;
-  /* Stay on top until an enlarged photo has finished shrinking back. */
-  transition: z-index 0s 0.5s;
-}
-
-.cell[data-layer="2"] {
-  --f: 0.55;
-  --blur: 1.2px;
-  --fade: 0.94;
-
-  z-index: 2;
-}
-
-.cell[data-layer="1"] {
-  --f: 0.25;
-  --blur: 3px;
-  --fade: 0.82;
-
   z-index: 1;
+  container-type: inline-size;
+  /* The same space at the sides as between tiles. */
+  padding: 0 4px;
 }
 
-/* Height is a share of the cell's height (--size, 0–100), unless that would
-   make it wider than the cell; then it is as wide as the cell. Either way the
-   width follows the photo's own shape (--ar = width / height), so it is never
-   cropped to a different shape. */
-.shot {
+/* Phones: two square columns. Landscape tiles span both columns, portrait
+   ones two rows; placed in order (lib/gallery.ts makes sure nothing is left
+   empty). */
+.bento {
+  --gap: 4px;
+  --cols: 2;
+
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  /* Square cells: a row is as tall as a column is wide. */
+  grid-auto-rows: calc((100cqw - (var(--cols) - 1) * var(--gap)) / var(--cols));
+  gap: var(--gap);
+}
+
+.tile {
   position: relative;
+  grid-column: span var(--pw);
+  grid-row: span var(--ph);
   display: block;
-  height: min(calc(var(--size) * 1cqh), calc(100cqw / var(--ar)));
-  aspect-ratio: var(--ratio);
+  min-width: 0;
   padding: 0;
   border: 0;
   background: var(--ink);
   cursor: zoom-in;
   overflow: hidden;
-  opacity: var(--fade);
-  transition:
-    transform 0.5s var(--ease),
-    box-shadow 0.5s var(--ease),
-    filter 0.4s var(--ease),
-    opacity 0.4s var(--ease);
 }
 
-.shot img {
+.tile img,
+.clip {
   object-fit: cover;
+  transition: transform 0.6s var(--ease);
 }
 
-.shot:focus-visible {
-  outline: 2px solid var(--red-deep);
-  outline-offset: 2px;
+/* The film clip over the still, fading in once it is actually playing. */
+.clip {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition:
+    opacity 0.4s,
+    transform 0.6s var(--ease);
 }
 
-/* Wide screens: one screen of a 6 × 4 grid; the title fills the field behind
-   the photos and drifts slightly the other way to the mouse. */
+.clip[data-playing] {
+  opacity: 1;
+}
+
+/* Inside the tile: there is no gap to draw an outline in. */
+.tile:focus-visible {
+  outline: 2px solid var(--paper);
+  outline-offset: -4px;
+}
+
+/* Wide screens: six square columns, every tile placed by hand. */
 @media (width >= 768px) {
-  .field {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-    grid-template-rows: repeat(4, minmax(0, 1fr));
-    grid-auto-rows: auto;
-    gap: 12px 24px;
-    height: calc(100svh - 110px);
-    min-height: 560px;
-    padding: 16px 20px;
+  .bento {
+    --cols: 6;
   }
 
-  .backdrop {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    transform: translate3d(
-      calc(var(--px, 0) * -0.2 * var(--travel-x)),
-      calc(var(--py, 0) * -0.2 * var(--travel-y)),
-      0
-    );
-  }
-
-  .bigTitle {
-    font-size: clamp(120px, 20vw, 400px);
-  }
-
-  /* Pinned just under the middle, above every photo; it never moves the title. */
-  .titleSub {
-    position: absolute;
-    top: calc(50% + 8.5vw);
-    left: 50%;
-    z-index: 11;
-    transform: translateX(-50%);
-    text-align: center;
-  }
-
-  .cell {
-    grid-column: var(--col);
-    grid-row: var(--row);
-    transform: translate3d(
-      calc(var(--px, 0) * var(--f) * var(--travel-x)),
-      calc(var(--py, 0) * var(--f) * var(--travel-y)),
-      0
-    );
+  .tile {
+    grid-column: var(--col) / span var(--w);
+    grid-row: var(--row) / span var(--h);
   }
 }
 
-/* With a mouse (not a touchscreen laptop's tap): hovering or focusing a
-   photo brings it into focus and enlarges it in place, above everything. */
-@media (width >= 768px) and (hover: hover) and (pointer: fine) {
-  /* Depth of field needs a mouse to bring a photo into focus; touch screens
-     keep the fade only. */
-  .shot {
-    filter: blur(var(--blur));
-  }
-
-  .cell:has(.shot:hover, .shot:focus-visible) {
-    z-index: 10;
-    transition-delay: 0s;
-  }
-
-  .shot:hover,
-  .shot:focus-visible {
-    transform: scale(var(--zoom));
-    filter: none;
-    opacity: 1;
-    box-shadow: 0 18px 40px color-mix(in srgb, var(--ink) 25%, transparent);
-  }
-}
-
-/* ---------- Corner labels ---------- */
-
-.corners {
-  display: flex;
-  justify-content: space-between;
-  align-items: end;
-  gap: 16px;
-  padding: 0 20px 20px;
-}
-
-.corner {
-  margin: 0;
-  font-size: 12px;
+/* The caption: number and name on a paper label that fades up in the
+   bottom-left corner on hover or keyboard focus. */
+.tileCap {
+  position: absolute;
+  z-index: 1;
+  left: 8px;
+  bottom: 8px;
+  max-width: calc(100% - 16px);
+  padding: 6px 10px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 13px;
   line-height: 1.3;
+  text-align: left;
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 0.3s var(--ease),
+    transform 0.3s var(--ease);
 }
 
-.right {
-  text-align: right;
+.tileNum {
+  margin-right: 4px;
+  opacity: 0.6;
+  font-variant-numeric: tabular-nums;
+}
+
+.tile:focus-visible .tileCap {
+  opacity: 1;
+  transform: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tile:hover .tileCap {
+    opacity: 1;
+    transform: none;
+  }
+
+  .tile:hover img,
+  .tile:hover .clip {
+    transform: scale(1.04);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tile img,
+  .tileCap {
+    transition: none;
+  }
+
+  .tile:hover img {
+    transform: none;
+  }
 }

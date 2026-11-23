@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import Gallery from "@/app/gallery/page";
-import { FIELD, PHOTOS, type PhotoId } from "@/lib/gallery";
+import { BENTO, PHOTOS, type PhotoId, type Tile } from "@/lib/gallery";
 import { motion } from "../vitest.setup";
 
 // Lenis is only created by the root layout; tests hand the viewer a fake one.
@@ -19,10 +19,41 @@ afterEach(() => {
 
 const shots = () => screen.getAllByRole("button", { name: /^Open photo:/ });
 const shot = (alt: string) => screen.getByRole("button", { name: `Open photo: ${alt}` });
-const title = () => screen.getByTestId("field-title");
 const dialog = () => screen.getByRole("dialog", { name: "Photo viewer" });
 const viewerImg = () => within(dialog()).getByRole("img");
 const galleryCss = () => readFileSync(join(process.cwd(), "components", "GalleryPage.module.css"), "utf8");
+const tiles = () => PHOTOS.map((p) => BENTO[p.id as PhotoId]);
+
+/**
+ * Places tiles the way CSS grid auto-placement does without `dense`: each one
+ * goes at or after the previous one, never back into an earlier hole.
+ * Returns the filled cells and each tile's top-left, in order.
+ */
+function packInOrder(spans: { w: number; h: number }[], cols: number) {
+  const filled = new Set<string>();
+  const starts: [number, number][] = [];
+  const free = (c: number, r: number, w: number, h: number) => {
+    if (c + w > cols) return false;
+    for (let y = r; y < r + h; y++) for (let x = c; x < c + w; x++) if (filled.has(`${x},${y}`)) return false;
+    return true;
+  };
+  let [cr, cc] = [0, 0];
+  for (const { w, h } of spans) {
+    let r = cr;
+    let c = cc;
+    while (!free(c, r, w, h)) {
+      c++;
+      if (c >= cols) {
+        c = 0;
+        r++;
+      }
+    }
+    for (let y = r; y < r + h; y++) for (let x = c; x < c + w; x++) filled.add(`${x},${y}`);
+    starts.push([r, c]);
+    [cr, cc] = [r, c + w];
+  }
+  return { filled, starts };
+}
 
 describe("Gallery data", () => {
   it("has 19 photos with unique ids: the 14 gallery photos and five from the journal", () => {
@@ -39,19 +70,60 @@ describe("Gallery data", () => {
     for (const p of PHOTOS) expect(existsSync(join(process.cwd(), "public", p.src)), p.src).toBe(true);
   });
 
-  it("gives every photo a spot, and lists them in reading order (row, then column)", () => {
-    expect(Object.keys(FIELD).sort()).toEqual(PHOTOS.map((p) => p.id).sort());
-    const spots = PHOTOS.map((p) => FIELD[p.id as PhotoId]);
-    for (let i = 1; i < spots.length; i++) {
-      const [a, b] = [spots[i - 1], spots[i]];
+  it("gives every photo a bento tile, in reading order (row, then column)", () => {
+    expect(Object.keys(BENTO).sort()).toEqual(PHOTOS.map((p) => p.id).sort());
+    const t = tiles();
+    for (let i = 1; i < t.length; i++) {
+      const [a, b] = [t[i - 1], t[i]];
       expect(b.row > a.row || (b.row === a.row && b.col > a.col), PHOTOS[i].id).toBe(true);
     }
-    for (const s of spots) {
-      expect(s.col).toBeGreaterThanOrEqual(1);
-      expect(s.col).toBeLessThanOrEqual(6);
-      expect(s.row).toBeGreaterThanOrEqual(1);
-      expect(s.row).toBeLessThanOrEqual(4);
+  });
+
+  it("fills the six-column grid exactly: no overlaps, no holes", () => {
+    const cells = new Map<string, string>();
+    PHOTOS.forEach((p, i) => {
+      const t: Tile = tiles()[i];
+      expect(t.col + t.w - 1, p.id).toBeLessThanOrEqual(6);
+      for (let y = t.row; y < t.row + t.h; y++)
+        for (let x = t.col; x < t.col + t.w; x++) {
+          expect(cells.get(`${x},${y}`), `${p.id} overlaps at ${x},${y}`).toBeUndefined();
+          cells.set(`${x},${y}`, p.id);
+        }
+    });
+    const rows = Math.max(...tiles().map((t) => t.row + t.h - 1));
+    expect(cells.size).toBe(6 * rows);
+  });
+
+  it("packs the two-column phone grid in reading order, without holes", () => {
+    const { filled, starts } = packInOrder(tiles().map((t) => ({ w: t.pw, h: t.ph })), 2);
+    const rows = Math.max(...[...filled].map((k) => Number(k.split(",")[1]))) + 1;
+    expect(filled.size).toBe(2 * rows);
+    // Every tile starts on a later row than the last, or further along the same row.
+    for (let i = 1; i < starts.length; i++) {
+      const [[r0, c0], [r1, c1]] = [starts[i - 1], starts[i]];
+      expect(r1 > r0 || (r1 === r0 && c1 > c0), PHOTOS[i].id).toBe(true);
     }
+  });
+
+  it("gives each of the 14 film stills a looping clip beside it; the journal photos are stills", () => {
+    for (const p of PHOTOS) {
+      const v = (p as { video?: string }).video;
+      if (p.src.startsWith("/media/gallery/")) {
+        expect(v, p.id).toBe(p.src.replace(/\.jpg$/, ".mp4"));
+        expect(existsSync(join(process.cwd(), "public", v!)), v).toBe(true);
+      } else expect(v, p.id).toBeUndefined();
+    }
+  });
+
+  it("shapes tiles by the photo: landscape wide, portrait tall", () => {
+    PHOTOS.forEach((p, i) => {
+      const t = tiles()[i];
+      if (p.width > p.height) expect(t.w, p.id).toBeGreaterThanOrEqual(t.h);
+      if (p.height > p.width * 1.5) {
+        expect(t.h, p.id).toBe(2);
+        expect(t.ph, p.id).toBe(2);
+      }
+    });
   });
 });
 
@@ -59,154 +131,150 @@ describe("Gallery page", () => {
   it("has one H1 and marks Gallery as the current page", () => {
     render(<Gallery />);
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
-    const current = screen.getAllByRole("link").filter((a) => a.getAttribute("aria-current") === "page");
-    expect(current.map((a) => a.getAttribute("href"))).toEqual(["/gallery"]);
+    expect(screen.getByRole("link", { name: /Gallery/, current: "page" })).toBeInTheDocument();
   });
 
-  it("scatters every photo as a button, in reading order", () => {
+  it("shows every photo as a button in one grid, in reading order", () => {
     render(<Gallery />);
+    const grid = screen.getByTestId("gallery-grid");
+    expect(within(grid).getAllByRole("button", { name: /^Open photo:/ })).toHaveLength(PHOTOS.length);
     expect(shots().map((b) => b.getAttribute("aria-label"))).toEqual(PHOTOS.map((p) => `Open photo: ${p.alt}`));
   });
 
-  it("puts each photo in its own cell, leaving the middle four for the title", () => {
-    const cells = PHOTOS.map((p) => FIELD[p.id as PhotoId]);
-    const keys = cells.map((s) => `${s.col},${s.row}`);
-    expect(new Set(keys).size).toBe(keys.length);
-    for (const s of cells) {
-      expect(s.col >= 3 && s.col <= 4 && s.row >= 2 && s.row <= 3).toBe(false);
-      expect(s.size).toBeGreaterThan(0);
-      expect(s.size).toBeLessThanOrEqual(100);
+  it("has no view switch", () => {
+    render(<Gallery />);
+    expect(screen.queryByRole("group", { name: "Gallery view" })).not.toBeInTheDocument();
+    for (const name of ["Field", "Grid", "One at a time"]) {
+      expect(screen.queryByRole("button", { name })).not.toBeInTheDocument();
     }
   });
 
-  it("places each cell with its grid position and offsets", () => {
+  it("places each tile with its desktop position and phone spans", () => {
     render(<Gallery />);
-    const cell = shot("The garden at golden hour").parentElement!;
-    expect(cell.style.getPropertyValue("--col")).toBe("1");
-    expect(cell.style.getPropertyValue("--row")).toBe("1");
-    expect(cell.style.justifyContent).toBe("flex-start");
-    expect(cell.style.alignItems).toBe("flex-end");
-    expect(shot("The garden at golden hour").style.transformOrigin).toBe("left top");
-    expect(shot("A young guest in the karaoke room").style.transformOrigin).toBe("right bottom");
+    PHOTOS.forEach((p, i) => {
+      const t = tiles()[i];
+      const el = shots()[i];
+      expect(el.style.getPropertyValue("--col")).toBe(String(t.col));
+      expect(el.style.getPropertyValue("--row")).toBe(String(t.row));
+      expect(el.style.getPropertyValue("--w")).toBe(String(t.w));
+      expect(el.style.getPropertyValue("--h")).toBe(String(t.h));
+      expect(el.style.getPropertyValue("--pw")).toBe(String(t.pw));
+      expect(el.style.getPropertyValue("--ph")).toBe(String(t.ph));
+    });
   });
 
-  it("grows each photo towards the middle of the screen", () => {
+  it("sizes each image for its tile and loads only the first block up front", () => {
     render(<Gallery />);
-    // col 3, row 1 / col 1, row 2 / col 5, row 3 / col 4, row 4
-    expect(shot("The shopfront on Kentish Town Road today").style.transformOrigin).toBe("center top");
-    expect(shot("Then and now: the old dining room at today’s shopfront").style.transformOrigin).toBe("left center");
-    expect(shot("The family, from the album, in the garden today").style.transformOrigin).toBe("right center");
-    expect(shot("Under the bunting in the garden").style.transformOrigin).toBe("center bottom");
+    PHOTOS.forEach((p, i) => {
+      const t = tiles()[i];
+      const img = within(shots()[i]).getByRole("img", { name: p.alt });
+      expect(img.getAttribute("sizes")).toBe(`(width >= 768px) ${t.w * 17}vw, ${t.pw * 50}vw`);
+      expect(img.getAttribute("loading")).toBe(i < 4 ? "eager" : "lazy");
+    });
   });
 
-  it("sizes each photo by its spot and shapes it by its own proportions", () => {
+  it("captions each tile with its number and name, hidden from screen readers", () => {
     render(<Gallery />);
-    for (const p of PHOTOS) {
-      const b = shot(p.alt);
-      expect(b.style.getPropertyValue("--size")).toBe(String(FIELD[p.id as PhotoId].size));
-      expect(Number(b.style.getPropertyValue("--ar"))).toBeCloseTo(p.width / p.height);
-      expect(b.style.getPropertyValue("--ratio")).toBe(`${p.width} / ${p.height}`);
-      expect(within(b).getByRole("img", { name: p.alt })).toBeInTheDocument();
-    }
+    const cap = shots()[1].querySelector("[aria-hidden='true']");
+    expect(cap).toHaveTextContent(`02 ${PHOTOS[1].alt}`);
   });
 
-  it("loads every photo up front (the field is one screen)", () => {
-    render(<Gallery />);
-    for (const b of shots()) expect(within(b).getByRole("img")).toHaveAttribute("loading", "eager");
+  it("places phones in order, wide screens by hand on six columns, 4px gaps and sides on the loader's black, and only zooms on hover with a mouse (CSS)", () => {
+    const css = galleryCss();
+    expect(css).not.toMatch(/dense/);
+    expect(css).not.toMatch(/max-width: \d+px/);
+    expect(css).toMatch(/--gap: 4px/);
+    expect(css).toMatch(/\.page \{[^}]*background: #0e0b0a/);
+    // The same 4px at the sides as between tiles; six columns on wide screens.
+    expect(css).toMatch(/\.wrap \{[^}]*padding: 0 4px/);
+    expect(css).toMatch(/--cols: 6/);
+    expect(css).toMatch(/grid-column: var\(--col\) \/ span var\(--w\)/);
+    expect(css).toMatch(/@media \(hover: hover\) and \(pointer: fine\) \{[\s\S]*\.tile:hover img/);
+    expect(css).toMatch(/prefers-reduced-motion: reduce/);
   });
 
-  it("names the hovered or focused photo in the middle of the field", () => {
-    render(<Gallery />);
-    expect(title()).toHaveTextContent(/^Larawan$/);
-    expect(title()).toHaveAttribute("aria-hidden", "true");
-
-    fireEvent.pointerEnter(shot("Behind the bar"), { pointerType: "mouse" });
-    const i = PHOTOS.findIndex((p) => p.alt === "Behind the bar");
-    expect(title()).toHaveTextContent(`Behind the bar · ${i + 1} / ${PHOTOS.length}`);
-    fireEvent.pointerLeave(shot("Behind the bar"));
-    expect(title()).toHaveTextContent(/^Larawan$/);
-
-    // Real focus, so :focus-visible can match (a bare focus event can't).
-    act(() => shot("The original shopfront").focus());
-    expect(title()).toHaveTextContent("The original shopfront");
-    act(() => shot("The original shopfront").blur());
-    expect(title()).toHaveTextContent(/^Larawan$/);
+  it("doesn't round the corners of any photo or caption (CSS)", () => {
+    expect(galleryCss()).not.toMatch(/border-radius/);
   });
 
-  it("keeps the newer photo's name when the pointer leaves an older one late", () => {
+  it("plays each clip muted and looping over its still, hidden from screen readers", () => {
     render(<Gallery />);
-    fireEvent.pointerEnter(shot("Behind the bar"), { pointerType: "mouse" });
-    fireEvent.pointerEnter(shot("The original shopfront"), { pointerType: "mouse" });
-    fireEvent.pointerLeave(shot("Behind the bar"));
-    expect(title()).toHaveTextContent("The original shopfront");
+    PHOTOS.forEach((p, i) => {
+      const v = shots()[i].querySelector("video");
+      const src = (p as { video?: string }).video;
+      if (!src) return expect(v, p.id).toBeNull();
+      expect(v).toHaveAttribute("src", src);
+      expect(v!.muted).toBe(true);
+      expect(v).toHaveAttribute("loop");
+      expect(v).toHaveAttribute("playsinline");
+      expect(v).toHaveAttribute("preload", "none");
+      expect(v).toHaveAttribute("aria-hidden", "true");
+      expect(within(shots()[i]).getByRole("img", { name: p.alt })).toBeInTheDocument();
+    });
   });
 
-  it("has two corner labels and no count or hint between them", () => {
+  it("keeps the stills and plays no clips for reduced motion", () => {
+    motion.reduce = true;
+    render(<Gallery />);
+    expect(screen.queryAllByTestId("loop-video")).toHaveLength(0);
+    expect(within(screen.getByTestId("gallery-grid")).getAllByRole("img")).toHaveLength(PHOTOS.length);
+    motion.reduce = false;
+  });
+
+  it("plays the clip in the viewer too", () => {
+    render(<Gallery />);
+    fireEvent.click(shot("The garden at golden hour"));
+    expect(within(dialog()).getByTestId("loop-video")).toHaveAttribute("src", "/media/gallery/garden.mp4");
+    fireEvent.click(within(dialog()).getByRole("button", { name: "Next photo" }));
+    // The journal photo has no clip; the garden's layer stays underneath until the new one has opened.
+    const layers = within(dialog()).getByTestId("flick-stage").querySelectorAll("[data-fresh] video");
+    expect(layers).toHaveLength(0);
+  });
+
+  it("darkens the edges of every page softly, with a fixed vignette that holds still through page changes (CSS)", () => {
+    const css = readFileSync(join(process.cwd(), "app", "globals.css"), "utf8");
+    const rule = css.match(/\.vignette \{[^}]*\}/)?.[0] ?? "";
+    expect(rule).toMatch(/position: fixed/);
+    expect(rule).toMatch(/pointer-events: none/);
+    expect(rule).toMatch(/rgb\(14 11 10 \/ 0\.55\) 100%/);
+    // Over the photos (the grid is z-index 1), under the header, bars and pause buttons (3 and up).
+    expect(rule).toMatch(/z-index: 2/);
+    // Its own transition layer, above both pages and not animated, so it never pops in.
+    expect(rule).toMatch(/view-transition-name: vignette/);
+    expect(css).toMatch(/::view-transition-group\(vignette\) \{[^}]*z-index: 3;[^}]*animation: none/);
+    expect(css).toMatch(/::view-transition-old\(vignette\) \{[^}]*display: none/);
+    const layout = readFileSync(join(process.cwd(), "app", "layout.tsx"), "utf8");
+    expect(layout).toMatch(/<div className="vignette" aria-hidden="true" \/>/);
+    expect(galleryCss()).not.toMatch(/::after/);
+  });
+
+  it("sets a big decorative GALLERY before the grid, pinned under it so the photos scroll over it", () => {
+    render(<Gallery />);
+    const title = screen.getByTestId("gallery-title");
+    expect(title).toHaveAttribute("aria-hidden", "true");
+    expect(title).toHaveTextContent(/^Gallery$/);
+    // Comes first, then the grid.
+    expect(title.compareDocumentPosition(screen.getByTestId("gallery-grid")) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
+    const css = galleryCss();
+    expect(css).toMatch(/\.title \{[^}]*position: sticky[^}]*z-index: 0/);
+    expect(css).toMatch(/\.wrap \{[^}]*position: relative;\s*z-index: 1/);
+    expect(css).toMatch(/\.titleText \{[^}]*color: var\(--red\)/);
+    // Darkens with the scroll, gone once the grid covers it.
+    expect(css).toMatch(
+      /animation-timeline: scroll\(root\);\s*animation-range: 0 calc\(104px \+ 15\.645vw \+ 2 \* clamp\(8px, 1vw, 14px\)\)/,
+    );
+    // Red rules above and below the word.
+    expect(title.firstElementChild).toHaveClass("titleRule");
+    expect(css).toMatch(/\.titleRule \{[^}]*border-top: 2px solid var\(--red\);\s*border-bottom: 2px solid var\(--red\)/);
+    expect(css).toMatch(/@keyframes title-dim \{\s*to \{\s*opacity: 0;/);
+  });
+
+  it("sets the header, lion and footer in red (the footer takes the page's colour)", () => {
     const { container } = render(<Gallery />);
-    const corners = Array.from(container.querySelector(".corners")!.children).map((c) => c.textContent);
-    expect(corners).toEqual(["BintangSince 1987", "Kentish TownLondon NW1"]);
-    expect(screen.queryByText(/\d+ photographs/)).not.toBeInTheDocument();
-    expect(screen.queryByText(/Hover to look closer/)).not.toBeInTheDocument();
-  });
-
-  it("sets the big GALLERY title behind the photos as the page heading", () => {
-    render(<Gallery />);
-    const h1 = screen.getByRole("heading", { level: 1 });
-    expect(h1).toHaveTextContent(/^Gallery/);
-    expect(h1).toHaveClass("bigTitle");
-    expect(h1.parentElement).toHaveClass("backdrop");
-    expect(galleryCss()).toMatch(/\.backdrop\s*\{[^}]*z-index:\s*0;/);
-  });
-
-  it("puts every photo on a depth layer, near ones sharp and far ones soft", () => {
-    render(<Gallery />);
-    for (const p of PHOTOS) {
-      const cell = shot(p.alt).parentElement!;
-      expect(cell).toHaveAttribute("data-layer", String(FIELD[p.id as PhotoId].layer));
-    }
-    const css = galleryCss();
-    expect(css).toMatch(/\.cell\[data-layer="1"\]\s*\{[^}]*--blur:\s*3px;/);
-    expect(css).toMatch(/\.cell\[data-layer="2"\]\s*\{[^}]*--blur:\s*1\.2px;/);
-    expect(css).toMatch(/\.cell\s*\{[^}]*--blur:\s*0px;/);
-  });
-
-  it("uses all three depths, with bigger photos nearer", () => {
-    const spots = PHOTOS.map((p) => FIELD[p.id as PhotoId]);
-    const byLayer = (l: number) => spots.filter((s) => s.layer === l).map((s) => s.size);
-    for (const s of spots) expect([1, 2, 3]).toContain(s.layer);
-    for (const l of [1, 2, 3]) expect(byLayer(l).length, `layer ${l}`).toBeGreaterThan(0);
-    const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
-    expect(mean(byLayer(1))).toBeLessThan(mean(byLayer(2)));
-    expect(mean(byLayer(2))).toBeLessThan(mean(byLayer(3)));
-    expect(Math.max(...byLayer(1))).toBeLessThan(Math.min(...byLayer(3)));
-  });
-
-  it("fades far layers as well as blurring them, and brings a hovered photo into focus (CSS)", () => {
-    const css = galleryCss();
-    expect(css).toMatch(/\.cell\[data-layer="2"\]\s*\{[^}]*--fade:\s*0\.94;/);
-    expect(css).toMatch(/\.cell\[data-layer="1"\]\s*\{[^}]*--fade:\s*0\.82;/);
-    expect(css).toMatch(/\.shot\s*\{[^}]*opacity:\s*var\(--fade\);/);
-    // Blur only where a mouse can bring a photo back into focus.
-    const mouse = css.slice(css.indexOf("@media (width >= 768px) and (hover: hover) and (pointer: fine)"));
-    expect(mouse).toMatch(/\.shot\s*\{\s*filter:\s*blur\(var\(--blur\)\);/);
-    expect(css.slice(0, css.indexOf("@media (width >= 768px) and (hover: hover)"))).not.toMatch(/filter:\s*blur/);
-  });
-
-  it("marks the resting title line as Tagalog and shows the photo's name when hovered", () => {
-    render(<Gallery />);
-    expect(within(title()).getByText("Larawan")).toHaveAttribute("lang", "tl");
-    const last = PHOTOS[PHOTOS.length - 1];
-    fireEvent.pointerEnter(shot(last.alt), { pointerType: "mouse" });
-    expect(title()).toHaveTextContent(`${last.alt} · ${PHOTOS.length} / ${PHOTOS.length}`);
-    expect(within(title()).queryByText("Larawan")).not.toBeInTheDocument();
-    expect(title().querySelector("[lang]")).toBeNull();
-  });
-
-  it("only enlarges photos with a mouse on wide screens", () => {
-    const css = galleryCss();
-    const mouse = css.slice(css.indexOf("@media (width >= 768px) and (hover: hover) and (pointer: fine)"));
-    expect(mouse).toMatch(/\.shot:hover,\s*\.shot:focus-visible\s*\{[^}]*transform:\s*scale\(var\(--zoom\)\)/);
-    expect(css.slice(0, css.indexOf("@media (width >= 768px) and (hover: hover)"))).not.toMatch(/scale\(var\(--zoom\)\)/);
+    expect(container.querySelector("header img")).toHaveAttribute("src", "/brand/lion-head-red.svg");
+    expect(container.querySelector("header")!.className).toMatch(/red/);
+    expect(galleryCss()).toMatch(/\.page \{[^}]*color: var\(--red\)/);
   });
 
   it("has the site footer", () => {
@@ -246,10 +314,12 @@ describe("Gallery viewer", () => {
     const second = viewerImg();
     expect(second).toHaveAccessibleName(PHOTOS[1].alt);
     expect(second.getAttribute("src")).toContain(encodeURIComponent(PHOTOS[1].src));
-    // keyed by photo id, so a fresh <img> (no stale pixels while the next one loads)
+    // The new photo is a fresh layer opening over the last (BUNSO-style);
+    // the old one stays underneath, hidden from assistive tech, until it has opened.
     expect(second).not.toBe(first);
-    expect(first).not.toBeInTheDocument();
-    expect(within(dialog()).getByText(PHOTOS[1].alt, { exact: false })).toHaveAttribute("aria-live", "polite");
+    expect(first.closest("[aria-hidden='true']")).not.toBeNull();
+    expect(second.closest("[data-fresh]")).not.toBeNull();
+    expect(within(dialog()).getByText(PHOTOS[1].alt).closest("p")).toHaveAttribute("aria-live", "polite");
   });
 
   it("ignores keys other than Escape, the arrows and Tab", () => {
@@ -308,17 +378,6 @@ describe("Gallery viewer", () => {
     expect(trigger).toHaveFocus();
   });
 
-  it("names the refocused photo in the field after closing, then goes back to the title on blur", () => {
-    render(<Gallery />);
-    const trigger = shot("Behind the bar");
-    fireEvent.click(trigger);
-    fireEvent.keyDown(document.body, { key: "Escape" });
-    expect(title()).toHaveTextContent("Behind the bar");
-    expect(trigger).toHaveFocus();
-    act(() => trigger.blur());
-    expect(title()).toHaveTextContent(/^Larawan$/);
-  });
-
   it("closes cleanly when the page unmounts with the viewer open", () => {
     lenis.current = { stop: vi.fn(), start: vi.fn() };
     const { unmount } = render(<Gallery />);
@@ -329,175 +388,49 @@ describe("Gallery viewer", () => {
   });
 });
 
-describe("Gallery hover and focus names", () => {
-  it("ignores touch and pen pointers (a tap opens the viewer instead)", () => {
+describe("Gallery viewer flicking", () => {
+  it("turns photos with the scroll wheel in the full viewer", () => {
+    vi.spyOn(performance, "now").mockReturnValue(10_000);
     render(<Gallery />);
-    fireEvent.pointerEnter(shot("Behind the bar"), { pointerType: "touch" });
-    expect(title()).toHaveTextContent(/^Larawan$/);
-  });
-
-  it("keeps a keyboard-focused photo's name when the mouse leaves another", () => {
-    render(<Gallery />);
-    act(() => shot("The original shopfront").focus());
-    fireEvent.pointerEnter(shot("Behind the bar"), { pointerType: "mouse" });
-    expect(title()).toHaveTextContent("Behind the bar");
-    fireEvent.pointerLeave(shot("Behind the bar"));
-    expect(title()).toHaveTextContent("The original shopfront");
-  });
-
-  it("doesn't name a photo that only has mouse focus", () => {
-    render(<Gallery />);
-    const b = shot("Behind the bar");
-    const matches = b.matches.bind(b);
-    b.matches = (sel: string) => (sel === ":focus-visible" ? false : matches(sel));
-    act(() => b.focus());
-    expect(title()).toHaveTextContent(/^Larawan$/);
-  });
-});
-
-describe("Gallery mouse parallax", () => {
-  const field = () => shot("The garden at golden hour").closest("[class*=field]") as HTMLElement;
-  const frames: FrameRequestCallback[] = [];
-  const flushFrames = (n = 200) => {
-    for (let k = 0; k < n && frames.length; k++) act(() => frames.shift()!(0));
-  };
-
-  it("eases the field towards the mouse with a mouse on a wide screen", () => {
-    motion.desktop = true;
-    const raf = vi.spyOn(window, "requestAnimationFrame").mockImplementation((cb) => frames.push(cb));
-    render(<Gallery />);
-    fireEvent.pointerMove(window, { clientX: window.innerWidth, clientY: 0 });
-    flushFrames(1);
-    const first = Number(field().style.getPropertyValue("--px"));
-    expect(first).toBeGreaterThan(0);
-    expect(first).toBeLessThan(1);
-    flushFrames();
-    expect(Number(field().style.getPropertyValue("--px"))).toBeCloseTo(1, 2);
-    expect(Number(field().style.getPropertyValue("--py"))).toBeCloseTo(-1, 2);
-    raf.mockRestore();
-    motion.desktop = false;
-  });
-
-  afterEach(() => {
-    frames.length = 0;
+    fireEvent.click(shot("The garden at golden hour"));
+    const stage = within(dialog()).getByTestId("flick-stage");
+    fireEvent.wheel(stage, { deltaY: 120 });
+    expect(within(dialog()).getByText(`2 / ${PHOTOS.length}`)).toBeInTheDocument();
+    // Too soon after the last turn: ignored.
+    fireEvent.wheel(stage, { deltaY: 120 });
+    expect(within(dialog()).getByText(`2 / ${PHOTOS.length}`)).toBeInTheDocument();
+    vi.mocked(performance.now).mockReturnValue(11_000);
+    fireEvent.wheel(stage, { deltaY: -120 });
+    expect(within(dialog()).getByText(`1 / ${PHOTOS.length}`)).toBeInTheDocument();
     vi.restoreAllMocks();
   });
 
-  /** Mouse on a wide screen, with frames queued in `frames` until flushed. */
-  const desktopFrames = () => {
-    motion.desktop = true;
-    return vi.spyOn(window, "requestAnimationFrame").mockImplementation((cb) => frames.push(cb));
-  };
-
-  it("eases back to the middle when the pointer leaves the page", () => {
-    desktopFrames();
+  it("turns one photo per trackpad flick, however long its momentum runs, and leaves pinch-zoom alone", () => {
+    const now = vi.spyOn(performance, "now").mockReturnValue(10_000);
     render(<Gallery />);
-    fireEvent.pointerMove(window, { clientX: 0, clientY: window.innerHeight });
-    flushFrames();
-    expect(Number(field().style.getPropertyValue("--px"))).toBeCloseTo(-1, 2);
-    expect(Number(field().style.getPropertyValue("--py"))).toBeCloseTo(1, 2);
-    fireEvent.pointerLeave(document.documentElement);
-    flushFrames();
-    expect(Number(field().style.getPropertyValue("--px"))).toBeCloseTo(0, 2);
-    expect(Number(field().style.getPropertyValue("--py"))).toBeCloseTo(0, 2);
+    fireEvent.click(shot("The garden at golden hour"));
+    const stage = within(dialog()).getByTestId("flick-stage");
+    fireEvent.wheel(stage, { deltaY: 60 });
+    expect(within(dialog()).getByText(`2 / ${PHOTOS.length}`)).toBeInTheDocument();
+    // Momentum: small events every 100ms for 1.5s, well past the 450ms rest.
+    for (let t = 10_100; t <= 11_500; t += 100) {
+      now.mockReturnValue(t);
+      fireEvent.wheel(stage, { deltaY: 30 });
+    }
+    expect(within(dialog()).getByText(`2 / ${PHOTOS.length}`)).toBeInTheDocument();
+    // A pinch (ctrlKey) is not a turn, and isn't prevented.
+    now.mockReturnValue(20_000);
+    expect(fireEvent.wheel(stage, { deltaY: 120, ctrlKey: true })).toBe(true);
+    expect(within(dialog()).getByText(`2 / ${PHOTOS.length}`)).toBeInTheDocument();
+    vi.restoreAllMocks();
   });
 
-  it("maps the middle of the window to 0 and stops asking for frames once settled", () => {
-    const raf = desktopFrames();
-    render(<Gallery />);
-    fireEvent.pointerMove(window, { clientX: window.innerWidth / 2, clientY: window.innerHeight / 2 });
-    // Already at the target: one frame writes 0 and no more are queued.
-    flushFrames();
-    expect(raf).toHaveBeenCalledTimes(1);
-    expect(Number(field().style.getPropertyValue("--px"))).toBe(0);
-    expect(Number(field().style.getPropertyValue("--py"))).toBe(0);
-
-    fireEvent.pointerMove(window, { clientX: window.innerWidth, clientY: window.innerHeight });
-    flushFrames();
-    expect(frames).toHaveLength(0);
-    const calls = raf.mock.calls.length;
-    expect(calls).toBeGreaterThan(2);
-    expect(calls).toBeLessThan(200);
-  });
-
-  it("queues one frame at a time however many moves arrive", () => {
-    const raf = desktopFrames();
-    render(<Gallery />);
-    for (let k = 0; k < 5; k++) fireEvent.pointerMove(window, { clientX: k * 10, clientY: k * 10 });
-    expect(raf).toHaveBeenCalledTimes(1);
-    expect(frames).toHaveLength(1);
-  });
-
-  it("removes its listeners, cancels the pending frame and clears --px/--py on unmount", () => {
-    desktopFrames();
-    const cancel = vi.spyOn(window, "cancelAnimationFrame").mockImplementation(() => {});
-    const winAdd = vi.spyOn(window, "addEventListener");
-    const winRemove = vi.spyOn(window, "removeEventListener");
-    const docAdd = vi.spyOn(document.documentElement, "addEventListener");
-    const docRemove = vi.spyOn(document.documentElement, "removeEventListener");
-    const { unmount } = render(<Gallery />);
-    const el = field();
-    fireEvent.pointerMove(window, { clientX: window.innerWidth, clientY: 0 });
-    flushFrames(3);
-    expect(el.style.getPropertyValue("--px")).not.toBe("");
-    expect(frames).toHaveLength(1);
-
-    const onMove = winAdd.mock.calls.find(([t]) => t === "pointermove")![1];
-    const onLeave = docAdd.mock.calls.find(([t]) => t === "pointerleave")![1];
-    unmount();
-    expect(winRemove).toHaveBeenCalledWith("pointermove", onMove);
-    expect(docRemove).toHaveBeenCalledWith("pointerleave", onLeave);
-    // The mock hands out ids from 1 up, so a real pending frame id is non-zero.
-    expect(cancel).toHaveBeenCalled();
-    expect(cancel.mock.calls.at(-1)![0]).toBeGreaterThan(0);
-    expect(el.style.getPropertyValue("--px")).toBe("");
-    expect(el.style.getPropertyValue("--py")).toBe("");
-  });
-
-  it("doesn't listen for the mouse on narrow screens", () => {
-    const raf = vi.spyOn(window, "requestAnimationFrame");
-    const winAdd = vi.spyOn(window, "addEventListener");
-    const docAdd = vi.spyOn(document.documentElement, "addEventListener");
-    render(<Gallery />);
-    expect(winAdd.mock.calls.some(([t]) => t === "pointermove")).toBe(false);
-    expect(docAdd.mock.calls.some(([t]) => t === "pointerleave")).toBe(false);
-    fireEvent.pointerMove(window, { clientX: 10, clientY: 10 });
-    expect(raf).not.toHaveBeenCalled();
-    expect(field().style.getPropertyValue("--px")).toBe("");
-  });
-
-  it("asks for a mouse as well as width, so a wide touch screen stays still", () => {
-    motion.desktop = true;
-    const real = window.matchMedia;
-    const mm = vi.spyOn(window, "matchMedia").mockImplementation((q: string) => {
-      const m = real(q);
-      return q.includes("hover: hover") && q.includes("pointer: fine") ? { ...m, matches: false } : m;
-    });
-    const winAdd = vi.spyOn(window, "addEventListener");
-    render(<Gallery />);
-    expect(mm).toHaveBeenCalledWith("(width >= 768px) and (hover: hover) and (pointer: fine)");
-    expect(winAdd.mock.calls.some(([t]) => t === "pointermove")).toBe(false);
-    fireEvent.pointerMove(window, { clientX: 10, clientY: 10 });
-    expect(field().style.getPropertyValue("--px")).toBe("");
-  });
-
-  it("shifts each layer by its own factor and the title the other way (CSS)", () => {
-    const css = galleryCss();
-    expect(css).toMatch(/--travel-x:\s*32px;/);
-    expect(css).toMatch(/--travel-y:\s*22px;/);
-    expect(css).toMatch(/\.cell\s*\{[^}]*--f:\s*1;/);
-    expect(css).toMatch(/\.cell\[data-layer="2"\]\s*\{[^}]*--f:\s*0\.55;/);
-    expect(css).toMatch(/\.cell\[data-layer="1"\]\s*\{[^}]*--f:\s*0\.25;/);
-    expect(css).toMatch(/\.cell\s*\{[^}]*var\(--px, 0\) \* var\(--f\) \* var\(--travel-x\)/);
-    expect(css).toMatch(/\.backdrop\s*\{[^}]*var\(--px, 0\) \* -0\.2 \* var\(--travel-x\)/);
-  });
-
-  it("stays still for reduced motion", () => {
-    motion.reduce = true;
-    motion.desktop = true;
-    render(<Gallery />);
-    fireEvent.pointerMove(window, { clientX: 10, clientY: 10 });
-    expect(field().style.getPropertyValue("--px")).toBe("");
-    motion.reduce = false;
+  it("keeps the arrows still as the names change: a fixed caption box, the count on one line (CSS)", () => {
+    const css = readFileSync(join(process.cwd(), "components", "PhotoViewer.module.css"), "utf8");
+    const rule = css.match(/\.caption \{[^}]*\}/)?.[0] ?? "";
+    expect(rule).toMatch(/\n  width: min\(/);
+    expect(rule).toMatch(/\n  height: calc\(var\(--lines\)/);
+    expect(rule).toMatch(/justify-content: flex-end/);
+    expect(css).toMatch(/\.name \{[^}]*-webkit-line-clamp: var\(--lines\)/);
   });
 });

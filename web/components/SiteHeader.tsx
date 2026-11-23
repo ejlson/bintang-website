@@ -11,7 +11,7 @@ type Props = {
   /** "overlay" floats over a hero; "page" sits in normal flow. */
   variant?: "overlay" | "page";
   /** Text colour of the bar. */
-  tone?: "paper" | "ink" | "yellow";
+  tone?: "paper" | "ink" | "yellow" | "red";
   /** Which lion head to show in the centre. */
   mark?: "red" | "paper" | "ink" | "yellow";
   /** Highlights the current page's link. */

@@ -70,6 +70,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <HistoryWipe />
         <SmoothScroll />
         {children}
+        {/* The soft dark fade at the edges of the screen, on every page (globals.css). */}
+        <div className="vignette" aria-hidden="true" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(restaurantJsonLd).replace(/</g, "\\u003c") }}

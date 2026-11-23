@@ -44,6 +44,27 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Every page: the edges of the screen fade softly into warm black (the Home
+   loader's #0e0b0a), like a lens vignette (after the Home intro's). A fixed
+   element from the root layout, over the page as it scrolls; z-index 2 keeps
+   it under the header, bars, tab bars and pause buttons (3 and up), menus and
+   the photo viewer, so they stay crisp. It never catches the mouse.
+   It has its own view-transition layer, held still above the wipe, so it
+   stays on screen through page changes instead of popping in afterwards. */
+.vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 80% 75% at 50% 50%,
+    rgb(14 11 10 / 0) 55%,
+    rgb(14 11 10 / 0.25) 80%,
+    rgb(14 11 10 / 0.55) 100%
+  );
+  view-transition-name: vignette;
+}
+
 img,
 video {
   max-width: 100%;
@@ -98,6 +119,18 @@ video {
 @keyframes page-slant {
   from { --wipe: 0%; }
   to { --wipe: 125%; }
+}
+
+/* The vignette (above) stays exactly where it is, over both pages. */
+::view-transition-group(vignette) {
+  z-index: 3;
+  animation: none;
+}
+::view-transition-old(vignette) {
+  display: none;
+}
+::view-transition-new(vignette) {
+  animation: none;
 }
 
 /* Outgoing page above, incoming page below and shown as-is (no crossfade). */

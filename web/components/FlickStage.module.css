@@ -1,0 +1,58 @@
+/* FlickStage: photos stacked in one box, each new one opening out from the
+   centre over the last (after the BUNSO gallery's full view). The caller
+   gives the stage its size through `className`. */
+
+.stage {
+  position: relative;
+  overflow: hidden;
+  touch-action: pan-y;
+}
+
+.layer {
+  position: absolute;
+  inset: 0;
+}
+
+.img,
+.clip {
+  object-fit: contain;
+}
+
+/* Over the still, fading in once it is actually playing. */
+.clip {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.clip[data-playing] {
+  opacity: 1;
+}
+
+.layer[data-fresh] {
+  animation: open 0.36s cubic-bezier(0.25, 0.6, 0.3, 1) both;
+}
+
+@keyframes open {
+  from {
+    clip-path: inset(40%);
+  }
+
+  to {
+    clip-path: inset(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .layer[data-fresh] {
+    animation: none;
+  }
+
+  /* No opening animation to finish, so the old photo goes straight away. */
+  .layer[aria-hidden="true"] {
+    display: none;
+  }
+}

@@ -1,8 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useRef } from "react";
 import type { Photo } from "@/lib/gallery";
+import { FlickStage } from "./FlickStage";
 import { getLenis } from "./SmoothScroll";
 import styles from "./PhotoViewer.module.css";
 
@@ -14,8 +14,9 @@ type Props = {
 };
 
 /**
- * Full-screen photo viewer: Close / Previous / Next, Esc closes, arrow keys
- * step, Tab stays inside, focus starts on Close, and the page behind doesn't
+ * Full-screen photo viewer: Close / Previous / Next, Esc closes, arrow keys,
+ * a swipe or the scroll wheel step (each photo opening over the last, as in
+ * the BUNSO gallery), Tab stays inside, focus starts on Close, and the page behind doesn't
  * scroll. The caller returns focus to whatever opened it.
  */
 export function PhotoViewer({ photos, index, onClose, onStep }: Props) {
@@ -70,13 +71,11 @@ export function PhotoViewer({ photos, index, onClose, onStep }: Props) {
           <path d="M5 5l14 14M19 5L5 19" />
         </svg>
       </button>
-      <Image
-        key={p.id}
-        className={styles.big}
-        src={p.src}
-        alt={p.alt}
-        width={p.width}
-        height={p.height}
+      <FlickStage
+        photo={p}
+        onStep={onStep}
+        wheel
+        className={styles.stage}
         sizes={p.height > p.width ? "(width >= 768px) 520px, 100vw" : "(width >= 1200px) 1100px, 100vw"}
       />
       <div className={styles.controls}>
@@ -86,7 +85,7 @@ export function PhotoViewer({ photos, index, onClose, onStep }: Props) {
           </svg>
         </button>
         <p className={styles.caption} aria-live="polite">
-          {p.alt}
+          <span className={styles.name}>{p.alt}</span>
           <span className={styles.count}>
             {index + 1} / {photos.length}
           </span>

@@ -82,13 +82,24 @@
   object-fit: cover;
 }
 
+/* The caption and the pause button are hollow: a 1px yellow outline over the
+   film, yellow type and icon, both 32px tall on one line at the foot. */
+.photo {
+  --chip: 32px;
+}
+
 .photo figcaption {
   position: absolute;
   left: 12px;
   bottom: 12px;
-  padding: 6px 10px;
+  display: inline-flex;
+  align-items: center;
+  height: var(--chip);
+  padding: 0 14px;
+  border: 1px solid var(--yellow);
   border-radius: 999px;
-  background: var(--yellow);
+  color: var(--yellow);
+  text-shadow: 0 1px 3px rgb(0 0 0 / 0.5);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.16em;
@@ -109,22 +120,31 @@
 /* Pause control (WCAG 2.2.2), bottom right, clear of the caption. */
 .pause {
   position: absolute;
-  right: 8px;
-  bottom: 8px;
-  width: 44px;
-  height: 44px;
+  right: 12px;
+  bottom: 12px;
+  width: var(--chip);
+  height: var(--chip);
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 0;
+  padding: 0;
+  border: 1px solid var(--yellow);
   border-radius: 999px;
-  background: var(--yellow);
-  color: var(--ink);
+  background: transparent;
+  color: var(--yellow);
+  filter: drop-shadow(0 1px 3px rgb(0 0 0 / 0.5));
   cursor: pointer;
 }
 
+/* The drawn circle is 32px; the tap area stays 44px. */
+.pause::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+}
+
 .pause:focus-visible {
-  outline: 2px solid var(--ink);
+  outline: 2px solid var(--yellow);
   outline-offset: 2px;
 }
 
@@ -232,11 +252,13 @@
   font-family: var(--font-serif);
 }
 
-/* At the foot of the column, level with the bottom of the photo. */
+/* At the foot of the column, level with the bottom of the photo, against
+   the right edge under the rows. */
 .actions {
   margin-top: auto;
   display: flex;
   flex-wrap: wrap;
+  justify-content: flex-end;
   align-items: center;
   gap: 12px 32px;
   padding-top: 24px;

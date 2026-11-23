@@ -35,6 +35,10 @@
   color: var(--yellow);
 }
 
+.red {
+  color: var(--red);
+}
+
 /* Two 22px lines = 44px, the Book pill's height, so the row reads as one band. */
 .list {
   display: flex;
@@ -79,6 +83,11 @@
 .yellow {
   --book-line: var(--yellow);
   --book-on: var(--ink);
+}
+
+.red {
+  --book-line: var(--red);
+  --book-on: var(--paper);
 }
 
 .book {
@@ -143,10 +152,50 @@
   font-synthesis-weight: none;
 }
 
-.link:hover .en,
-.link[aria-current="page"] .en {
-  text-decoration: underline;
-  text-underline-offset: 3px;
+/* Hover: an underline draws in from the left and leaves to the right, like a
+   pen stroke, while the Tagalog line comes up to full strength. The current
+   page keeps its line drawn. The line hugs the English word, not the link box. */
+.en {
+  position: relative;
+  width: fit-content;
+}
+
+.right .en {
+  margin-left: auto;
+}
+
+.en::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.35s var(--ease);
+}
+
+.link:hover .en::after,
+.link[aria-current="page"] .en::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+.link .tl {
+  transition: opacity 0.35s var(--ease);
+}
+
+.link:hover .tl {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .en::after,
+  .link .tl {
+    transition: none;
+  }
 }
 
 .book:focus-visible {
@@ -202,6 +251,7 @@
   background: var(--ink);
   color: var(--paper);
   --book-line: var(--paper);
+  --book-on: var(--ink);
 }
 
 .overlay .book {
@@ -242,7 +292,6 @@
 @media (768px <= width < 1024px) {
   .list {
     column-gap: 20px;
-  --book-on: var(--ink);
     font-size: 15px;
   }
 
