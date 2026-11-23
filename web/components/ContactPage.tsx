@@ -10,7 +10,7 @@ import styles from "./ContactPage.module.css";
 /*
  * Contact us: one compact yellow screen (the footer is the next). The title across the width, then the
  * Home film's portrait loop (ContactFilm) beside an index of numbered rows (visit, call, write, hours),
- * each split by a rule, and the booking pill at the foot. Patterned on the
+ * each split by a rule, and the Book button at the foot. Patterned on the
  * typographic restaurant contact pages on Awwwards (Root Food, UVE, Les Burgers
  * de Colette): big type, few words, every detail a link.
  * Facts come from lib/site.ts, shared with the footer and the JSON-LD.
@@ -43,10 +43,15 @@ export function ContactPage() {
           currentHref="/contact"
         />
 
-        <div className={styles.wrap}>
-          <h1 className={styles.title}>
+        {/* Across the page between two rules, like the Journal's masthead; the
+            letters keep the site's usual proportions (FitTitle's default squish). */}
+        <h1 className={styles.title}>
+          <span className={styles.titleMask}>
             <FitTitle text="Contact us" />
-          </h1>
+          </span>
+        </h1>
+
+        <div className={styles.wrap}>
 
           <div className={styles.grid}>
             <ContactFilm />
@@ -116,16 +121,10 @@ export function ContactPage() {
               </section>
 
               <div className={styles.actions}>
-                <a
-                  href={BOOKING_URL}
-                  target="_blank"
-                  rel="noopener"
-                  className="cine-book"
-                >
-                  <span className="cine-frame">Book a table</span>{" "}
-                  <span className="sr-only">
-                    on OpenTable (opens in a new tab)
-                  </span>
+                {/* Drawn like the header's Book button (SiteHeader.module.css .book). */}
+                <a href={BOOKING_URL} target="_blank" rel="noopener" className={styles.book}>
+                  Book a table{" "}
+                  <span className="sr-only">on OpenTable (opens in a new tab)</span>
                 </a>
                 <Link href="/contact/karaoke" className={styles.more}>
                   Karaoke &amp; private hire {ARROW}

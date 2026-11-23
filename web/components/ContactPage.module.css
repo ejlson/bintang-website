@@ -3,13 +3,13 @@
    Spacing on the 8px scale: 4 8 12 16 24 32 48 64 96. */
 
 .page {
-  --gutter: clamp(12px, 3vw, 40px);
-  --max: 1600px;
   --rule: color-mix(in srgb, var(--ink) 28%, transparent);
   /* Row padding shrinks on short screens so the list always fits. */
   --row-y: clamp(12px, 2vh, 20px);
 
   background: var(--yellow);
+  /* The footer's Book a table writes its words in this on hover. */
+  --ground: var(--yellow);
   color: var(--ink);
   font-family: var(--font-ui);
 }
@@ -22,26 +22,34 @@
   flex-direction: column;
 }
 
+/* Same side margins as the title, so the film starts under its left edge and
+   the rows end under its right edge at every width. */
 .wrap {
   flex: 1;
   min-height: 0;
-  width: 100%;
-  max-width: var(--max);
-  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  padding: 16px var(--gutter) clamp(16px, 4vh, 48px);
+  margin: 0 1.4vw;
+  padding: clamp(16px, 3vh, 32px) 0 clamp(16px, 4vh, 48px);
 }
 
-/* Spans the full width (FitTitle), squished like MENU. */
+/* Across the page like the Journal's masthead (JournalPage.module.css .title):
+   the same side margins and a 2px rule above and below. The letters keep
+   FitTitle's usual squish, so CONTACT US is not stretched to JOURNAL's height. */
 .title {
   flex: none;
-  width: 100%;
-  margin: 0 0 clamp(16px, 3vh, 32px);
+  margin: 8px 1.4vw 0;
+  padding: clamp(8px, 1vw, 14px) 0;
+  border-top: 2px solid var(--ink);
+  border-bottom: 2px solid var(--ink);
   font-family: var(--font-display);
   font-weight: 700;
   line-height: 0;
-  text-align: center;
+}
+
+/* The letters rise from behind this edge, so they never cross the rules. */
+.titleMask {
+  display: block;
 }
 
 /* Photo left, the index right; the photo takes all the height left under the title. */
@@ -50,8 +58,13 @@
   min-height: 0;
   display: grid;
   grid-template-rows: minmax(0, 1fr);
-  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-  gap: clamp(24px, 4vw, 64px);
+  /* The film and the rows keep the widths they had in the old 1600px column
+     (5/12 and 7/12 of it, less the gap) and sit at opposite sides; on wider
+     screens the extra width goes into the space between them. */
+  --gap: clamp(24px, 4vw, 64px);
+  --span: calc(min(100%, 1520px) - var(--gap));
+  grid-template-columns: calc(var(--span) * 5 / 12) calc(var(--span) * 7 / 12);
+  justify-content: space-between;
 }
 
 .photo {
@@ -229,6 +242,50 @@
   padding-top: 24px;
 }
 
+/* The header's Book button (SiteHeader.module.css .book), in ink on yellow:
+   a faint hairline frame and small wide caps; on hover or focus the frame
+   firms up and ink fills it from the left, the words turning yellow. */
+.book {
+  --track: 0.32em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 34px 0 calc(34px + var(--track));
+  border: 1px solid color-mix(in srgb, var(--ink) 60%, transparent);
+  background: linear-gradient(var(--ink), var(--ink)) left / 0 100% no-repeat;
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: var(--track);
+  text-decoration: none;
+  text-transform: uppercase;
+  transition:
+    border-color 0.5s var(--ease),
+    background-size 0.5s var(--ease),
+    color 0.35s var(--ease);
+}
+
+.book:hover,
+.book:focus-visible {
+  border-color: var(--ink);
+  background-size: 100% 100%;
+  color: var(--yellow);
+}
+
+.book:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .book {
+    transition: none;
+  }
+}
+
 .more {
   display: inline-flex;
   align-items: center;
@@ -298,11 +355,11 @@
 /* ---------- Motion: rises in on load, like Menu and About ---------- */
 
 @media (prefers-reduced-motion: no-preference) {
-  .title {
+  .titleMask {
     clip-path: inset(-0.2em -0.2em 0 -0.2em);
   }
 
-  .title > * {
+  .titleMask > * {
     animation: rise 0.9s var(--ease) both;
   }
 
