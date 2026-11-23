@@ -204,6 +204,13 @@ describe("MenuPage", () => {
     expect(screen.getByRole("link", { name: "Book a table" })).toHaveAttribute("href", "/contact");
   });
 
+  it("sets Book a table as the cinematic button", () => {
+    render(<MenuPage />);
+    const book = screen.getByRole("link", { name: "Book a table" });
+    expect(book).toHaveClass("cine-book");
+    expect(book.querySelector(".cine-frame")).toHaveTextContent(/^Book a table$/);
+  });
+
   it("renders every item of the active menu", () => {
     render(<MenuPage />);
     for (const m of menus) {

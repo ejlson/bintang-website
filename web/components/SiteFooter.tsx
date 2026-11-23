@@ -26,8 +26,9 @@ export function SiteFooter() {
           <a href={`mailto:${site.email}`}>{site.email}</a>
           <a href={`tel:${site.phoneIntl}`}>{site.phone}</a>
         </nav>
-        <a href={BOOKING_URL} target="_blank" rel="noopener" className={styles.book}>
-          Book a table<span className="sr-only"> (opens in a new tab)</span>
+        <a href={BOOKING_URL} target="_blank" rel="noopener" className={`cine-book cine-book--sm ${styles.book}`}>
+          <span className="cine-frame">Book a table</span>{" "}
+          <span className="sr-only">(opens in a new tab)</span>
         </a>
       </div>
 

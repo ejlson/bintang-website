@@ -68,9 +68,9 @@ export function KaraokePage() {
               {/* Keeps the space the photo had, so the buttons sit where they did. */}
               <div className={styles.shot} aria-hidden="true" />
               <div className={styles.actions}>
-                <a href={BOOKING_URL} target="_blank" rel="noopener" className={styles.pill}>
-                  Book a table
-                  <span className="sr-only"> on OpenTable (opens in a new tab)</span>
+                <a href={BOOKING_URL} target="_blank" rel="noopener" className="cine-book">
+                  <span className="cine-frame">Book a table</span>{" "}
+                  <span className="sr-only">on OpenTable (opens in a new tab)</span>
                 </a>
                 <Link href="/menu#karaoke" className={styles.more}>
                   See the karaoke menu {ARROW}
@@ -92,10 +92,10 @@ export function KaraokePage() {
               <div className={styles.actions}>
                 <a
                   href={`mailto:${site.email}?subject=${encodeURIComponent("Karaoke room hire")}`}
-                  className={`${styles.pill} ${styles.pillLine}`}
+                  className="cine-book"
                 >
-                  Enquire
-                  <span className="sr-only"> about the karaoke room by email</span>
+                  <span className="cine-frame">Enquire</span>{" "}
+                  <span className="sr-only">about the karaoke room by email</span>
                 </a>
                 <a href={`mailto:${site.email}`} className={styles.more}>
                   {site.email}

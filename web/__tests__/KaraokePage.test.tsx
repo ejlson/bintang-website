@@ -85,6 +85,19 @@ describe("Karaoke page", () => {
     expect(within(hire).getByRole("link", { name: site.email })).toHaveAttribute("href", `mailto:${site.email}`);
   });
 
+  it("sets Book a table and Enquire as the cinematic button, keeping their full names", () => {
+    render(<Karaoke />);
+    const book = within(screen.getByRole("region", { name: "The sharing feast" })).getByRole("link", { name: /Book a table/ });
+    expect(book).toHaveClass("cine-book");
+    expect(book.querySelector(".cine-frame")).toHaveTextContent(/^Book a table$/);
+    expect(book).toHaveAccessibleName(/^Book a table\s*on OpenTable \(opens in a new tab\)$/);
+    const enquire = within(screen.getByRole("region", { name: "The whole room" })).getByRole("link", { name: /Enquire/ });
+    expect(enquire).toHaveClass("cine-book");
+    expect(enquire.querySelector(".cine-frame")).toHaveTextContent(/^Enquire$/);
+    expect(enquire).toHaveAccessibleName(/^Enquire\s*about the karaoke room by email$/);
+    expect(enquire).not.toHaveAttribute("target");
+  });
+
   it("ends on the site footer", () => {
     const { container } = render(<Karaoke />);
     expect(container.querySelector("main > div > div:last-child footer")).toBeInTheDocument();

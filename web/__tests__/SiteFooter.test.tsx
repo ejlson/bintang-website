@@ -39,6 +39,15 @@ describe("SiteFooter", () => {
     expect(map).toHaveAccessibleName(expect.stringContaining("opens in a new tab"));
   });
 
+  it("sets Book a table as the small cinematic button, named for the new tab", () => {
+    render(<SiteFooter />);
+    const booking = screen.getByRole("link", { name: /Book a table/ });
+    expect(booking).toHaveClass("cine-book", "cine-book--sm");
+    expect(booking.querySelector(".cine-frame")).toHaveTextContent(/^Book a table$/);
+    expect(booking.getAttribute("rel")).toContain("noopener");
+    expect(booking).toHaveAccessibleName(/^Book a table\s*\(opens in a new tab\)$/);
+  });
+
   it("lists every opening-hours row", () => {
     render(<SiteFooter />);
     for (const h of hours) {

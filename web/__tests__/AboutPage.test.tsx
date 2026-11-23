@@ -136,4 +136,14 @@ describe("About page", () => {
     expect(book).toHaveAttribute("target", "_blank");
     expect(within(come).getByRole("link", { name: /Groups and private hire/ })).toHaveAttribute("href", "/contact/private-hire");
   });
+
+  it("sets Book a table as the cinematic button, still named for OpenTable and the new tab", () => {
+    render(<About />);
+    const book = within(screen.getByRole("region", { name: /Come for/ })).getByRole("link", { name: /Book a table/ });
+    expect(book).toHaveClass("cine-book");
+    expect(book).not.toHaveClass("cine-book--sm");
+    expect(book.querySelector(".cine-frame")).toHaveTextContent(/^Book a table$/);
+    expect(book.getAttribute("rel")).toContain("noopener");
+    expect(book).toHaveAccessibleName(/^Book a table\s*on OpenTable \(opens in a new tab\)$/);
+  });
 });

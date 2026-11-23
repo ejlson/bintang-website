@@ -151,6 +151,17 @@ describe("JournalPage", () => {
     expect(screen.getByRole("link", { name: /Karaoke enquiries/ })).toHaveAttribute("href", "/contact/karaoke");
   });
 
+  it("sets both Book a table links (advert and post foot) as the cinematic button", () => {
+    for (const ui of [<JournalPage key="page" />, <JournalPostShell key="post"><p>x</p></JournalPostShell>]) {
+      const { unmount } = render(ui);
+      const book = screen.getByRole("link", { name: "Book a table" });
+      expect(book).toHaveClass("cine-book");
+      expect(book.querySelector(".cine-frame")).toHaveTextContent(/^Book a table$/);
+      expect(book).not.toHaveAttribute("target");
+      unmount();
+    }
+  });
+
   it("app/journal/page renders JournalPage with title and description metadata", () => {
     render(<JournalRoute />);
     expect(screen.getByRole("heading", { level: 1, name: "Journal" })).toBeInTheDocument();

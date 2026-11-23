@@ -164,3 +164,122 @@ video {
     display: none;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Buttons — "Cinematic" (SPEC.md › Buttons). Set like opening credits:
+   Aquavit Regular in wide caps, a hairline frame, no fills, one slow ease.
+
+   .cine-book is every "Book a table":
+     <a class="cine-book"><span class="cine-frame">Book a table</span></a>
+   The short rules either side are its ::before/::after. They grow outward
+   with a transform, so hovering never moves the layout. --cine-accent
+   colours the rules and the hover frame (red unless the page sets it).
+   .cine-book--sm is the footer's compact size.
+   --------------------------------------------------------------------------- */
+.cine-book {
+  --cine-rule: 28px;
+  --cine-track: 0.42em;
+  --cine-pad: 28px;
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+  color: inherit;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: var(--cine-track);
+  line-height: 1;
+  text-decoration: none;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.cine-book::before,
+.cine-book::after {
+  content: "";
+  flex: none;
+  width: var(--cine-rule);
+  height: 1px;
+  background: var(--cine-accent, var(--red));
+  transition: transform 0.7s var(--ease);
+}
+
+.cine-book::before {
+  transform-origin: right;
+}
+
+.cine-book::after {
+  transform-origin: left;
+}
+
+/* Trailing letter-spacing sits inside the right edge, so the left pads by the same. */
+.cine-frame {
+  display: inline-flex;
+  align-items: center;
+  min-height: 54px;
+  padding: 0 var(--cine-pad) 0 calc(var(--cine-pad) + var(--cine-track));
+  border: 1px solid currentColor;
+  transition: border-color 0.7s var(--ease);
+}
+
+@media (hover: hover) {
+  .cine-book:hover::before,
+  .cine-book:hover::after {
+    transform: scaleX(2.5);
+  }
+
+  .cine-book:hover .cine-frame {
+    border-color: var(--cine-accent, var(--red));
+  }
+}
+
+.cine-book:focus-visible {
+  outline: none;
+}
+
+.cine-book:focus-visible .cine-frame {
+  outline: 1px solid currentColor;
+  outline-offset: 5px;
+}
+
+.cine-book--sm {
+  --cine-rule: 16px;
+  --cine-track: 0.32em;
+  --cine-pad: 18px;
+  gap: 12px;
+  font-size: 11px;
+}
+
+.cine-book--sm .cine-frame {
+  min-height: 44px;
+}
+
+/* The footer's small one shares a row with "Since 1987": on the narrowest
+   phones it drops its rules so that row stays on one line. */
+@media (max-width: 400px) {
+  .cine-book--sm {
+    gap: 0;
+  }
+
+  .cine-book--sm::before,
+  .cine-book--sm::after {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .cine-book:not(.cine-book--sm) {
+    --cine-rule: 14px;
+    --cine-track: 0.3em;
+    --cine-pad: 20px;
+    gap: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cine-book::before,
+  .cine-book::after,
+  .cine-frame {
+    transition: none;
+  }
+}

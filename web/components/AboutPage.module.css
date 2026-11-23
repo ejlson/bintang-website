@@ -35,9 +35,7 @@
 .band,
 .d,
 .hl,
-.qt,
-.pill,
-.more {
+.qt {
   font-family: var(--font-display);
 }
 
@@ -600,23 +598,7 @@
   align-items: center;
   gap: 16px 32px;
   margin-top: 24px;
-}
-
-/* Paper pill on the red page. */
-.pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 52px;
-  padding: 0 48px;
-  border-radius: 999px;
-  background: var(--paper);
-  color: var(--red-deep);
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-decoration: none;
-  text-transform: uppercase;
+  --cine-accent: currentColor;
 }
 
 .more {
@@ -625,20 +607,24 @@
   gap: 16px;
   min-height: 44px;
   color: inherit;
+  font-family: var(--font-ui);
   font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
+  font-weight: 400;
+  letter-spacing: 0.32em;
   text-decoration: none;
   text-transform: uppercase;
 }
 
-.pill:hover,
-.more:hover {
-  text-decoration: underline;
-  text-underline-offset: 4px;
+.more svg {
+  transition: translate 0.7s var(--ease);
 }
 
-.pill:focus-visible,
+@media (hover: hover) {
+  .more:hover svg {
+    translate: 10px 0;
+  }
+}
+
 .more:focus-visible {
   outline: 2px solid var(--paper);
   outline-offset: 4px;

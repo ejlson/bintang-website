@@ -208,7 +208,8 @@ export function MenuPage() {
         {
           "--acc": menu.accent,
           "--bg": menu.background,
-          ...(menu.id === "karaoke" && { "--book-fill": "var(--ink)" }),
+          // Cream on Karaoke's red is only ~3.9:1, so its tabs aren't dimmed (SPEC › Buttons).
+          ...(menu.id === "karaoke" && { "--tab-dim": "100%" }),
         } as CSSProperties
       }
     >
@@ -269,8 +270,8 @@ export function MenuPage() {
         </div>
 
         <div className={styles.cta}>
-          <Link href="/contact" className={styles.book}>
-            Book a table
+          <Link href="/contact" className="cine-book">
+            <span className="cine-frame">Book a table</span>
           </Link>
         </div>
       </div>

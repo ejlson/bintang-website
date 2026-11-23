@@ -120,11 +120,10 @@ export function ContactPage() {
                   href={BOOKING_URL}
                   target="_blank"
                   rel="noopener"
-                  className={styles.pill}
+                  className="cine-book"
                 >
-                  Book a table
+                  <span className="cine-frame">Book a table</span>{" "}
                   <span className="sr-only">
-                    {" "}
                     on OpenTable (opens in a new tab)
                   </span>
                 </a>

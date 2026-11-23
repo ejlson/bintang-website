@@ -105,19 +105,15 @@
 .line {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   min-height: 44px;
   color: inherit;
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.32em;
   text-decoration: none;
   text-transform: uppercase;
-}
-
-.line:hover {
-  text-decoration: underline;
-  text-underline-offset: 4px;
 }
 
 .line:focus-visible {
@@ -127,7 +123,7 @@
 
 .arrow {
   flex: none;
-  transition: transform 0.3s var(--ease);
+  transition: transform 0.7s var(--ease);
 }
 
 @media (hover: hover) {
@@ -145,7 +141,7 @@
 
   .front:hover .readMore .arrow,
   .line:hover .arrow {
-    transform: translateX(4px);
+    transform: translateX(10px);
   }
 }
 
@@ -519,32 +515,6 @@
   padding: 96px var(--gutter);
   display: flex;
   justify-content: center;
-}
-
-.book {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 52px;
-  padding: 0 44px;
-  border-radius: 999px;
-  background: var(--ink);
-  color: var(--newsprint);
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-decoration: none;
-  text-transform: uppercase;
-}
-
-.book:hover {
-  text-decoration: underline;
-  text-underline-offset: 4px;
-}
-
-.book:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 3px;
 }
 
 /* ---------- Post page ---------- */

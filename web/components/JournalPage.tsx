@@ -58,8 +58,8 @@ export function JournalPage() {
           </h2>
           <p className={styles.advertLine}>Open-mic: Saturday 5pm – 11pm</p>
           <div className={styles.advertLinks}>
-            <Link href="/contact" className={styles.book}>
-              Book a table
+            <Link href="/contact" className="cine-book">
+              <span className="cine-frame">Book a table</span>
             </Link>
             <Link href="/contact/karaoke" className={styles.line}>
               Karaoke enquiries
@@ -116,8 +116,8 @@ export function JournalPostShell({ children }: { children: ReactNode }) {
       </div>
 
       <div className={styles.cta}>
-        <Link href="/contact" className={styles.book}>
-          Book a table
+        <Link href="/contact" className="cine-book">
+          <span className="cine-frame">Book a table</span>
         </Link>
       </div>
 

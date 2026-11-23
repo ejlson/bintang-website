@@ -39,8 +39,24 @@ describe("Contact page", () => {
 
   it("offers booking on OpenTable and a karaoke link", () => {
     render(<Contact />);
-    expect(screen.getByRole("link", { name: "Book a table on OpenTable (opens in a new tab)" })).toHaveAttribute("href", BOOKING_URL);
+    // The header's Book link shares this name; the page's own is the one in <main>.
+    const books = screen.getAllByRole("link", { name: "Book a table on OpenTable (opens in a new tab)" });
+    const pageBook = books.find((a) => a.closest("main"));
+    expect(pageBook).toHaveAttribute("href", BOOKING_URL);
     expect(screen.getByRole("link", { name: /Karaoke & private hire/ })).toHaveAttribute("href", "/contact/karaoke");
+  });
+
+  it("sets Book a table as the cinematic button, opening OpenTable in a new tab", () => {
+    render(<Contact />);
+    // The header's Book link has the same name, so pick the page's own by its frame.
+    const [book, ...rest] = screen
+      .getAllByRole("link", { name: /^Book a table\s*on OpenTable \(opens in a new tab\)$/ })
+      .filter((a) => a.querySelector(".cine-frame"));
+    expect(rest).toEqual([]);
+    expect(book).toHaveClass("cine-book");
+    expect(book.querySelector(".cine-frame")).toHaveTextContent(/^Book a table$/);
+    expect(book).toHaveAttribute("target", "_blank");
+    expect(book.getAttribute("rel")).toContain("noopener");
   });
 });
 

@@ -99,3 +99,25 @@ describe.each(FILES)("%s motion", (file) => {
     expect([...used].filter((n) => !defined.has(n))).toEqual([]);
   });
 });
+
+describe("globals.css cinematic button", () => {
+  const decls = declarations(readFileSync(join(process.cwd(), "app", "globals.css"), "utf8"));
+  const cine = decls.filter((d) => d.context.some((c) => c.includes(".cine-")));
+
+  it("only grows the rules and recolours the frame on hover for mouse users", () => {
+    const hovers = cine.filter((d) => d.context.some((c) => c.includes(":hover")));
+    expect(hovers.length).toBeGreaterThan(0);
+    expect(hovers.filter((d) => !d.context.some((c) => /@media\s*\(hover:\s*hover\)/.test(c)))).toEqual([]);
+  });
+
+  it("grows the rules with a transform, so hovering never moves the layout", () => {
+    const hovers = cine.filter((d) => d.context.some((c) => c.includes(":hover")));
+    expect(hovers.map((d) => d.prop).sort()).toEqual(["border-color", "transform"]);
+  });
+
+  it("drops the transitions for reduced motion", () => {
+    const still = cine.filter((d) => d.context.some((c) => /prefers-reduced-motion:\s*reduce/.test(c)));
+    expect(still).toEqual([expect.objectContaining({ prop: "transition", value: "none" })]);
+    expect(still[0].context.at(-1)).toMatch(/\.cine-book::before[\s\S]*\.cine-book::after[\s\S]*\.cine-frame/);
+  });
+});

@@ -42,8 +42,7 @@
 
 /* The shared header follows the page's text colour so it fades with it,
    Book button included (its outline would otherwise stay ink and vanish on
-   a dark page). --book-fill (set inline) swaps the red hover fill on the
-   red Karaoke page. */
+   a dark page). */
 .page > header {
   color: inherit;
   --book-line: var(--acc);
@@ -144,26 +143,28 @@
   min-height: 44px;
   padding: 0;
   border: 0;
-  background: none;
-  color: inherit;
   cursor: pointer;
   font-family: var(--font-serif);
   font-weight: 400;
   font-size: clamp(22px, 3.6vw, 56px);
   line-height: 1.1;
-  text-decoration-thickness: 2px;
-  text-underline-offset: 0.14em;
+  /* Cinematic (SPEC.md › Buttons): the rest are dimmed, the chosen one comes up
+     to full strength and a hairline draws in under it. */
+  color: color-mix(in srgb, var(--acc) var(--tab-dim, 72%), var(--bg));
+  background: linear-gradient(currentColor, currentColor) left 100% / 0 1px no-repeat;
+  transition:
+    color 0.7s var(--ease),
+    background-size 0.7s var(--ease);
 }
 
-.tab:hover {
-  text-decoration-line: underline;
-  text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
+.tab:hover,
+.tab[aria-selected="true"] {
+  color: var(--acc);
 }
 
 .tab[aria-selected="true"] {
   font-style: italic;
-  text-decoration-line: underline;
-  text-decoration-color: var(--acc);
+  background-size: 100% 1px;
 }
 
 .tab:focus-visible {
@@ -386,31 +387,7 @@
   padding: 64px var(--gutter) 96px;
   display: flex;
   justify-content: center;
-}
-
-.book {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 52px;
-  padding: 0 48px;
-  border-radius: 999px;
-  background: var(--acc);
-  color: var(--bg);
-  font-size: 15px;
-  letter-spacing: 0.06em;
-  text-decoration: none;
-  text-transform: uppercase;
-}
-
-.book:hover {
-  text-decoration: underline;
-  text-underline-offset: 4px;
-}
-
-.book:focus-visible {
-  outline: 2px solid var(--acc);
-  outline-offset: 3px;
+  --cine-accent: var(--acc);
 }
 
 @media (max-width: 640px) {

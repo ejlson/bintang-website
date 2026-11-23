@@ -25,7 +25,6 @@
 /* ---------- Type roles ---------- */
 
 .k,
-.pill,
 .more {
   font-family: var(--font-display);
 }
@@ -318,15 +317,6 @@
     gap: 8px 24px;
     margin-top: 16px;
   }
-
-  .pill {
-    min-height: 44px;
-    padding: 0 28px;
-  }
-
-  .pillLine {
-    min-height: 42px;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -347,30 +337,7 @@
   align-items: center;
   gap: 16px 32px;
   margin-top: clamp(24px, 4vh, 44px);
-}
-
-.pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 52px;
-  padding: 0 40px;
-  border-radius: 999px;
-  background: var(--lit);
-  color: var(--ink);
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-decoration: none;
-  text-shadow: none;
-  text-transform: uppercase;
-}
-
-.pillLine {
-  min-height: 50px;
-  border: 1px solid currentColor;
-  background: none;
-  color: inherit;
+  --cine-accent: var(--lit);
 }
 
 .more {
@@ -379,21 +346,25 @@
   gap: 16px;
   min-height: 44px;
   color: inherit;
+  font-family: var(--font-ui);
   font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
+  font-weight: 400;
+  letter-spacing: 0.32em;
   overflow-wrap: anywhere;
   text-decoration: none;
   text-transform: uppercase;
 }
 
-.pill:hover,
-.more:hover {
-  text-decoration: underline;
-  text-underline-offset: 4px;
+.more svg {
+  transition: translate 0.7s var(--ease);
 }
 
-.pill:focus-visible,
+@media (hover: hover) {
+  .more:hover svg {
+    translate: 10px 0;
+  }
+}
+
 .more:focus-visible {
   outline: 2px solid var(--lit);
   outline-offset: 4px;

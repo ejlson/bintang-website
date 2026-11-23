@@ -319,8 +319,9 @@ export function AboutPage() {
             ))}
           </div>
           <div className={styles.actions}>
-            <a href={BOOKING_URL} target="_blank" rel="noopener" className={styles.pill}>
-              Book a table<span className="sr-only"> on OpenTable (opens in a new tab)</span>
+            <a href={BOOKING_URL} target="_blank" rel="noopener" className="cine-book">
+              <span className="cine-frame">Book a table</span>{" "}
+              <span className="sr-only">on OpenTable (opens in a new tab)</span>
             </a>
             <Link href="/contact/private-hire" className={styles.more}>
               Groups and private hire {ARROW}

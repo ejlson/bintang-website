@@ -148,29 +148,11 @@
   text-underline-offset: 3px;
 }
 
-/* Hollow, like the header's Book button: the footer can't know the page colour to fill with. */
+/* The look is the shared .cine-book--sm (globals.css). The footer takes its
+   page's colours, so the rules follow the text rather than a fixed red. */
 .book {
   justify-self: end;
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  padding: 0 22px;
-  border: 2px solid currentColor;
-  border-radius: 999px;
-  color: inherit;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  text-decoration: none;
-}
-
-/* --book-fill: pages whose background is red (Karaoke) set it, like the header's. */
-.book:hover,
-.book:focus-visible {
-  border-color: var(--book-fill, var(--red));
-  background: var(--book-fill, var(--red));
-  color: var(--paper);
+  --cine-accent: currentColor;
 }
 
 .bottom {

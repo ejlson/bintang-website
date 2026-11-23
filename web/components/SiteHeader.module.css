@@ -58,9 +58,12 @@
   gap: 16px 32px;
 }
 
-/* Book: the Sakuga VFX button (components/BookButton). Hollow in the bar's
-   text colour; fills Bintang red on hover/press, which is also what the
-   impact frame inverts. `.book` is the plain-link fallback, drawn the same. */
+/* Book: a plain link to OpenTable (components/BookButton), drawn as the
+   site's cinematic button (SPEC.md › Buttons): Aquavit caps in a 1px frame,
+   no fill, no click effect. The frame rests at 60% strength and comes up to
+   full on hover (0.7s), so it reads on every bar colour, red pages included.
+   Letter-spacing also trails the last letter, so the left pads by the same
+   amount and the word sits in the middle. */
 .paper {
   --book-line: var(--paper);
 }
@@ -73,58 +76,29 @@
   --book-line: var(--yellow);
 }
 
-.book,
-.sakuga {
-  flex: none;
-}
-
 .book {
+  --book-pad: 34px;
+  --book-track: 0.32em;
+  flex: none;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   min-height: 44px;
-  padding: 0 30px;
-  border: 2px solid var(--book-line);
-  border-radius: 999px;
+  padding: 0 var(--book-pad) 0 calc(var(--book-pad) + var(--book-track));
+  border: 1px solid color-mix(in srgb, var(--book-line) 60%, transparent);
   color: var(--book-line);
-  font-family: var(--font-serif);
-  font-size: 18px;
-  font-style: italic;
-  font-weight: 500;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: var(--book-track);
   text-decoration: none;
+  text-transform: uppercase;
+  transition: border-color 0.7s var(--ease);
 }
 
-.book:hover,
-.book:active {
-  border-color: var(--book-fill, var(--red));
-  background: var(--book-fill, var(--red));
-  color: var(--paper);
-}
-
-.sakuga {
-  --sk-back: 270px; /* room for the 150px burst's rays (BookButton) */
-  --sk-card: transparent;
-  --sk-ink: var(--book-line);
-  --sk-btn-line: var(--book-line);
-  --sk-acc: var(--book-line);
-}
-
-.sakuga:hover,
-.sakuga:active {
-  --sk-card: var(--book-fill, var(--red));
-  --sk-ink: var(--paper);
-  --sk-btn-line: var(--book-fill, var(--red));
-}
-
-.sakuga::part(button) {
-  min-height: 44px;
-  padding: 10px 30px;
-  border-radius: 999px;
-  font-family: var(--font-serif);
-  font-size: 18px;
-  font-style: italic;
-  font-weight: 500;
-  letter-spacing: 0;
-  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+.book:hover {
+  border-color: var(--book-line);
 }
 
 .sr {
@@ -218,8 +192,7 @@
   --book-line: var(--paper);
 }
 
-.overlay .book,
-.overlay .sakuga {
+.overlay .book {
   align-self: flex-start;
 }
 
@@ -291,11 +264,7 @@
   }
 
   .book {
-    padding: 0 22px;
-  }
-
-  .sakuga::part(button) {
-    padding: 10px 22px;
+    --book-pad: 24px;
   }
 
   .toggle {
