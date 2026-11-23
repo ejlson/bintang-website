@@ -32,6 +32,12 @@ function heroVideo(readyState: number) {
   return v;
 }
 
+/** Pretend the tab is in the background (or shown again). */
+function setHidden(hidden: boolean) {
+  Object.defineProperty(document, "hidden", { configurable: true, get: () => hidden });
+  if (!hidden) document.dispatchEvent(new Event("visibilitychange"));
+}
+
 function reset() {
   delete root.dataset.homeIntro;
   delete root.dataset.homeIntroAt;
@@ -52,6 +58,7 @@ beforeEach(() => {
 });
 afterEach(() => {
   vi.restoreAllMocks();
+  setHidden(false);
   for (const [type, listener] of added) window.removeEventListener(type, listener);
   vi.clearAllTimers();
   vi.useRealTimers();
@@ -117,6 +124,17 @@ describe("startPlay", () => {
     root.dataset.homeIntro = "load";
     advance(1234);
     startPlay();
+    expect(intro()).toBe("play");
+    expect(Number(introAt())).toBe(performance.now());
+  });
+
+  it("in a background tab, waits until the tab is shown and times from then", () => {
+    root.dataset.homeIntro = "load";
+    setHidden(true);
+    startPlay();
+    advance(4000);
+    expect(intro()).toBe("load");
+    setHidden(false);
     expect(intro()).toBe("play");
     expect(Number(introAt())).toBe(performance.now());
   });
@@ -295,6 +313,34 @@ describe("INTRO_SCRIPT", () => {
       advance(LOAD_MAX_MS);
       expect(intro()).toBe("play");
       expect(introAt()).toBe(at);
+    });
+
+    it("in a background tab, holds the loader until the tab is shown", () => {
+      heroVideo(4);
+      setHidden(true);
+      runScript();
+      fireLoad();
+      advance(LOAD_MAX_MS * 2);
+      expect(intro()).toBe("load");
+      setHidden(false);
+      expect(intro()).toBe("play");
+      expect(Number(introAt())).toBe(performance.now());
+    });
+
+    it.each(["pointerdown", "keydown"])("a %s skips from the first frame, before React loads", (type) => {
+      runScript();
+      window.dispatchEvent(new Event(type));
+      expect(intro()).toBe("skip");
+      fireLoad();
+      advance(LOAD_MAX_MS * 2);
+      expect(intro()).toBe("skip");
+    });
+
+    it("a click after the intro has ended leaves it ended", () => {
+      runScript();
+      root.dataset.homeIntro = "skip";
+      window.dispatchEvent(new Event("pointerdown"));
+      expect(intro()).toBe("skip");
     });
 
     it("never plays once skipped during loading", () => {

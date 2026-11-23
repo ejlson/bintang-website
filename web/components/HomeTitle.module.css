@@ -298,9 +298,11 @@
    line leaves, the header drops in from the top, then the pause button and
    thumbnail rise from the bottom: the frame closing in around the film (the
    title layer above them takes any click until 6.3s). */
-:global(html[data-home-intro="load"]) .home :global(header),
-:global(html[data-home-intro="load"]) .hud {
-  opacity: 0;
+@media (prefers-reduced-motion: no-preference) {
+  :global(html[data-home-intro="load"]) .home :global(header),
+  :global(html[data-home-intro="load"]) .hud {
+    opacity: 0;
+  }
 }
 
 :global(html[data-home-intro="play"]) .home :global(header) {
@@ -347,11 +349,15 @@
     display: none;
   }
 
-  :global(html[data-home-intro]) .film,
-  :global(html[data-home-intro]) .home :global(header),
-  :global(html[data-home-intro]) .hud {
+  /* Only while the intro would run, so the hero's own resting styles (the
+     pause button's 0.85 opacity) are untouched otherwise. */
+  :global(html[data-home-intro="load"]) .film,
+  :global(html[data-home-intro="play"]) .film,
+  :global(html[data-home-intro="load"]) .home :global(header),
+  :global(html[data-home-intro="play"]) .home :global(header),
+  :global(html[data-home-intro="load"]) .hud,
+  :global(html[data-home-intro="play"]) .hud {
     animation: none;
-    opacity: 1;
     transform: none;
   }
 }
@@ -420,12 +426,14 @@
   to { transform: scale(1); }
 }
 
+/* No `to` opacity: each lands on its own resting opacity (the pause button
+   rests at 0.85), so nothing steps when the animation is removed. */
 @keyframes intro-header-in {
   from { opacity: 0; transform: translateY(-14px); }
-  to { opacity: 1; transform: none; }
+  to { transform: none; }
 }
 
 @keyframes intro-hud-in {
   from { opacity: 0; transform: translateY(14px); }
-  to { opacity: 1; transform: none; }
+  to { transform: none; }
 }
