@@ -12,23 +12,23 @@
    106%) · 0.3–1.9 the black lifts, slower, onto the film, which is dim and
    vignetted from the first frame (black → dark → bright, never bright between) ·
    1.5 credit · 1.9 WELCOME · 2.25 TO · 2.7 sides · 3.15 BINTANG · 3.55 billing ·
-   5.15 they all cut out at once · 5.2–6.3 the film brightens · 5.5 header
+   5.15–6.05 they all fade away together, like the lion (blurring, growing) · 5.2–6.3 the film brightens · 5.5 header
    drops in · 5.65 pause button and thumbnail rise in · all settled by 6.45. */
 
 .title {
   display: none;
 }
 
-/* While it runs it covers the hero and header, so the first click anywhere
-   lands here (and skips). In "play" it hides itself when the exit ends, with
-   or without JS, so nothing is ever left blocking the page. */
+/* While it runs it covers the hero and header, so a click can't land on the
+   invisible links underneath (clicks don't skip it; it always plays through).
+   In "play" it hides itself when the title has gone, with or without JS, so
+   nothing is ever left blocking the page. */
 :global(html[data-home-intro="load"]) .title,
 :global(html[data-home-intro="play"]) .title {
   position: absolute;
   inset: 0;
   z-index: 20;
   display: block;
-  cursor: pointer;
 }
 
 :global(html[data-home-intro="play"]) .title {
@@ -176,7 +176,10 @@
 }
 
 :global(html[data-home-intro="play"]) .poster {
-  animation: intro-title-push 4.6s linear 0.95s both;
+  /* The push is on `transform`, the dissolve on `scale`, so they don't fight. */
+  animation:
+    intro-title-push 4.6s linear 0.95s both,
+    intro-dissolve 0.9s cubic-bezier(0.55, 0, 0.75, 0.2) 5.15s forwards;
 }
 
 .poster p {
@@ -192,25 +195,24 @@
   width: 100%;
 }
 
-/* Hard cuts, each piece simply off then on, like a splice; then all of them
-   off together in one cut. */
+/* In: hard cuts, each piece simply off then on, like a splice. Out: the whole
+   title dissolves together, like the lion (on .poster above). */
 .cut {
   opacity: 0;
 }
 
 :global(html[data-home-intro="play"]) .cut {
   animation:
-    intro-show 0s linear both,
-    intro-cut-out 0s linear forwards; /* not "both": it mustn't apply before its delay */
+    intro-show 0s linear both;
 }
 
 /* Scoped like the rule above, so its shorthand doesn't reset these delays. */
-:global(html[data-home-intro="play"]) .d1 { animation-delay: 1.5s, 5.15s; }
-:global(html[data-home-intro="play"]) .d2 { animation-delay: 1.9s, 5.15s; }
-:global(html[data-home-intro="play"]) .d3 { animation-delay: 2.25s, 5.15s; }
-:global(html[data-home-intro="play"]) .d4 { animation-delay: 2.7s, 5.15s; }
-:global(html[data-home-intro="play"]) .d5 { animation-delay: 3.15s, 5.15s; }
-:global(html[data-home-intro="play"]) .d6 { animation-delay: 3.55s, 5.15s; }
+:global(html[data-home-intro="play"]) .d1 { animation-delay: 1.5s; }
+:global(html[data-home-intro="play"]) .d2 { animation-delay: 1.9s; }
+:global(html[data-home-intro="play"]) .d3 { animation-delay: 2.25s; }
+:global(html[data-home-intro="play"]) .d4 { animation-delay: 2.7s; }
+:global(html[data-home-intro="play"]) .d5 { animation-delay: 3.15s; }
+:global(html[data-home-intro="play"]) .d6 { animation-delay: 3.55s; }
 
 .credit {
   margin-bottom: 1.5vh !important;
@@ -297,7 +299,7 @@
 /* Header, pause button and thumbnail are hidden while loading; as the last
    line leaves, the header drops in from the top, then the pause button and
    thumbnail rise from the bottom: the frame closing in around the film (the
-   title layer above them takes any click until 6.3s). */
+   title layer above them blocks clicks until 6.3s). */
 @media (prefers-reduced-motion: no-preference) {
   :global(html[data-home-intro="load"]) .home :global(header),
   :global(html[data-home-intro="load"]) .hud {
@@ -416,9 +418,9 @@
   to { transform: scale(1.035); }
 }
 
-@keyframes intro-cut-out {
-  from { opacity: 0; }
-  to { opacity: 0; }
+/* The lion's dissolve, for the title (`scale`, not `transform`: see .poster). */
+@keyframes intro-dissolve {
+  to { opacity: 0; filter: blur(12px); scale: 1.06; visibility: hidden; }
 }
 
 @keyframes intro-film-push {

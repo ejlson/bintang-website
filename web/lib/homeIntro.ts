@@ -1,7 +1,9 @@
 /**
- * The Home loader and title intro ("Welcome to Bintang", poster cut) show once
- * per browser session, never for reduced motion. The state lives on
- * <html data-home-intro>:
+ * The Home loader and title intro ("Welcome to Bintang", poster cut) show only
+ * when a visitor arrives on Home from outside the site (a search result, a link
+ * elsewhere, a typed address): never when they move to Home within the site,
+ * come back to it, reload it, or have seen it already this session; never for
+ * reduced motion. The state lives on <html data-home-intro>:
  *   "load" — the loader (red lion, tail swinging, red ring) holds on black
  *            until the site is ready;
  *   "play" — the rest of the sequence in HomeTitle.module.css runs, timed from
@@ -22,57 +24,31 @@ export const LOAD_MAX_MS = 8000;
 export const VIDEO_WAIT_MS = 2500;
 
 /**
- * Move from the loader to the sequence, if still loading; records when. In a
- * background tab (opened with a middle-click, say) it waits until the tab is
- * shown: hidden tabs don't run CSS animations, but timers do, so starting the
- * clock early would cut the sequence short.
- */
-export function startPlay(): void {
-  const root = document.documentElement;
-  if (root.dataset.homeIntro !== "load") return;
-  if (document.hidden) {
-    document.addEventListener("visibilitychange", startPlay, { once: true });
-    return;
-  }
-  root.dataset.homeIntroAt = String(performance.now());
-  root.dataset.homeIntro = "play";
-}
-
-/**
- * Decide and record it. Same rules as INTRO_SCRIPT below, for when Home is
- * reached by a client-side navigation and that script never ran for it.
- */
-export function decideIntro(): Exclude<IntroState, "play"> {
-  try {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return "skip";
-    if (window.sessionStorage.getItem(INTRO_KEY)) return "skip";
-    window.sessionStorage.setItem(INTRO_KEY, "1");
-    return "load";
-  } catch {
-    // Storage blocked: we couldn't stop it replaying on every visit, so don't play it.
-    return "skip";
-  }
-}
-
-/**
- * Runs in <head> before the first paint on a full page load of Home, so the
- * loader is up from the very first frame (no flash of the hero underneath).
+ * Runs in <head> before the first paint on a full page load of Home (the only
+ * way the intro can start: moving to Home within the site is a client-side
+ * navigation, so this never runs for it), so the loader is up from the very
+ * first frame (no flash of the hero underneath). It skips when the visitor came
+ * from another page of this site (same-origin referrer), on a reload or a
+ * back/forward to Home, when they've seen it this session, for reduced motion,
+ * and if storage is blocked (it couldn't stop replaying).
  * It also decides when loading is done, without waiting for React: once the
  * page has loaded (scripts, styles, fonts) and the hero film has a frame to
  * show (or VIDEO_WAIT_MS after that), and the loader has shown for
- * LOAD_MIN_MS; and never later than LOAD_MAX_MS, so it can't get stuck. Like
- * startPlay, it waits for a background tab to be shown. A click, tap or key
- * press skips from the first frame, before React has loaded.
+ * LOAD_MIN_MS; and never later than LOAD_MAX_MS, so it can't get stuck. In a
+ * background tab (opened with a middle-click, say) it waits until the tab is
+ * shown: hidden tabs don't run CSS animations, but timers do, so starting the
+ * clock early would cut the sequence short. It always plays through: clicks
+ * and keys don't skip it.
  */
 export const INTRO_SCRIPT = `(function(){try{
 if(location.pathname!=="/")return;
 var r=document.documentElement,k=${JSON.stringify(INTRO_KEY)};
-if(matchMedia("(prefers-reduced-motion: reduce)").matches||sessionStorage.getItem(k)){r.dataset.homeIntro="skip";return}
+var nav=performance.getEntriesByType&&performance.getEntriesByType("navigation")[0],kind=nav&&nav.type,ref=document.referrer,inSite=false;
+try{inSite=!!ref&&new URL(ref).origin===location.origin}catch(e){}
+if(inSite||kind==="reload"||kind==="back_forward"||matchMedia("(prefers-reduced-motion: reduce)").matches||sessionStorage.getItem(k)){r.dataset.homeIntro="skip";return}
 sessionStorage.setItem(k,"1");r.dataset.homeIntro="load";
 var t0=performance.now(),loaded=false,film=false;
 function go(){if(r.dataset.homeIntro!=="load")return;if(document.hidden){document.addEventListener("visibilitychange",go,{once:true});return}r.dataset.homeIntroAt=String(performance.now());r.dataset.homeIntro="play"}
-function skip(){var s=r.dataset.homeIntro;if(s==="load"||s==="play")r.dataset.homeIntro="skip"}
-addEventListener("pointerdown",skip,{once:true});addEventListener("keydown",skip,{once:true});
 function check(){if(loaded&&film)setTimeout(go,Math.max(0,${LOAD_MIN_MS}-(performance.now()-t0)))}
 function filmReady(){if(film)return;film=true;check()}
 addEventListener("load",function(){loaded=true;

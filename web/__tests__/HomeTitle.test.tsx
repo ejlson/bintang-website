@@ -2,14 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { StrictMode } from "react";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { renderToString } from "react-dom/server";
-import { INTRO_KEY, INTRO_MS, LOAD_MIN_MS, startPlay } from "@/lib/homeIntro";
+import { INTRO_KEY, INTRO_MS, LOAD_MAX_MS } from "@/lib/homeIntro";
 import { motion } from "../vitest.setup";
 
 const root = document.documentElement;
 const intro = () => root.dataset.homeIntro;
 
 /**
- * HomeTitle keeps `loadingTimer` and `leftAt` in module state (once per
+ * HomeTitle keeps `leftAt` in module state (once per
  * document), so each test gets a fresh copy of the module.
  */
 async function loadHomeTitle() {
@@ -102,37 +102,38 @@ describe("HomeTitle markup", () => {
 });
 
 describe("HomeTitle intro state", () => {
-  it('unset (client navigation): "load", then "play" after LOAD_MIN_MS, then "skip" INTRO_MS later', async () => {
+  it('unset (client-side navigation to Home): sets "skip" and does nothing else', async () => {
+    const add = vi.spyOn(window, "addEventListener");
+    const setItem = vi.spyOn(Storage.prototype, "setItem");
+    const observe = vi.spyOn(MutationObserver.prototype, "observe");
     const HomeTitle = await loadHomeTitle();
     render(<HomeTitle />);
-    expect(intro()).toBe("load");
-    expect(sessionStorage.getItem(INTRO_KEY)).toBe("1");
-
-    await advance(LOAD_MIN_MS - 1);
-    expect(intro()).toBe("load");
-    await advance(1);
-    expect(intro()).toBe("play");
-    expect(Number(root.dataset.homeIntroAt)).toBe(LOAD_MIN_MS);
-
-    await advance(INTRO_MS - 1);
-    expect(intro()).toBe("play");
-    await advance(1);
+    expect(intro()).toBe("skip");
+    expect(root.dataset.homeIntroAt).toBeUndefined();
+    expect(sessionStorage.getItem(INTRO_KEY)).toBeNull();
+    expect(setItem).not.toHaveBeenCalled();
+    expect(vi.getTimerCount()).toBe(0);
+    const types = add.mock.calls.map(([type]) => type);
+    expect(types).not.toContain("keydown");
+    expect(types).not.toContain("pointerdown");
+    expect(observe).not.toHaveBeenCalled();
+    await advance(LOAD_MAX_MS + INTRO_MS);
     expect(intro()).toBe("skip");
   });
 
-  it("unset and already seen this session: skip", async () => {
-    sessionStorage.setItem(INTRO_KEY, "1");
+  it("unset: skips even on a first visit this session with motion allowed (only the head script starts it)", async () => {
+    motion.reduce = false;
+    expect(sessionStorage.getItem(INTRO_KEY)).toBeNull();
     const HomeTitle = await loadHomeTitle();
     render(<HomeTitle />);
-    expect(intro()).toBe("skip");
-    await advance(LOAD_MIN_MS + INTRO_MS);
     expect(intro()).toBe("skip");
   });
 
-  it("unset and reduced motion: skip", async () => {
-    motion.reduce = true;
+  it("unset: a later key press or click changes nothing", async () => {
     const HomeTitle = await loadHomeTitle();
     render(<HomeTitle />);
+    fireEvent.keyDown(window, { key: "a" });
+    fireEvent.pointerDown(window);
     expect(intro()).toBe("skip");
   });
 
@@ -179,7 +180,7 @@ describe("HomeTitle intro state", () => {
     const HomeTitle = await loadHomeTitle();
     render(<HomeTitle />);
     // No loader timer of its own: the script decides when loading is done.
-    await advance(LOAD_MIN_MS * 3);
+    await advance(LOAD_MAX_MS);
     expect(intro()).toBe("load");
 
     scriptPlays();
@@ -207,37 +208,41 @@ describe("HomeTitle intro state", () => {
   it.each([
     ["keydown", () => fireEvent.keyDown(window, { key: "Escape" })],
     ["pointerdown", () => fireEvent.pointerDown(window)],
-  ])("skips to the end on the first %s while playing", async (_name, fire) => {
+  ])("a %s while playing doesn't skip: it plays through to INTRO_MS", async (_name, fire) => {
     scriptPlays();
     const HomeTitle = await loadHomeTitle();
     render(<HomeTitle />);
     await advance(1000);
-    expect(intro()).toBe("play");
     act(() => fire());
+    expect(intro()).toBe("play");
+    await advance(INTRO_MS - 1000 - 1);
+    expect(intro()).toBe("play");
+    await advance(1);
     expect(intro()).toBe("skip");
   });
 
   it.each([
     ["keydown", () => fireEvent.keyDown(window, { key: " " })],
     ["pointerdown", () => fireEvent.pointerDown(window)],
-  ])("a %s during the loader skips, and its loader timer never flips it to play", async (_name, fire) => {
+  ])("a %s during the script's loader doesn't skip it", async (_name, fire) => {
+    root.dataset.homeIntro = "load";
     const HomeTitle = await loadHomeTitle();
     render(<HomeTitle />);
-    expect(intro()).toBe("load");
     await advance(500);
     act(() => fire());
-    expect(intro()).toBe("skip");
-    await advance(LOAD_MIN_MS + INTRO_MS);
-    expect(intro()).toBe("skip");
-    expect(root.dataset.homeIntroAt).toBeUndefined();
+    expect(intro()).toBe("load");
   });
 
-  it("startPlay after a skip does nothing (the guard the loader timer relies on)", async () => {
+  it("listens for no clicks or keys at all", async () => {
+    root.dataset.homeIntro = "load";
+    const add = vi.spyOn(window, "addEventListener");
     const HomeTitle = await loadHomeTitle();
     render(<HomeTitle />);
-    fireEvent.keyDown(window, { key: "a" });
-    startPlay();
-    expect(intro()).toBe("skip");
+    scriptPlays();
+    await flush();
+    const types = add.mock.calls.map(([type]) => type);
+    expect(types).not.toContain("keydown");
+    expect(types).not.toContain("pointerdown");
   });
 
   it('leaves "skip" alone: no timers, no listeners, no visit recorded', async () => {
@@ -256,13 +261,11 @@ describe("HomeTitle intro state", () => {
     expect(intro()).toBe("play");
   });
 
-  it("removes its timer, listeners and observer on unmount", async () => {
+  it("removes its timer and observer on unmount", async () => {
     root.dataset.homeIntro = "load";
-    const remove = vi.spyOn(window, "removeEventListener");
     const HomeTitle = await loadHomeTitle();
     const { unmount } = render(<HomeTitle />);
     unmount();
-    expect(remove.mock.calls.map(([type]) => type)).toEqual(expect.arrayContaining(["keydown", "pointerdown"]));
     // The observer is gone: a later "play" arms nothing.
     scriptPlays();
     await advance(INTRO_MS * 2);
@@ -271,8 +274,19 @@ describe("HomeTitle intro state", () => {
     expect(intro()).toBe("play");
   });
 
-  it("survives a StrictMode double effect run: one visit, one loader, one end", async () => {
-    const setItem = vi.spyOn(Storage.prototype, "setItem");
+  it("StrictMode with unset state: skip, nothing armed", async () => {
+    const HomeTitle = await loadHomeTitle();
+    render(
+      <StrictMode>
+        <HomeTitle />
+      </StrictMode>,
+    );
+    expect(intro()).toBe("skip");
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("survives a StrictMode double effect run: the script's load, then play, then one end", async () => {
+    root.dataset.homeIntro = "load";
     const HomeTitle = await loadHomeTitle();
     render(
       <StrictMode>
@@ -280,8 +294,9 @@ describe("HomeTitle intro state", () => {
       </StrictMode>,
     );
     expect(intro()).toBe("load");
-    expect(setItem).toHaveBeenCalledTimes(1);
-    await advance(LOAD_MIN_MS);
+    await advance(1000);
+    scriptPlays();
+    await flush();
     expect(intro()).toBe("play");
     await advance(INTRO_MS - 1);
     expect(intro()).toBe("play");

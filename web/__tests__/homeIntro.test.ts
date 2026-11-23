@@ -6,8 +6,6 @@ import {
   LOAD_MAX_MS,
   LOAD_MIN_MS,
   VIDEO_WAIT_MS,
-  decideIntro,
-  startPlay,
 } from "@/lib/homeIntro";
 import { motion } from "../vitest.setup";
 
@@ -38,6 +36,13 @@ function setHidden(hidden: boolean) {
   if (!hidden) document.dispatchEvent(new Event("visibilitychange"));
 }
 
+/** How the visitor arrived: the referrer, and the navigation entry's type (undefined: no entry). */
+function arrive(referrer: string, type?: string) {
+  Object.defineProperty(document, "referrer", { configurable: true, get: () => referrer });
+  vi.spyOn(performance, "getEntriesByType").mockImplementation(((kind: string) =>
+    kind === "navigation" && type !== undefined ? [{ type } as PerformanceNavigationTiming] : []) as Performance["getEntriesByType"]);
+}
+
 function reset() {
   delete root.dataset.homeIntro;
   delete root.dataset.homeIntroAt;
@@ -49,6 +54,8 @@ function reset() {
 beforeEach(() => {
   reset();
   vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "performance", "Date"] });
+  // Default: a fresh arrival from outside the site (typed address), first visit this session.
+  arrive("", "navigate");
   added = [];
   const real = window.addEventListener.bind(window);
   vi.spyOn(window, "addEventListener").mockImplementation((type, listener, options) => {
@@ -63,6 +70,8 @@ afterEach(() => {
   vi.clearAllTimers();
   vi.useRealTimers();
   reset();
+  // Back to jsdom's own (empty) referrer.
+  delete (document as { referrer?: string }).referrer;
 });
 
 describe("homeIntro constants", () => {
@@ -78,74 +87,6 @@ describe("homeIntro constants", () => {
   it("embeds the same key and timings in the head script", () => {
     expect(INTRO_SCRIPT).toContain(JSON.stringify(INTRO_KEY));
     for (const ms of [LOAD_MIN_MS, LOAD_MAX_MS, VIDEO_WAIT_MS]) expect(INTRO_SCRIPT).toContain(String(ms));
-  });
-});
-
-describe("decideIntro", () => {
-  it('returns "load" the first time in a session and records it', () => {
-    expect(decideIntro()).toBe("load");
-    expect(sessionStorage.getItem(INTRO_KEY)).toBe("1");
-  });
-
-  it("skips once it has been seen this session", () => {
-    expect(decideIntro()).toBe("load");
-    expect(decideIntro()).toBe("skip");
-  });
-
-  it("skips for reduced motion without recording a visit", () => {
-    motion.reduce = true;
-    expect(decideIntro()).toBe("skip");
-    expect(sessionStorage.getItem(INTRO_KEY)).toBeNull();
-  });
-
-  it("skips when sessionStorage throws on read", () => {
-    vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
-      throw new DOMException("denied", "SecurityError");
-    });
-    expect(decideIntro()).toBe("skip");
-  });
-
-  it("skips when sessionStorage throws on write", () => {
-    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
-      throw new DOMException("full", "QuotaExceededError");
-    });
-    expect(decideIntro()).toBe("skip");
-  });
-
-  it("does not touch <html> (the caller does)", () => {
-    decideIntro();
-    expect(intro()).toBeUndefined();
-    expect(introAt()).toBeUndefined();
-  });
-});
-
-describe("startPlay", () => {
-  it('moves "load" to "play" and records when', () => {
-    root.dataset.homeIntro = "load";
-    advance(1234);
-    startPlay();
-    expect(intro()).toBe("play");
-    expect(Number(introAt())).toBe(performance.now());
-  });
-
-  it("in a background tab, waits until the tab is shown and times from then", () => {
-    root.dataset.homeIntro = "load";
-    setHidden(true);
-    startPlay();
-    advance(4000);
-    expect(intro()).toBe("load");
-    setHidden(false);
-    expect(intro()).toBe("play");
-    expect(Number(introAt())).toBe(performance.now());
-  });
-
-  it.each([undefined, "skip", "play"])("does nothing when the state is %s", (state) => {
-    if (state) root.dataset.homeIntro = state;
-    if (state === "play") root.dataset.homeIntroAt = "5";
-    advance(100);
-    startPlay();
-    expect(intro()).toBe(state);
-    expect(introAt()).toBe(state === "play" ? "5" : undefined);
   });
 });
 
@@ -197,9 +138,69 @@ describe("INTRO_SCRIPT", () => {
     expect(vi.getTimerCount()).toBe(0);
   });
 
-  it("agrees with decideIntro: a visit recorded by the script makes decideIntro skip", () => {
+  it("skips the second full load of Home in a session (the visit is recorded)", () => {
     runScript();
-    expect(decideIntro()).toBe("skip");
+    delete root.dataset.homeIntro;
+    runScript();
+    expect(intro()).toBe("skip");
+  });
+
+  describe("where the visitor came from", () => {
+    it.each([
+      ["an external referrer (search result)", "https://www.google.com/", "navigate"],
+      ["an external referrer on another port of the same host", "http://localhost:4000/menu", "navigate"],
+      ["no referrer (typed address, bookmark)", "", "navigate"],
+      ["no referrer and no navigation entry", "", undefined],
+      ["an external referrer and no navigation entry", "https://www.google.com/", undefined],
+      ["an unparsable referrer", "not a url", "navigate"],
+    ])('plays ("load") for %s', (_label, referrer, type) => {
+      arrive(referrer, type);
+      runScript();
+      expect(intro()).toBe("load");
+      expect(sessionStorage.getItem(INTRO_KEY)).toBe("1");
+    });
+
+    it.each([
+      ["a same-origin referrer (another page of this site)", "/menu", "navigate"],
+      ["a same-origin referrer to Home itself", "/", "navigate"],
+      ["a same-origin referrer and no navigation entry", "/about", undefined],
+      ["a reload", "", "reload"],
+      ["a reload that kept an external referrer", "https://www.google.com/", "reload"],
+      ["back/forward", "", "back_forward"],
+      ["back/forward that kept an external referrer", "https://www.google.com/", "back_forward"],
+    ])("skips for %s: records nothing, starts nothing", (_label, referrer, type) => {
+      arrive(referrer.startsWith("/") ? location.origin + referrer : referrer, type);
+      runScript();
+      expect(intro()).toBe("skip");
+      expect(sessionStorage.getItem(INTRO_KEY)).toBeNull();
+      expect(vi.getTimerCount()).toBe(0);
+      fireLoad();
+      advance(LOAD_MAX_MS * 2);
+      expect(intro()).toBe("skip");
+      expect(introAt()).toBeUndefined();
+    });
+
+    it("works where performance.getEntriesByType is missing (treated as a fresh navigation)", () => {
+      vi.mocked(performance.getEntriesByType).mockRestore();
+      const original = performance.getEntriesByType;
+      Object.defineProperty(performance, "getEntriesByType", { configurable: true, writable: true, value: undefined });
+      try {
+        runScript();
+        expect(intro()).toBe("load");
+      } finally {
+        Object.defineProperty(performance, "getEntriesByType", { configurable: true, writable: true, value: original });
+      }
+    });
+
+    it("a same-origin arrival does not record the visit, so a later outside arrival still plays", () => {
+      arrive(`${location.origin}/menu`, "navigate");
+      runScript();
+      expect(intro()).toBe("skip");
+      delete root.dataset.homeIntro;
+      arrive("https://www.google.com/", "navigate");
+      runScript();
+      expect(intro()).toBe("load");
+    });
   });
 
   describe("load → play", () => {
@@ -327,20 +328,13 @@ describe("INTRO_SCRIPT", () => {
       expect(Number(introAt())).toBe(performance.now());
     });
 
-    it.each(["pointerdown", "keydown"])("a %s skips from the first frame, before React loads", (type) => {
+    it.each(["pointerdown", "keydown"])("a %s doesn't skip the loader: it still plays", (type) => {
       runScript();
       window.dispatchEvent(new Event(type));
-      expect(intro()).toBe("skip");
+      expect(intro()).toBe("load");
       fireLoad();
-      advance(LOAD_MAX_MS * 2);
-      expect(intro()).toBe("skip");
-    });
-
-    it("a click after the intro has ended leaves it ended", () => {
-      runScript();
-      root.dataset.homeIntro = "skip";
-      window.dispatchEvent(new Event("pointerdown"));
-      expect(intro()).toBe("skip");
+      advance(LOAD_MAX_MS);
+      expect(intro()).toBe("play");
     });
 
     it("never plays once skipped during loading", () => {

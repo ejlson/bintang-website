@@ -1,15 +1,13 @@
 "use client";
 
 import { useId, useLayoutEffect } from "react";
-import { INTRO_MS, LOAD_MIN_MS, decideIntro, startPlay } from "@/lib/homeIntro";
+import { INTRO_MS } from "@/lib/homeIntro";
 import { ART, BODY_CLIP, PIVOT, TAIL_CLIP, VIEWBOX } from "./FooterLion";
 import styles from "./HomeTitle.module.css";
 
 /** Classes the Hero uses to hold its chrome back while the title runs (app/page.tsx imports the module for `home`). */
 export const introClasses = { hud: styles.hud, film: styles.film };
 
-// The loader's hand-over after a client-side navigation (see the effect).
-let loadingTimer = 0;
 // When HomeTitle last went away (unmounted, or hidden by the router); null if never.
 let leftAt: number | null = null;
 
@@ -19,10 +17,11 @@ let leftAt: number | null = null;
  * footer's, over a red loading ring, until the site is ready (lib/homeIntro
  * decides when). Then the lion dissolves away, the black fades up slowly on
  * the dimmed film, the red title smash-cuts in word by word with its billing,
- * holds, then all cuts out at once as the film brightens, and the header
+ * holds, then dissolves away like the lion as the film brightens, and the header
  * drops in and the pause button and thumbnail rise in. All CSS, keyed
- * off <html data-home-intro>; this component only decides (after a client-side
- * navigation), ends and skips it. Any click, tap or key press skips to the end.
+ * off <html data-home-intro>; this component only times its end (the head
+ * script in lib/homeIntro decides whether it plays). It always plays through:
+ * clicks and keys don't skip it.
  * Decorative: the H1 carries the words.
  */
 export function HomeTitle() {
@@ -34,12 +33,9 @@ export function HomeTitle() {
     const now = performance.now();
     const read = () => root.dataset.homeIntro;
     let state = read();
-    if (state !== "load" && state !== "play" && state !== "skip") {
-      // Client-side navigation to Home: the site is already loaded, so the
-      // loader only shows for its minimum before the sequence starts.
-      state = root.dataset.homeIntro = decideIntro();
-      if (state === "load") loadingTimer = window.setTimeout(startPlay, LOAD_MIN_MS);
-    }
+    // Unset means Home was reached within the site (a client-side navigation:
+    // the head script only runs on a full load of "/"): never play it then.
+    if (state !== "load" && state !== "play" && state !== "skip") state = root.dataset.homeIntro = "skip";
     // Back on Home after leaving mid-intro (the router hid the page, which
     // restarts its CSS): don't replay it. A dev StrictMode remount is instant.
     if (state !== "skip" && leftAt !== null && now - leftAt > 50) state = root.dataset.homeIntro = "skip";
@@ -47,7 +43,6 @@ export function HomeTitle() {
 
     let endTimer = 0;
     const finish = () => {
-      window.clearTimeout(loadingTimer);
       root.dataset.homeIntro = "skip";
     };
     // Once playing (now, or when the loader hands over), end at INTRO_MS from
@@ -62,14 +57,10 @@ export function HomeTitle() {
     onState();
     const watch = new MutationObserver(onState);
     watch.observe(root, { attributes: true, attributeFilter: ["data-home-intro"] });
-    window.addEventListener("pointerdown", finish);
-    window.addEventListener("keydown", finish);
     return () => {
       leftAt = performance.now();
       watch.disconnect();
       window.clearTimeout(endTimer);
-      window.removeEventListener("pointerdown", finish);
-      window.removeEventListener("keydown", finish);
     };
   }, []);
 
