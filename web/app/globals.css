@@ -65,6 +65,15 @@ body {
   view-transition-name: vignette;
 }
 
+/* Phones: no vignette. iOS 26 Safari paints its toolbars solid whenever a
+   fixed element touches the screen's edge, which hid the page behind a dark
+   strip under the bottom bar. Without it the page shows through the glass. */
+@media (hover: none) and (pointer: coarse) {
+  .vignette {
+    display: none;
+  }
+}
+
 img,
 video {
   max-width: 100%;
