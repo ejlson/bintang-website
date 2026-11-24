@@ -134,6 +134,7 @@ describe("SiteHeader mobile overlay", () => {
 
     const links = within(dialog).getAllByRole("link");
     expect(links.map((a) => a.getAttribute("href"))).toEqual([
+      "/",
       ...allLinks.map((l) => l.href),
       site.mapUrl,
       `tel:${site.phoneIntl}`,
@@ -209,13 +210,17 @@ describe("SiteHeader mobile overlay", () => {
     const dialog = screen.getByRole("dialog");
     const close = within(dialog).getByRole("button", { name: /Close/ });
     const links = within(dialog).getAllByRole("link");
+    const first = links[0]; // the lion, home
     const last = links[links.length - 1];
 
+    // Opens on the close button; Shift+Tab reaches the lion, then wraps to the end.
     expect(close).toHaveFocus();
+    await user.tab({ shift: true });
+    expect(first).toHaveFocus();
     await user.tab({ shift: true });
     expect(last).toHaveFocus();
     await user.tab();
-    expect(close).toHaveFocus();
+    expect(first).toHaveFocus();
 
     // Walking forward through every item never leaves the dialog.
     for (let i = 0; i < links.length + 2; i++) {
@@ -239,6 +244,19 @@ describe("SiteHeader mobile overlay", () => {
     await user.click(toggle());
     unmount();
     expect(document.body.style.overflow).toBe("");
+  });
+});
+
+describe("SiteHeader overlay home link", () => {
+  it("the lion in the menu links home and closes the menu", async () => {
+    const user = userEvent.setup();
+    render(<SiteHeader currentHref="/menu" />);
+    await user.click(toggle());
+    const home = within(screen.getByRole("dialog")).getByRole("link", { name: "Bintang home" });
+    expect(home).toHaveAttribute("href", "/");
+    await clickWithoutNavigating(user, home);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(toggle()).toHaveAttribute("aria-expanded", "false");
   });
 });
 

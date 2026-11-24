@@ -124,7 +124,8 @@ export function SiteHeader({ variant = "overlay", tone = "paper", mark = "red", 
     getLenis()?.stop();
     const focusables = () =>
       Array.from(dialog?.querySelectorAll<HTMLElement>("a[href], button:not([disabled])") ?? []);
-    focusables()[0]?.focus();
+    // Start on the close button (the lion home link comes before it).
+    (dialog?.querySelector<HTMLElement>("button") ?? focusables()[0])?.focus();
 
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
@@ -210,8 +211,16 @@ export function SiteHeader({ variant = "overlay", tone = "paper", mark = "red", 
             inert={!open}
           >
             <div className={styles.overlayBar}>
-              {/* eslint-disable-next-line @next/next/no-img-element -- small vector mark, no optimisation needed */}
-              <img className={styles.overlayMark} src={MARK_SRC.paper} alt="" width={53} height={52} />
+              <Link
+                href="/"
+                className={styles.overlayHome}
+                aria-label="Bintang home"
+                // Already home: no navigation happens, so close and hand focus back.
+                onClick={window.location.pathname === "/" ? () => close() : () => hide()}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element -- small vector mark, no optimisation needed */}
+                <img className={styles.overlayMark} src={MARK_SRC.paper} alt="" width={53} height={52} />
+              </Link>
               <button type="button" className={styles.close} onClick={() => close()}>
                 <span className={styles.sr}>Close menu · Isara</span>
                 <span className={styles.cross} aria-hidden="true" />

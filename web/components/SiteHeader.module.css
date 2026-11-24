@@ -310,6 +310,20 @@
   min-height: 44px;
 }
 
+/* The lion in the menu's top bar: a link home, a 44px tap target. */
+.overlayHome {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.overlayHome:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
 .overlayMark {
   display: block;
   height: 34px;
