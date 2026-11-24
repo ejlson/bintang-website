@@ -410,3 +410,17 @@
   from { opacity: 0; translate: 0 24px; }
   to { opacity: 1; translate: 0 0; }
 }
+
+/* Firefox and Safari before 18.2 have no text-box (see the trimmed row text
+   above): pull each up by the same amount instead. For Aquavit, trimming to
+   the cap top removes half the line height less 0.332em (measured in Chrome).
+   Last in the file so it beats the margin: 0 resets above. */
+@supports not (text-box: trim-start cap alphabetic) {
+  .k,
+  .h,
+  .big,
+  .hours dt,
+  .hours dd {
+    margin-top: calc(0.332em - 0.5lh);
+  }
+}

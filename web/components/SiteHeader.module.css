@@ -422,6 +422,18 @@
   transition: color 0.35s var(--ease);
 }
 
+/* Firefox and Safari before 18.2 have no text-box: pull in by the same amounts
+   instead. For Aquavit, trimming to the cap top removes half the line height
+   less 0.332em, and to the baseline half the line height less 0.355em
+   (measured in Chrome). */
+@supports not (text-box: trim-both cap alphabetic) {
+  .num,
+  .overlayList .en {
+    margin-top: calc(0.332em - 0.5lh);
+    margin-bottom: calc(0.355em - 0.5lh);
+  }
+}
+
 /* No pen-stroke underline here: the current page is marked by colour. */
 .overlayList .en::after {
   content: none;
