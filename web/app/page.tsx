@@ -7,7 +7,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 export default function Home() {
   return (
     <main className={introStyles.home} style={{ color: "var(--paper)" }}>
-      <SiteHeader variant="overlay" tone="paper" mark="paper" currentHref="/" />
+      <SiteHeader variant="overlay" tone="paper" mark="paper" wordmark currentHref="/" />
       <Hero />
     </main>
   );

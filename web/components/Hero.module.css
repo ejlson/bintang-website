@@ -101,11 +101,9 @@
 }
 
 @media (width < 768px) {
+  /* No thumbnail on phones. */
   .thumb {
-    width: 60px;
-    height: 60px;
-    right: 16px;
-    bottom: 16px;
+    display: none;
   }
 
   .pause {

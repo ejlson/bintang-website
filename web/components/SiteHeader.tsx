@@ -17,6 +17,8 @@ type Props = {
   tone?: "paper" | "ink" | "yellow" | "red";
   /** Which lion head to show in the centre. */
   mark?: "red" | "paper" | "ink" | "yellow";
+  /** Phones only: the Bintang wordmark (paper) in place of the lion. */
+  wordmark?: boolean;
   /** Highlights the current page's link. */
   currentHref?: string;
 };
@@ -69,7 +71,7 @@ function NavItem({
   );
 }
 
-export function SiteHeader({ variant = "overlay", tone = "paper", mark = "red", currentHref }: Props) {
+export function SiteHeader({ variant = "overlay", tone = "paper", mark = "red", wordmark = false, currentHref }: Props) {
   const [open, setOpen] = useState(false);
   // After closing, the overlay stays mounted (inert, hidden from assistive
   // tech, no longer a dialog) just long enough to animate out.
@@ -164,7 +166,11 @@ export function SiteHeader({ variant = "overlay", tone = "paper", mark = "red", 
 
       <Link ref={markRef} href="/" className={styles.mark} aria-label="Bintang home">
         {/* eslint-disable-next-line @next/next/no-img-element -- small vector mark, no optimisation needed */}
-        <img src={MARK_SRC[mark]} alt="" width={53} height={52} />
+        <img className={wordmark ? styles.lionWhenWordmark : undefined} src={MARK_SRC[mark]} alt="" width={53} height={52} />
+        {wordmark && (
+          // eslint-disable-next-line @next/next/no-img-element -- small vector mark
+          <img className={styles.wordmark} src="/brand/bintang-wordmark-paper.svg" alt="" width={243} height={105} />
+        )}
       </Link>
 
       <div className={styles.end}>

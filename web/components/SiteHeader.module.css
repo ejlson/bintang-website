@@ -224,6 +224,11 @@
   filter: drop-shadow(0 2px 12px rgb(40 16 14 / 0.5));
 }
 
+/* Shown on phones only (see the phone rules below). */
+.mark .wordmark {
+  display: none;
+}
+
 /* Phones: a hamburger. Two lines in the bar's colour inside a 44px tap
    target, the lower one shorter so it reads as drawn, not as an icon font. */
 .toggle {
@@ -629,6 +634,8 @@
   .header {
     grid-template-columns: auto 1fr auto;
     align-items: center;
+    /* The middle column is empty here; a small gap leaves the wordmark room. */
+    column-gap: 12px;
   }
 
   .list {
@@ -642,6 +649,25 @@
 
   .mark img {
     height: 34px;
+  }
+
+  /* Home on phones: the wordmark takes the lion's place. */
+  .mark .lionWhenWordmark {
+    display: none;
+  }
+
+  /* Sized so the B (57 of the art's 105 units, 2 from its top) is exactly as
+     tall as the 44px Book button: 44 × 105 / 57 ≈ 81px. The negative bottom
+     margin centres the B, not the whole art (its tail hangs low), on the bar. */
+  .mark .wordmark {
+    display: block;
+    /* Phones under ~400px can't fit 188px beside Book + Menu: there it scales
+       down to the space left (100vw − 40px padding − 149px Book/Menu − 24px
+       gaps; the art is 243 × 105) rather than squash or collide. */
+    --wm-h: min(81px, calc((100vw - 213px) * 0.432));
+    height: var(--wm-h);
+    max-width: none;
+    margin-bottom: calc(var(--wm-h) * -0.42);
   }
 
   .end {

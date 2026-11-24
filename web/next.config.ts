@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
   partialPrefetching: !preview,
   // Hide the on-screen route indicator in dev; errors still surface.
   devIndicators: false,
+  // Lets a phone on the same Wi-Fi load the dev server from the Mac's LAN
+  // address (dev only; ignored by builds). Update if the Mac's IP changes.
+  allowedDevOrigins: ["192.168.1.149"],
   // The preview on workers.dev must never be indexed.
   ...(preview
     ? { headers: async () => [{ source: "/:path*", headers: [{ key: "X-Robots-Tag", value: "noindex" }] }] }
