@@ -48,6 +48,7 @@ export function SiteFooter() {
           <Link href="/contact/karaoke">Karaoke</Link>
           <a href={`mailto:${site.email}`}>{site.email}</a>
           <a href={`tel:${site.phoneIntl}`}>{site.phone}</a>
+          <Link href="/privacy">Privacy</Link>
         </nav>
         <a href={BOOKING_URL} target="_blank" rel="noopener" className={`cine-book cine-book--sm ${styles.book}`}>
           <span className="cine-frame">Book a table</span>{" "}

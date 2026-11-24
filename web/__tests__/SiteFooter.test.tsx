@@ -38,6 +38,7 @@ describe("SiteFooter", () => {
       "/contact/karaoke",
       `mailto:${site.email}`,
       `tel:${site.phoneIntl}`,
+      "/privacy",
     ]);
     expect(container.querySelector("[lang=tl]")).toBeNull();
   });

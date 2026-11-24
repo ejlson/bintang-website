@@ -1,0 +1,170 @@
+/* Runtime error page (components/ErrorScreen), "Error C — Red title card":
+   About's deep red flood, paper type, Aquavit throughout. */
+
+.page {
+  --gutter: 1.4vw;
+  min-height: 100vh;
+  min-height: 100svh;
+  background: var(--red-deep);
+  /* The footer's Book a table writes its words in this on hover. */
+  --ground: var(--red-deep);
+  color: var(--paper);
+  font-family: var(--font-ui);
+  font-weight: 400;
+  display: flex;
+  flex-direction: column;
+}
+
+/* The title card fills the first screen under the header. */
+.card {
+  flex: 1 0 auto;
+  min-height: calc(100svh - 120px);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 32px var(--gutter) 56px;
+  box-sizing: border-box;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.foot {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: end;
+  gap: 40px;
+  margin-top: 40px;
+  padding-top: 28px;
+  border-top: 1px solid color-mix(in srgb, currentColor 50%, transparent);
+}
+
+.words {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lede {
+  margin: 0;
+  max-width: 30ch;
+  font-family: var(--font-serif);
+  font-size: clamp(20px, 2vw, 26px);
+  line-height: 1.35;
+}
+
+/* 92% like the header's Tagalog lines: still ≥4.5:1 on the red. */
+.note {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-style: italic;
+  opacity: 0.92;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px 36px;
+}
+
+.line {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 44px;
+  color: inherit;
+  font-size: 12px;
+  letter-spacing: 0.32em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.line:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.line:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
+
+/* "Try again" is drawn like the header's Book (SiteHeader.module.css .book):
+   caps in a 1px frame resting at 60%; on hover or focus the paper wipes in
+   from the left and the words turn red. */
+.retry {
+  --retry-pad: 34px;
+  --retry-track: 0.32em;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  margin: 0;
+  padding: 0 var(--retry-pad) 0 calc(var(--retry-pad) + var(--retry-track));
+  border: 1px solid color-mix(in srgb, var(--paper) 60%, transparent);
+  border-radius: 0;
+  background: linear-gradient(var(--paper), var(--paper)) left / 0 100% no-repeat;
+  color: var(--paper);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: var(--retry-track);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    border-color 0.5s var(--ease),
+    background-size 0.5s var(--ease),
+    color 0.35s var(--ease);
+}
+
+.retry:hover,
+.retry:focus-visible {
+  border-color: var(--paper);
+  background-size: 100% 100%;
+  color: var(--red-deep);
+}
+
+.retry:focus-visible {
+  outline: 2px solid var(--paper);
+  outline-offset: 4px;
+}
+
+@media (max-width: 767px) {
+  .page {
+    --gutter: 16px;
+  }
+
+  .card {
+    min-height: calc(100svh - 96px);
+    padding-bottom: 40px;
+  }
+
+  .foot {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+
+  .actions {
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+  }
+
+  .retry {
+    --retry-pad: 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .retry {
+    transition: none;
+  }
+}
