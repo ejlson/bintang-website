@@ -81,10 +81,11 @@
   bottom: 20px;
   z-index: 4;
   display: block;
-  width: 76px;
-  height: 76px;
+  width: 86px;
+  height: 86px;
   overflow: hidden;
   border: 2px solid var(--paper);
+  border-radius: 12px;
   background: var(--ink);
   transition: transform 0.4s var(--ease);
 }
