@@ -6,7 +6,7 @@ export const metadata: Metadata = pageMeta({
   path: "/menu",
   title: "Filipino menu & weekend brunch in Camden",
   description:
-    "Bintang’s menus: à la carte Filipino plates, weekend brunch with silogs and bottomless drinks, Filipino desserts and karaoke. Kentish Town Road, Camden NW1.",
+    "Bintang’s Filipino menu in Camden, London: sharing plates like kare-kare and sisig, weekend brunch with silogs and bottomless drinks, and ube desserts.",
   image: { url: "/media/gallery/trays.jpg", width: 1600, height: 900, alt: "Trays from the Bintang kitchen, topped with lemon" },
 });
 
