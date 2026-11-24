@@ -5,11 +5,12 @@
 // search engines leave it alone.
 //
 //   npm run preview:build     CMS pull + OpenNext build into .open-next/
-//   npm run preview:deploy    upload it as the `bintang-preview` Worker
+//   npm run preview:deploy    upload it as the `bintang-website` Worker (the
+//                             Worker Cloudflare builds from GitHub on push)
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "main": ".open-next/worker.js",
-  "name": "bintang-preview",
+  "name": "bintang-website",
   "compatibility_date": "2026-07-23",
   "compatibility_flags": [
     "nodejs_compat"
@@ -22,7 +23,7 @@
   "services": [
     {
       "binding": "WORKER_SELF_REFERENCE",
-      "service": "bintang-preview"
+      "service": "bintang-website"
     }
   ],
   "images": {
