@@ -38,9 +38,8 @@ html::-webkit-scrollbar {
 
 body {
   margin: 0;
-  /* Black, not ink: iOS Safari paints its top and bottom toolbars solid in
-     this colour (and theme-color), because the fixed .vignette touches both
-     screen edges. Keep the vignette full-screen or the bars turn see-through. */
+  /* Black, not ink: iOS Safari paints its top toolbar solid in this colour
+     (and theme-color), because the fixed .vignette touches the top edge. */
   background: #000;
   color: var(--ink);
   font-family: var(--font-ui);
@@ -66,6 +65,20 @@ body {
     rgb(14 11 10 / 0.32) 100%
   );
   view-transition-name: vignette;
+}
+
+/* Phones: iOS Safari paints a toolbar solid whenever a fixed element touches
+   that screen edge. The vignette keeps the top bar black but stops halfway
+   down, so the page shows through the bottom bar's glass. The gradient is
+   still drawn at full-screen size, so its top half looks the same. */
+@media (hover: none) and (pointer: coarse) {
+  .vignette {
+    bottom: auto;
+    height: 50%;
+    background-size: 100% 200%;
+    background-position: top;
+    background-repeat: no-repeat;
+  }
 }
 
 img,
