@@ -119,7 +119,7 @@
   position: relative;
   height: 100%;
   overflow: hidden;
-  background: #1f1d1d url("/media/karaoke/karaoke-poster.jpg") center / cover no-repeat;
+  background: #0e0b0a url("/media/karaoke/karaoke-poster.jpg") center / cover no-repeat;
   color: var(--paper);
 }
 
@@ -143,10 +143,10 @@
   inset: 0;
   background: linear-gradient(
     to bottom,
-    rgb(31 29 29 / 0.7),
-    rgb(31 29 29 / 0.15) 38%,
-    rgb(31 29 29 / 0) 55%,
-    rgb(31 29 29 / 0.75)
+    rgb(14 11 10 / 0.7),
+    rgb(14 11 10 / 0.15) 38%,
+    rgb(14 11 10 / 0) 55%,
+    rgb(14 11 10 / 0.75)
   );
 }
 
@@ -210,7 +210,15 @@
   position: absolute;
   z-index: 1;
   inset: 0;
-  background: rgb(31 29 29 / 0.62);
+  /* The Home intro's black (#0e0b0a), not the warm grey ink: deepest behind the
+     information at the foot, easing off above it so more of the room shows under KARAOKE. */
+  background: linear-gradient(
+    to top,
+    rgb(14 11 10 / 0.9),
+    rgb(14 11 10 / 0.82) 45%,
+    rgb(14 11 10 / 0.35) 75%,
+    rgb(14 11 10 / 0.25)
+  );
   opacity: 0;
   transition: opacity 0.6s var(--ease);
   pointer-events: none;
@@ -236,12 +244,30 @@
   /* Bottom padding keeps the buttons clear of the pause button (bottom 12–56px). */
   padding: clamp(48px, 7vh, 80px) var(--gutter) clamp(72px, 9vh, 104px);
   color: var(--lit);
-  text-shadow: 0 1px 12px rgb(31 29 29 / 0.6);
+  text-shadow: 0 1px 12px rgb(14 11 10 / 0.6);
   pointer-events: none;
 }
 
 .info > * {
   pointer-events: auto;
+}
+
+/* Two columns at every width, split by a rule down the middle (as on the board). */
+.info {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.way {
+  justify-content: flex-end;
+}
+
+.way + .way {
+  padding-left: clamp(16px, 3vw, 48px);
+  border-left: 1px solid currentColor;
+}
+
+.way:first-child {
+  padding-right: clamp(16px, 3vw, 48px);
 }
 
 /* Empty space between each column's text and its buttons (where a photo was). Wide
@@ -253,14 +279,9 @@
 
 @media (width >= 900px) {
   .info {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
     align-content: stretch;
     gap: 0;
     height: calc(var(--stage-h) - var(--title-bottom));
-  }
-
-  .way {
-    justify-content: flex-end;
   }
 
   .shot {
@@ -270,54 +291,98 @@
     max-height: 280px;
     margin-top: 8px;
   }
-
-  .way + .way {
-    padding-left: clamp(24px, 3vw, 48px);
-    border-left: 1px solid currentColor;
-  }
-
-  .way:first-child {
-    padding-right: clamp(24px, 3vw, 48px);
-  }
 }
 
-/* Narrower screens: the stacked columns are taller than the space under KARAOKE, so
-   nothing is pinned there except the video: the header, title and information scroll as
-   a normal page over it. */
+/* Narrower screens: the same pinned layout, KARAOKE held at the top and the two columns
+   resting at the foot of the screen; the rule is as tall as the taller column. */
 @media (width < 900px) {
-  .bar {
-    position: relative;
+  .info {
+    gap: 0;
   }
 
-  .info {
-    position: relative;
-    top: auto;
-    min-height: 0;
-    padding-top: 48px;
+  /* Tops aligned, so the two labels and titles sit on one line. */
+  .way {
+    justify-content: flex-start;
+  }
+
+  .info .h3 {
+    font-size: 28px;
+  }
+
+  .info .m {
+    font-size: 16px;
   }
 }
 
-/* Phones: tighter type and spacing for the stacked columns. */
+/* Phones: tighter type, buttons and spacing so the two columns fit side by side. */
 @media (width < 600px) {
   .info {
-    gap: 40px;
+    padding-bottom: 72px;
   }
 
   .info .way {
     gap: 10px;
   }
 
+  .info .k {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+  }
+
   .info .h3 {
-    font-size: 26px;
+    font-size: 22px;
   }
 
   .info .m {
-    font-size: 16px;
+    font-size: 14px;
   }
 
-  .actions {
-    gap: 8px 24px;
-    margin-top: 16px;
+  /* .info raises these above the base .actions/.more rules further down. */
+  .info .actions {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 32px;
+  }
+
+  .actions :global(.cine-book) {
+    --cine-track: 0.24em;
+    --cine-pad: 14px;
+    font-size: 11px;
+  }
+
+  .actions :global(.cine-book)::before,
+  .actions :global(.cine-book)::after {
+    display: none;
+  }
+
+  .actions :global(.cine-frame) {
+    min-height: 44px;
+  }
+
+  /* Text and arrow flow as one line of type, so a wrapped link stays left-aligned
+     with the arrow right after its last word. */
+  .info .more {
+    display: block;
+    min-height: 0;
+    padding: 12px 0;
+    font-size: 10px;
+    line-height: 1.6;
+    letter-spacing: 0.14em;
+  }
+
+  .info .more svg {
+    width: 24px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
+  /* The address breaks only at the @. */
+  .info a.more[href^="mailto:"] {
+    overflow-wrap: normal;
+    letter-spacing: 0.04em;
+    text-transform: none;
+    font-size: 12px;
   }
 }
 

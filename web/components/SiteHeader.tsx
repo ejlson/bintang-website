@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import { allLinks, bookLinks, exploreLinks, type NavLink } from "@/lib/nav";
+import { site } from "@/lib/site";
 import { BookButton } from "./BookButton";
 import { getLenis } from "./SmoothScroll";
 import styles from "./SiteHeader.module.css";
@@ -28,9 +29,31 @@ const MARK_SRC = {
   yellow: "/brand/lion-head-yellow.svg",
 } as const;
 
-function NavItem({ link, current, onClick }: { link: NavLink; current: boolean; onClick?: () => void }) {
+function NavItem({
+  link,
+  current,
+  onClick,
+  index,
+}: {
+  link: NavLink;
+  current: boolean;
+  onClick?: () => void;
+  /** Overlay rows only: numbered 01, 02… and staggered in. */
+  index?: number;
+}) {
   return (
-    <Link href={link.href} className={styles.link} aria-current={current ? "page" : undefined} onClick={onClick}>
+    <Link
+      href={link.href}
+      className={styles.link}
+      aria-current={current ? "page" : undefined}
+      onClick={onClick}
+      style={index === undefined ? undefined : ({ "--i": index } as CSSProperties)}
+    >
+      {index !== undefined && (
+        <span className={styles.num} aria-hidden="true">
+          {String(index + 1).padStart(2, "0")}
+        </span>
+      )}
       <span className={styles.en}>{link.en}</span>
       <span className={styles.tl} lang="tl">
         {link.tl}
@@ -134,30 +157,43 @@ export function SiteHeader({ variant = "overlay", tone = "paper", mark = "red", 
           aria-controls={dialogId}
           onClick={() => setOpen(true)}
         >
-          <span className={styles.en}>Menu</span>
-          <span className={styles.tl} lang="tl">
-            Mga Pahina
-          </span>
+          <span className={styles.sr}>Menu · Mga Pahina</span>
+          <span className={styles.burger} aria-hidden="true" />
         </button>
       </div>
 
       {open && (
         <div ref={dialogRef} id={dialogId} className={styles.overlay} data-lenis-prevent role="dialog" aria-modal="true" aria-label="Site menu">
-          <button type="button" className={styles.close} onClick={close}>
-            Close <span lang="tl">· Isara</span>
-          </button>
+          <div className={styles.overlayBar}>
+            {/* eslint-disable-next-line @next/next/no-img-element -- small vector mark, no optimisation needed */}
+            <img className={styles.overlayMark} src={MARK_SRC.paper} alt="" width={53} height={52} />
+            <button type="button" className={styles.close} onClick={close}>
+              <span className={styles.sr}>Close menu · Isara</span>
+              <span className={styles.cross} aria-hidden="true" />
+            </button>
+          </div>
           <nav aria-label="All pages" className={styles.overlayList}>
-            {allLinks.map((l) => (
+            {allLinks.map((l, i) => (
               <NavItem
                 key={l.href}
                 link={l}
+                index={i}
                 current={l.href === currentHref}
                 // Same-page link: no navigation happens, so hand focus back explicitly.
                 onClick={l.href === currentHref ? close : () => setOpen(false)}
               />
             ))}
           </nav>
-          <BookButton />
+          <div className={styles.overlayFoot}>
+            <BookButton />
+            <p className={styles.overlayInfo}>
+              <a href={site.mapUrl} target="_blank" rel="noopener noreferrer">
+                {site.street}, {site.postcode}
+                <span className={styles.sr}> (map, opens in a new tab)</span>
+              </a>
+              <a href={`tel:${site.phoneIntl}`}>{site.phone}</a>
+            </p>
+          </div>
         </div>
       )}
     </header>

@@ -88,13 +88,15 @@
 /* Sticky tabs sit on a fade rather than a solid block: solid page colour
    behind the tab labels, dissolving (with a soft backdrop blur) into the
    menu as it scrolls underneath. The extra bottom padding is the fade zone;
-   the negative margin keeps the layout where it was. */
+   the negative margin keeps the layout where it was. z-index 1 keeps it
+   above the menu but under the site vignette (2), so the screen's edges
+   fade over the tabs too instead of the bar cutting a bright band. */
 .tabBar {
   --fade: 40px;
 
   position: sticky;
   top: 0;
-  z-index: 5;
+  z-index: 1;
   isolation: isolate;
   padding: 0 var(--gutter) var(--fade);
   margin-bottom: calc(-1 * var(--fade));

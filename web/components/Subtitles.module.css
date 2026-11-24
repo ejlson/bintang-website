@@ -130,6 +130,16 @@
    them the full width, so the longest Tagalog line fits on one row. */
 @media (max-width: 767px) {
   .subtitles {
-    padding: 0 16px 92px;
+    /* At the foot of the screen; the sides clear the pause button (bottom-left, 44px). */
+    padding: 0 48px 16px;
+  }
+
+  /* Small enough that the longest line ("Maligayang pagdating sa Bintang") fits. */
+  .en {
+    font-size: 18px;
+  }
+
+  .tl {
+    font-size: 16px;
   }
 }

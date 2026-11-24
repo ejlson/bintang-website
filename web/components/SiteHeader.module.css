@@ -224,67 +224,245 @@
   filter: drop-shadow(0 2px 12px rgb(40 16 14 / 0.5));
 }
 
+/* Phones: a hamburger. Two lines in the bar's colour inside a 44px tap
+   target, the lower one shorter so it reads as drawn, not as an icon font. */
 .toggle {
   display: none;
-  justify-self: end;
-  align-self: center;
-  min-height: 44px;
+  position: relative;
+  width: 44px;
+  height: 44px;
+  margin-right: -10px;
   padding: 0;
   border: 0;
   background: none;
   color: inherit;
-  font: inherit;
-  text-align: right;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* Full-screen menu (phones) */
+.burger,
+.burger::before,
+.burger::after {
+  position: absolute;
+  right: 10px;
+  height: 1.5px;
+  border-radius: 1px;
+  background: currentColor;
+}
+
+.burger {
+  top: 50%;
+  width: 24px;
+  margin-top: -0.75px;
+}
+
+.burger::before,
+.burger::after {
+  content: "";
+  right: 0;
+}
+
+.burger::before {
+  top: -7px;
+  width: 24px;
+}
+
+.burger::after {
+  top: 7px;
+  width: 16px;
+  transition: width 0.35s var(--ease);
+}
+
+.toggle:hover .burger::after {
+  width: 24px;
+}
+
+/* Menu (phones): the page stays visible behind a dark, see-through veil,
+   softly blurred so the links read cleanly over video. The top bar repeats
+   the header's layout (lion left, × where the hamburger was), so opening
+   reads as the header turning over rather than a new screen. */
 .overlay {
   position: fixed;
   inset: 0;
   z-index: 50;
   display: flex;
   flex-direction: column;
-  gap: 32px;
-  padding: 20px;
+  padding: 16px 20px max(24px, env(safe-area-inset-bottom));
   overflow-y: auto;
-  background: var(--ink);
+  overscroll-behavior: contain;
+  background: rgb(14 11 10 / 0.72);
+  -webkit-backdrop-filter: blur(10px) saturate(1.1);
+  backdrop-filter: blur(10px) saturate(1.1);
   color: var(--paper);
   --book-line: var(--paper);
   --book-on: var(--ink);
+  animation: veil-in 0.4s var(--ease) both;
 }
 
-.overlay .book {
-  align-self: flex-start;
+.overlayBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+}
+
+.overlayMark {
+  display: block;
+  height: 34px;
+  width: auto;
 }
 
 .close {
-  align-self: flex-end;
-  min-height: 44px;
-  padding: 0 4px;
+  position: relative;
+  width: 44px;
+  height: 44px;
+  margin-right: -10px;
+  padding: 0;
   border: 0;
   background: none;
   color: inherit;
-  font: inherit;
-  font-size: 15px;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
+.cross::before,
+.cross::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  width: 24px;
+  height: 1.5px;
+  margin-top: -0.75px;
+  border-radius: 1px;
+  background: currentColor;
+  animation: cross-in 0.45s var(--ease) both;
+}
+
+.cross::before {
+  --turn: 45deg;
+}
+
+.cross::after {
+  --turn: -45deg;
+}
+
+/* Numbered rows on hairlines: number, English set large, Tagalog to the
+   right on the same baseline. */
 .overlayList {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  margin: auto 0;
+  padding: 32px 0;
+}
+
+.overlayList .link {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  align-items: baseline;
+  gap: 12px;
+  padding: 14px 0 12px;
+  border-bottom: 1px solid rgb(237 233 233 / 0.16);
+  animation: row-in 0.6s var(--ease) both;
+  animation-delay: calc(0.08s + var(--i, 0) * 0.05s);
+}
+
+.overlayList .link:first-child {
+  border-top: 1px solid rgb(237 233 233 / 0.16);
+}
+
+.num {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  opacity: 0.5;
+  font-variant-numeric: tabular-nums;
 }
 
 .overlayList .en {
   font-family: var(--font-serif);
-  font-size: 36px;
-  line-height: 1.05;
+  font-size: clamp(30px, 9vw, 40px);
+  line-height: 1;
 }
 
 .overlayList .tl {
-  margin-top: 2px;
-  font-size: 15px;
+  font-size: 13px;
+  text-align: right;
+  opacity: 0.6;
+}
+
+.overlayList .link[aria-current="page"] .num {
+  opacity: 1;
+}
+
+.overlayFoot {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: row-in 0.6s var(--ease) both;
+  animation-delay: 0.45s;
+}
+
+.overlay .book {
+  width: 100%;
+  min-height: 52px;
+}
+
+.overlayInfo {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.7;
+}
+
+.overlayInfo a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.overlayInfo a:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
+
+@keyframes veil-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes row-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+@keyframes cross-in {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(var(--turn));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .overlayList .link,
+  .overlayFoot {
+    animation: none;
+  }
+
+  .cross::before,
+  .cross::after {
+    animation-duration: 0s;
+  }
+
+  .burger::after {
+    transition: none;
+  }
 }
 
 /* Narrow desktops: smaller type and gaps so both lists fit on one row,
@@ -331,6 +509,5 @@
 
   .toggle {
     display: block;
-    white-space: nowrap;
   }
 }

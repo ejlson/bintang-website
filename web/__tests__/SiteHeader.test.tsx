@@ -3,6 +3,7 @@ import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SiteHeader } from "@/components/SiteHeader";
 import { BOOKING_URL, allLinks, bookLinks, exploreLinks } from "@/lib/nav";
+import { site } from "@/lib/site";
 import { fireMediaChange, mediaListeners, motion } from "../vitest.setup";
 
 const DESKTOP_QUERY = "(width >= 768px)";
@@ -119,7 +120,7 @@ describe("SiteHeader mobile overlay", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
-  it("opens a modal dialog with every page link plus the Book button and moves focus inside", async () => {
+  it("opens a modal dialog with every page link, the Book button, address and phone, and moves focus inside", async () => {
     const user = userEvent.setup();
     render(<SiteHeader currentHref="/menu" />);
     await user.click(toggle());
@@ -130,7 +131,12 @@ describe("SiteHeader mobile overlay", () => {
     expect(dialog.id).toBe(toggle().getAttribute("aria-controls"));
 
     const links = within(dialog).getAllByRole("link");
-    expect(links.map((a) => a.getAttribute("href"))).toEqual([...allLinks.map((l) => l.href), BOOKING_URL]);
+    expect(links.map((a) => a.getAttribute("href"))).toEqual([
+      ...allLinks.map((l) => l.href),
+      BOOKING_URL,
+      site.mapUrl,
+      `tel:${site.phoneIntl}`,
+    ]);
     expect(within(dialog).getByRole("link", { name: /Mga Ulam/ })).toHaveAttribute("aria-current", "page");
 
     expect(dialog).toContainElement(document.activeElement as HTMLElement);
