@@ -10,6 +10,12 @@ export const site = {
   mapUrl: "https://www.google.com/maps/search/?api=1&query=Bintang+93+Kentish+Town+Road+London+NW1+8NY",
 } as const;
 
+/** Bintang's social accounts, shown as icons in the footer (and as sameAs in the JSON-LD). */
+export const socials = [
+  { name: "Instagram", handle: "@bintang_restaurant", url: "https://www.instagram.com/bintang_restaurant/" },
+  { name: "TikTok", handle: "@bintang_restaurant", url: "https://www.tiktok.com/@bintang_restaurant" },
+] as const;
+
 type Day = "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday";
 
 export type Hours = {

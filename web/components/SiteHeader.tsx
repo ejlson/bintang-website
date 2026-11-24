@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useCallback, useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import { allLinks, bookLinks, exploreLinks, type NavLink } from "@/lib/nav";
-import { site } from "@/lib/site";
+import { site, socials } from "@/lib/site";
+import { SOCIAL_ICON_PATHS } from "@/lib/socialIcons";
 import { BookButton } from "./BookButton";
 import { getLenis } from "./SmoothScroll";
 import styles from "./SiteHeader.module.css";
@@ -21,6 +22,9 @@ type Props = {
 
 /** Matches the CSS breakpoint where the split nav replaces the menu button. */
 const DESKTOP_QUERY = "(width >= 768px)";
+const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+/** How long the overlay stays on screen to play its way out (SiteHeader.module.css › .leaving). */
+const LEAVE_MS = 500;
 
 const MARK_SRC = {
   red: "/brand/lion-head-red.svg",
@@ -38,7 +42,7 @@ function NavItem({
   link: NavLink;
   current: boolean;
   onClick?: () => void;
-  /** Overlay rows only: numbered 01, 02… and staggered in. */
+  /** Overlay rows only: numbered 01, 02…, English only, staggered in. */
   index?: number;
 }) {
   return (
@@ -55,27 +59,47 @@ function NavItem({
         </span>
       )}
       <span className={styles.en}>{link.en}</span>
-      <span className={styles.tl} lang="tl">
-        {link.tl}
-      </span>
+      {index === undefined && (
+        <span className={styles.tl} lang="tl">
+          {link.tl}
+        </span>
+      )}
     </Link>
   );
 }
 
 export function SiteHeader({ variant = "overlay", tone = "paper", mark = "red", currentHref }: Props) {
   const [open, setOpen] = useState(false);
+  // After closing, the overlay stays mounted (inert, hidden from assistive
+  // tech, no longer a dialog) just long enough to animate out.
+  const [leaving, setLeaving] = useState(false);
+  // Bumped on every open so a reopen mid-exit remounts the overlay and its
+  // entrance plays from the start.
+  const [openCount, setOpenCount] = useState(0);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const markRef = useRef<HTMLAnchorElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const dialogId = useId();
 
-  const close = useCallback(() => {
+  /** Closes the menu; the overlay animates out unless motion is reduced or `instant`. */
+  const hide = useCallback((instant = false) => {
     setOpen(false);
+    setLeaving(!instant && !window.matchMedia(REDUCED_MOTION_QUERY).matches);
+  }, []);
+
+  const close = useCallback((instant = false) => {
+    hide(instant);
     // The toggle is hidden at desktop widths; focus the home mark there instead
     // so focus never drops to <body>.
     const desktop = window.matchMedia(DESKTOP_QUERY).matches;
     (desktop ? markRef.current : toggleRef.current)?.focus();
-  }, []);
+  }, [hide]);
+
+  useEffect(() => {
+    if (!leaving) return;
+    const t = window.setTimeout(() => setLeaving(false), LEAVE_MS);
+    return () => window.clearTimeout(t);
+  }, [leaving]);
 
   // If the screen widens past the phone breakpoint while open (e.g. a tablet
   // rotates), the overlay no longer belongs: close it.
@@ -83,7 +107,8 @@ export function SiteHeader({ variant = "overlay", tone = "paper", mark = "red", 
     if (!open) return;
     const mql = window.matchMedia(DESKTOP_QUERY);
     const onChange = (e: MediaQueryListEvent) => {
-      if (e.matches) close();
+      // The overlay no longer belongs at this width: drop it at once.
+      if (e.matches) close(true);
     };
     mql.addEventListener("change", onChange);
     return () => mql.removeEventListener("change", onChange);
@@ -155,19 +180,34 @@ export function SiteHeader({ variant = "overlay", tone = "paper", mark = "red", 
           className={styles.toggle}
           aria-expanded={open}
           aria-controls={dialogId}
-          onClick={() => setOpen(true)}
+          onClick={() => {
+            setLeaving(false);
+            setOpenCount((n) => n + 1);
+            setOpen(true);
+          }}
         >
           <span className={styles.sr}>Menu · Mga Pahina</span>
           <span className={styles.burger} aria-hidden="true" />
         </button>
       </div>
 
-      {open && (
-        <div ref={dialogRef} id={dialogId} className={styles.overlay} data-lenis-prevent role="dialog" aria-modal="true" aria-label="Site menu">
+      {(open || leaving) && (
+        <div
+          key={openCount}
+          ref={dialogRef}
+          id={dialogId}
+          className={`${styles.overlay} ${open ? "" : styles.leaving}`}
+          data-lenis-prevent
+          role={open ? "dialog" : undefined}
+          aria-modal={open ? "true" : undefined}
+          aria-label={open ? "Site menu" : undefined}
+          aria-hidden={open ? undefined : "true"}
+          inert={!open}
+        >
           <div className={styles.overlayBar}>
             {/* eslint-disable-next-line @next/next/no-img-element -- small vector mark, no optimisation needed */}
             <img className={styles.overlayMark} src={MARK_SRC.paper} alt="" width={53} height={52} />
-            <button type="button" className={styles.close} onClick={close}>
+            <button type="button" className={styles.close} onClick={() => close()}>
               <span className={styles.sr}>Close menu · Isara</span>
               <span className={styles.cross} aria-hidden="true" />
             </button>
@@ -180,19 +220,33 @@ export function SiteHeader({ variant = "overlay", tone = "paper", mark = "red", 
                 index={i}
                 current={l.href === currentHref}
                 // Same-page link: no navigation happens, so hand focus back explicitly.
-                onClick={l.href === currentHref ? close : () => setOpen(false)}
+                onClick={l.href === currentHref ? () => close() : () => hide()}
               />
             ))}
           </nav>
           <div className={styles.overlayFoot}>
-            <BookButton />
             <p className={styles.overlayInfo}>
               <a href={site.mapUrl} target="_blank" rel="noopener noreferrer">
-                {site.street}, {site.postcode}
-                <span className={styles.sr}> (map, opens in a new tab)</span>
+                {site.street}
+                <span className={styles.sr}>, {site.postcode} (map, opens in a new tab)</span>
               </a>
               <a href={`tel:${site.phoneIntl}`}>{site.phone}</a>
             </p>
+            <div className={styles.overlayEnd}>
+              <ul aria-label="Follow Bintang" className={styles.socials}>
+                {socials.map((s) => (
+                  <li key={s.name}>
+                    <a href={s.url} target="_blank" rel="noopener noreferrer" className={styles.social}>
+                      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+                        <path d={SOCIAL_ICON_PATHS[s.name]} fill="currentColor" />
+                      </svg>
+                      <span className={styles.sr}>{s.name} (opens in a new tab)</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+              <BookButton />
+            </div>
           </div>
         </div>
       )}

@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { act, render, screen, within } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SiteHeader } from "@/components/SiteHeader";
 import { BOOKING_URL, allLinks, bookLinks, exploreLinks } from "@/lib/nav";
-import { site } from "@/lib/site";
+import { site, socials } from "@/lib/site";
 import { fireMediaChange, mediaListeners, motion } from "../vitest.setup";
 
 const DESKTOP_QUERY = "(width >= 768px)";
@@ -120,7 +120,7 @@ describe("SiteHeader mobile overlay", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
-  it("opens a modal dialog with every page link, the Book button, address and phone, and moves focus inside", async () => {
+  it("opens a modal dialog with every page link, address, phone, socials and the Book button, and moves focus inside", async () => {
     const user = userEvent.setup();
     render(<SiteHeader currentHref="/menu" />);
     await user.click(toggle());
@@ -133,11 +133,19 @@ describe("SiteHeader mobile overlay", () => {
     const links = within(dialog).getAllByRole("link");
     expect(links.map((a) => a.getAttribute("href"))).toEqual([
       ...allLinks.map((l) => l.href),
-      BOOKING_URL,
       site.mapUrl,
       `tel:${site.phoneIntl}`,
+      ...socials.map((s) => s.url),
+      BOOKING_URL,
     ]);
-    expect(within(dialog).getByRole("link", { name: /Mga Ulam/ })).toHaveAttribute("aria-current", "page");
+    for (const s of socials) {
+      const link = within(dialog).getByRole("link", { name: new RegExp(`^${s.name}`) });
+      expect(link).toHaveAttribute("target", "_blank");
+      expect(link.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
+    }
+    expect(within(dialog).getByRole("link", { name: "Menu" })).toHaveAttribute("aria-current", "page");
+    // Overlay rows are English only (title card); the Tagalog stays in the desktop bar.
+    expect(within(dialog).queryByText("Mga Ulam")).toBeNull();
 
     expect(dialog).toContainElement(document.activeElement as HTMLElement);
     expect(document.body.style.overflow).toBe("hidden");
@@ -232,6 +240,56 @@ describe("SiteHeader mobile overlay", () => {
   });
 });
 
+describe("SiteHeader overlay exit animation", () => {
+  const leavingOverlay = () => document.querySelector<HTMLElement>('[aria-hidden="true"][inert]');
+
+  it("keeps the overlay briefly as an inert, hidden layer to animate out, then removes it", async () => {
+    const user = userEvent.setup();
+    render(<SiteHeader />);
+    await user.click(toggle());
+    const id = screen.getByRole("dialog").id;
+    await user.keyboard("{Escape}");
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    const leaving = leavingOverlay();
+    expect(leaving).not.toBeNull();
+    expect(leaving!.id).toBe(id);
+    expect(toggle()).toHaveFocus();
+    expect(document.body.style.overflow).toBe("");
+
+    await waitFor(() => expect(leavingOverlay()).toBeNull());
+  });
+
+  it("removes the overlay at once with reduced motion", async () => {
+    motion.reduce = true;
+    const user = userEvent.setup();
+    render(<SiteHeader />);
+    await user.click(toggle());
+    await user.keyboard("{Escape}");
+    expect(leavingOverlay()).toBeNull();
+  });
+
+  it("drops the overlay at once when the screen widens past the breakpoint", async () => {
+    const user = userEvent.setup();
+    render(<SiteHeader />);
+    await user.click(toggle());
+    motion.desktop = true;
+    act(() => fireMediaChange(DESKTOP_QUERY, true));
+    expect(leavingOverlay()).toBeNull();
+  });
+
+  it("reopening mid-exit gives a fresh, live dialog", async () => {
+    const user = userEvent.setup();
+    render(<SiteHeader />);
+    await user.click(toggle());
+    await user.keyboard("{Escape}");
+    await user.click(toggle());
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(leavingOverlay()).toBeNull();
+    expect(screen.getAllByRole("link", { name: "About" }).length).toBeGreaterThan(0);
+  });
+});
+
 describe("SiteHeader at desktop widths", () => {
   it("returns focus to the home mark (toggle is hidden) when closed via the close button", async () => {
     const user = userEvent.setup();
@@ -301,7 +359,7 @@ describe("SiteHeader overlay links", () => {
     const user = userEvent.setup();
     render(<SiteHeader currentHref="/menu" />);
     await user.click(toggle());
-    const current = within(screen.getByRole("dialog")).getByRole("link", { name: /Mga Ulam/ });
+    const current = within(screen.getByRole("dialog")).getByRole("link", { name: "Menu" });
     expect(current).toHaveAttribute("aria-current", "page");
 
     await clickWithoutNavigating(user, current);
@@ -315,7 +373,7 @@ describe("SiteHeader overlay links", () => {
     render(<SiteHeader currentHref="/menu" />);
     await user.click(toggle());
     motion.desktop = true;
-    await clickWithoutNavigating(user, within(screen.getByRole("dialog")).getByRole("link", { name: /Mga Ulam/ }));
+    await clickWithoutNavigating(user, within(screen.getByRole("dialog")).getByRole("link", { name: "Menu" }));
     expect(homeMark()).toHaveFocus();
   });
 
