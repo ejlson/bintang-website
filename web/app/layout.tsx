@@ -48,6 +48,7 @@ const restaurantJsonLd = {
     `${SITE_URL}/media/about/history-bamboo-dining-room.jpg`,
   ],
   servesCuisine: ["Filipino", "Asian"],
+  priceRange: site.priceRange,
   menu: `${SITE_URL}/menu`,
   hasMenu: { "@id": `${SITE_URL}/menu#menu` },
   acceptsReservations: BOOKING_URL,
@@ -60,6 +61,8 @@ const restaurantJsonLd = {
     postalCode: site.postcode,
     addressCountry: "GB",
   },
+  geo: { "@type": "GeoCoordinates", ...site.geo },
+  hasMap: site.mapUrl,
   openingHoursSpecification: hours
     .filter((h) => h.opens)
     .map((h) => ({ "@type": "OpeningHoursSpecification", dayOfWeek: h.days, opens: h.opens, closes: h.closes })),

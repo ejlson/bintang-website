@@ -8,6 +8,10 @@ export const site = {
   phoneIntl: "+442072672197",
   email: "bintangnw1@gmail.com",
   mapUrl: "https://www.google.com/maps/search/?api=1&query=Bintang+93+Kentish+Town+Road+London+NW1+8NY",
+  /** The pin on Bintang's Google Maps listing, so the JSON-LD and the listing agree. */
+  geo: { latitude: 51.5435524, longitude: -0.1418932 },
+  /** schema.org priceRange: mains £16–19, small plates £6–14. */
+  priceRange: "££",
 } as const;
 
 /** Bintang's social accounts, shown as icons in the footer (and as sameAs in the JSON-LD). */
