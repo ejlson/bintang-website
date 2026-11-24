@@ -151,7 +151,7 @@ describe("About page", () => {
     const book = within(come).getByRole("link", { name: /Book a table/ });
     expect(book).toHaveAttribute("href", "https://www.opentable.co.uk/r/bintang-london");
     expect(book).toHaveAttribute("target", "_blank");
-    expect(within(come).getByRole("link", { name: /Groups and private hire/ })).toHaveAttribute("href", "/contact/private-hire");
+    expect(within(come).getByRole("link", { name: /Groups and private hire/ })).toHaveAttribute("href", "/contact");
   });
 
   it("sets Book a table as the cinematic button, still named for OpenTable and the new tab", () => {

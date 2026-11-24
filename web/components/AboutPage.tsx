@@ -324,7 +324,7 @@ export function AboutPage() {
               <span className="cine-frame">Book a table</span>{" "}
               <span className="sr-only">on OpenTable (opens in a new tab)</span>
             </a>
-            <Link href="/contact/private-hire" className={styles.more}>
+            <Link href="/contact" className={styles.more}>
               Groups and private hire {ARROW}
             </Link>
           </div>

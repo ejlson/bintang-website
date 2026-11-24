@@ -44,8 +44,7 @@ export function SiteFooter() {
           </ul>
         </div>
         <nav aria-label="More" className={styles.links}>
-          <Link href="/contact/groups">Groups</Link>
-          <Link href="/contact/private-hire">Private hire</Link>
+          <Link href="/contact">Contact us</Link>
           <Link href="/contact/karaoke">Karaoke</Link>
           <a href={`mailto:${site.email}`}>{site.email}</a>
           <a href={`tel:${site.phoneIntl}`}>{site.phone}</a>

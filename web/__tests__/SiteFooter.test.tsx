@@ -34,8 +34,7 @@ describe("SiteFooter", () => {
       .getAllByRole("link")
       .map((a) => a.getAttribute("href"));
     expect(hrefs).toEqual([
-      "/contact/groups",
-      "/contact/private-hire",
+      "/contact",
       "/contact/karaoke",
       `mailto:${site.email}`,
       `tel:${site.phoneIntl}`,
