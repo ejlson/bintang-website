@@ -5,7 +5,7 @@ import Home from "@/app/page";
 import Gallery from "@/app/gallery/page";
 import Contact from "@/app/contact/page";
 import { BOOKING_URL } from "@/lib/nav";
-import { hours, site } from "@/lib/site";
+import { hours, site, socials } from "@/lib/site";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -61,6 +61,24 @@ describe("SiteFooter", () => {
     expect(booking.querySelector(".cine-frame")).toHaveTextContent(/^Book a table$/);
     expect(booking.getAttribute("rel")).toContain("noopener");
     expect(booking).toHaveAccessibleName(/^Book a table\s*\(opens in a new tab\)$/);
+  });
+
+  it("links to Instagram and TikTok as named icons that open in a new tab", () => {
+    render(<SiteFooter />);
+    const list = screen.getByRole("list", { name: "Follow Bintang" });
+    const links = within(list).getAllByRole("link");
+    expect(links.map((a) => a.getAttribute("href"))).toEqual([
+      "https://www.instagram.com/bintang_restaurant/",
+      "https://www.tiktok.com/@bintang_restaurant",
+    ]);
+    links.forEach((a, i) => {
+      expect(a).toHaveAccessibleName(`${socials[i].name} (opens in a new tab)`);
+      expect(a).toHaveAttribute("target", "_blank");
+      expect(a.getAttribute("rel")).toContain("noopener");
+      // The mark is decoration; the name comes from the hidden text.
+      expect(a.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
+      expect(a.querySelector("svg path")?.getAttribute("d")).toBeTruthy();
+    });
   });
 
   it("lists every opening-hours row", () => {

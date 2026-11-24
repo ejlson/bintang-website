@@ -236,7 +236,7 @@ describe("Gallery page", () => {
     const rule = css.match(/\.vignette \{[^}]*\}/)?.[0] ?? "";
     expect(rule).toMatch(/position: fixed/);
     expect(rule).toMatch(/pointer-events: none/);
-    expect(rule).toMatch(/rgb\(14 11 10 \/ 0\.55\) 100%/);
+    expect(rule).toMatch(/rgb\(14 11 10 \/ 0\.32\) 100%/);
     // Over the photos (the grid is z-index 1), under the header, bars and pause buttons (3 and up).
     expect(rule).toMatch(/z-index: 2/);
     // Its own transition layer, above both pages and not animated, so it never pops in.

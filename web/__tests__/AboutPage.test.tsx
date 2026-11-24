@@ -3,6 +3,7 @@ import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import About from "@/app/about/page";
 import { ALBUM, DISHES, YEARS } from "@/components/AboutPage";
 import { ABOUT_FILM, ABOUT_FILM_POSTER } from "@/components/AboutFilm";
+import { hours } from "@/lib/site";
 import { motion } from "../vitest.setup";
 
 const play = HTMLMediaElement.prototype.play as unknown as ReturnType<typeof vi.fn>;
@@ -34,6 +35,22 @@ describe("About page", () => {
     expect(screen.getByText("Find us").nextElementSibling).toHaveTextContent("93 Kentish Town Road");
     expect(screen.getByText("Open").nextElementSibling).toHaveTextContent("Tue–Thu 5–9.30pm");
     expect(screen.getByText("Open").nextElementSibling).not.toHaveTextContent("Closed");
+  });
+
+  it("sets each open entry as its own hour, breaking after the first and dotting the rest", () => {
+    render(<About />);
+    const open = screen.getByText("Open").nextElementSibling as HTMLElement;
+    const opening = hours.filter((h) => h.opens);
+    const entries = Array.from(open.querySelectorAll(":scope > .hour"));
+    expect(entries).toHaveLength(opening.length);
+    entries.forEach((entry, i) => {
+      expect(entry).toHaveTextContent(`${opening[i].label} ${opening[i].time}`);
+      expect(entry.querySelectorAll("br")).toHaveLength(i === 1 ? 1 : 0);
+      const sep = entry.querySelector(".hourSep");
+      if (i > 1) expect(sep?.textContent).toBe(" · ");
+      else expect(sep).toBeNull();
+    });
+    expect(open.textContent).toContain(` · ${opening[2].label} ${opening[2].time}`);
   });
 
   it("marks About as the current page", () => {

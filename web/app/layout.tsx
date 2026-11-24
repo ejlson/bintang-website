@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { HistoryWipe } from "@/components/PageTransition";
 import { SmoothScroll } from "@/components/SmoothScroll";
 import { INTRO_SCRIPT } from "@/lib/homeIntro";
-import { hours, site } from "@/lib/site";
+import { hours, site, socials } from "@/lib/site";
 import "lenis/dist/lenis.css";
 import "./globals.css";
 
@@ -40,6 +40,7 @@ const restaurantJsonLd = {
   email: site.email,
   servesCuisine: ["Filipino", "Asian"],
   foundingDate: "1987",
+  sameAs: socials.map((s) => s.url),
   address: {
     "@type": "PostalAddress",
     streetAddress: site.street,

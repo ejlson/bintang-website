@@ -109,7 +109,8 @@
 
 /* Columns divided by soft rules, like the Menu's column rules. Each ruled grid has fixed
    column counts per breakpoint (below), so the first item of every row is known and loses its
-   rule. On a phone the columns stack and the soft rules run between them instead. */
+   rule. On a phone the Come for columns stack and the soft rules run between them instead;
+   the facts and years go two across (see Phones, below). */
 .ruled > * + * {
   padding-top: 16px;
   border-top: 1px solid var(--soft-rule);
@@ -462,17 +463,11 @@
   border-top: 1px solid currentColor;
 }
 
-/* 1, 2 or 4 across, so a photo is never left on its own row. */
+/* 2 or 4 across, so a photo is never left on its own row. */
 .strip {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 48px 8px;
-}
-
-@media (width >= 560px) {
-  .strip {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 
 @media (width >= 1000px) {
@@ -630,6 +625,172 @@
 .more:focus-visible {
   outline: 2px solid var(--paper);
   outline-offset: 4px;
+}
+
+/* ---------- Phones ----------
+   Below 600px the facts, the years and the then-and-now photos sit two across instead of
+   one per row, the film is cropped shorter, and the type steps down so lines don't wrap
+   awkwardly. Two-across ruled grids: a soft rule between the columns, and between rows. */
+
+@media (width < 600px) {
+  .page {
+    --section-gap: 48px;
+  }
+
+  .band {
+    font-size: 12px;
+    letter-spacing: 0.24em;
+    text-wrap: balance;
+  }
+
+  .facts,
+  .years {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0;
+  }
+
+  .facts > *,
+  .years > * {
+    padding: 16px 0 16px 16px;
+    border-top: 1px solid var(--soft-rule);
+    border-left: 1px solid var(--soft-rule);
+  }
+
+  .facts > :nth-child(2n + 1),
+  .years > :nth-child(2n + 1) {
+    padding-left: 0;
+    padding-right: 16px;
+    border-left: 0;
+  }
+
+  .facts > :nth-child(-n + 2),
+  .years > :nth-child(-n + 2) {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .facts {
+    padding: 24px 0 8px;
+  }
+
+  .facts .s {
+    font-size: 15px;
+  }
+
+  /* One opening-hours entry per line in the narrow column. */
+  .hour {
+    display: block;
+  }
+
+  .hour br,
+  .hourSep {
+    display: none;
+  }
+
+  /* The boxed line already closes the timeline; skip the second rule under it. */
+  .thenNow {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .intro {
+    gap: 32px;
+    padding-top: 32px;
+  }
+
+  .statement {
+    font-size: 28px;
+    line-height: 1.15;
+  }
+
+  .lead {
+    gap: 32px;
+  }
+
+  .lion {
+    width: 112px;
+  }
+
+  .film {
+    max-width: none;
+  }
+
+  .filmFrame {
+    aspect-ratio: 4 / 5;
+  }
+
+  .headline {
+    font-size: 44px;
+  }
+
+  .story {
+    gap: 16px;
+    padding: 32px 0;
+  }
+
+  .m {
+    font-size: 18px;
+    line-height: 1.45;
+  }
+
+  .brief {
+    padding-bottom: 32px;
+  }
+
+  .years .d {
+    font-size: 32px;
+  }
+
+  .years .s {
+    font-size: 15px;
+  }
+
+  .boxedLine {
+    padding: 12px 8px;
+  }
+
+  .strip {
+    gap: 32px 8px;
+  }
+
+  .photoFrame {
+    margin-bottom: 4px;
+  }
+
+  .photo .h3 {
+    font-size: 20px;
+    line-height: 1.1;
+  }
+
+  .photo .cap {
+    font-size: 13px;
+  }
+
+  .qt {
+    font-size: clamp(44px, 13vw, 56px);
+  }
+
+  .dishBox {
+    gap: 16px;
+    padding: 24px 16px 16px;
+  }
+
+  .dishes {
+    font-size: 19px;
+    line-height: 1.4;
+  }
+
+  .comeGrid .h3 {
+    font-size: 28px;
+  }
+
+  .comeGrid > div {
+    gap: 8px;
+  }
+
+  .actions {
+    margin-top: 8px;
+  }
 }
 
 /* ---------- Motion ----------
@@ -918,4 +1079,79 @@
 @keyframes float {
   from { transform: translateY(calc(-1 * var(--float, 40px))); }
   to { transform: translateY(var(--float, 40px)); }
+}
+
+/* ---------- Motion on phones ----------
+   One tempo for every reveal below the first screen. Each one runs over the same fixed
+   200px of scroll from the moment its top edge enters the screen, instead of a share of its
+   own height, so short labels and tall photos arrive in step. Two-across grids stagger by
+   column (the right-hand item a beat behind), not by position in a four-across row. The
+   film and lion sit below the fold here, so they reveal on scroll like everything else
+   instead of playing unseen on load. */
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) and (width < 600px) {
+    .sec::before {
+      animation-timeline: --about-sec;
+      animation-range: cover 0px cover 200px;
+    }
+
+    .album > .k,
+    .storyText > *,
+    .storyFigure > figcaption,
+    .boxedLine,
+    .thenNow > .k,
+    .quote > .cap,
+    .dishBox > *,
+    .come > .k,
+    .actions > *,
+    .comeGrid > *,
+    .comeGrid > :nth-child(n),
+    .strip > :nth-child(n),
+    .years li:nth-child(n),
+    .hl,
+    .rise,
+    .frame,
+    .photoFrame {
+      animation-range: cover 0px cover 200px;
+    }
+
+    /* Second item in a pair, a beat behind. */
+    .storyText > :nth-child(2),
+    .strip > :nth-child(2n),
+    .years li:nth-child(2n),
+    .actions > :nth-child(2) {
+      animation-range: cover 48px cover 248px;
+    }
+
+    /* Photos develop over the same stretch their frame wipes open in. */
+    .frame img,
+    .photoFrame img {
+      animation-range: cover 0px cover 240px, cover 0% cover 100%;
+    }
+
+    .qt {
+      --float: 12px;
+      animation-range: cover 0px cover 200px, cover 0% cover 100%;
+    }
+
+    .filmFrame {
+      animation: wipe linear both;
+      animation-timeline: view();
+      animation-range: cover 0px cover 200px;
+    }
+
+    .film > figcaption {
+      animation: fadeUp linear both;
+      animation-timeline: view();
+      animation-range: cover 48px cover 248px;
+    }
+
+    .lion {
+      --float: -16px;
+      animation: fadeUp linear both, float linear both;
+      animation-timeline: view(), view();
+      animation-range: cover 0px cover 200px, cover 0% cover 100%;
+    }
+  }
 }

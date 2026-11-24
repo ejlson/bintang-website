@@ -138,8 +138,8 @@ export function AboutPage() {
             <dt className={styles.k}>Open</dt>
             <dd className={styles.s}>
               {OPEN.map((h, i) => (
-                <span key={h.label}>
-                  {i === 1 ? <br /> : i > 1 ? " · " : null}
+                <span key={h.label} className={styles.hour}>
+                  {i === 1 ? <br /> : i > 1 ? <span className={styles.hourSep}> · </span> : null}
                   {h.label} {h.time}
                 </span>
               ))}
@@ -252,7 +252,7 @@ export function AboutPage() {
               {ALBUM.map((p) => (
                 <figure key={p.src} className={styles.photo}>
                   <div className={styles.photoFrame}>
-                    <Image src={p.src} alt={p.alt} fill sizes="(width >= 1000px) 25vw, (width >= 560px) 50vw, 100vw" />
+                    <Image src={p.src} alt={p.alt} fill sizes="(width >= 1000px) 25vw, 50vw" />
                   </div>
                   <p className={styles.k}>
                     {p.when[0]} · <span lang="tl">{p.when[1]}</span>

@@ -57,10 +57,10 @@ body {
   z-index: 2;
   pointer-events: none;
   background: radial-gradient(
-    ellipse 80% 75% at 50% 50%,
-    rgb(14 11 10 / 0) 55%,
-    rgb(14 11 10 / 0.25) 80%,
-    rgb(14 11 10 / 0.55) 100%
+    ellipse 90% 85% at 50% 50%,
+    rgb(14 11 10 / 0) 60%,
+    rgb(14 11 10 / 0.12) 82%,
+    rgb(14 11 10 / 0.32) 100%
   );
   view-transition-name: vignette;
 }
