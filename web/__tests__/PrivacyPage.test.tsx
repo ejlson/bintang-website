@@ -4,7 +4,9 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import Privacy, { metadata } from "@/app/privacy/page";
 import { privacySections } from "@/components/PrivacyPage";
+import sitemap from "@/app/sitemap";
 import { BOOKING_URL } from "@/lib/nav";
+import { SITE_URL } from "@/lib/seo";
 import { site } from "@/lib/site";
 
 describe("Privacy page", () => {
@@ -59,6 +61,11 @@ describe("Privacy page", () => {
     expect(metadata.title).toBe("Privacy notice");
     expect(metadata.alternates?.canonical).toBe("/privacy");
     expect(metadata.openGraph).toMatchObject({ url: "/privacy", title: "Privacy notice · Bintang" });
+  });
+
+  it("is listed in the sitemap, at low priority", () => {
+    const entry = sitemap().find((e) => e.url === `${SITE_URL}/privacy`);
+    expect(entry).toMatchObject({ priority: 0.2 });
   });
 
   it("sets white type on About's red", () => {
