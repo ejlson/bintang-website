@@ -39,7 +39,7 @@ describe("MenuPage", () => {
   it("app/menu/page renders MenuPage with title metadata", () => {
     render(<MenuRoute />);
     expect(screen.getByRole("heading", { level: 1, name: /^Menu\s*— Bintang/ })).toBeInTheDocument();
-    expect(metadata.title).toBe("Filipino menu & weekend brunch in Camden");
+    expect(metadata.title).toBe("Filipino menu & weekend brunch in Kentish Town");
     expect(metadata.alternates?.canonical).toBe("/menu");
   });
 

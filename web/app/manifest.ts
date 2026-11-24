@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Bintang — Filipino restaurant in Camden",
+    name: "Bintang — Filipino restaurant in Kentish Town",
     short_name: "Bintang",
     start_url: "/",
     display: "browser",

@@ -111,7 +111,7 @@ Designed on the Claude Design canvas "Bintang Website" (Menu artboard); options 
 1. **One system:** spacing 8 · 16 · 24 · 32 · 48 · 64 · 96; every section opens on a 2px rule, 24px above its content, with the same section gap below; inner dividers 1px; columns split by soft rules. Type roles, Aquavit only (700 display and labels, 400 text): label 12px tracked caps · caption 14px italic · small 16px · story 20–24px · statement 32–48px · item title 32px · display 40px caps · headline 48–112px caps · giant quote 56–160px caps.
 2. **Masthead:** "ABOUT US" across the full width (FitTitle, H1; the rotating stamp beside it was removed 23 Nov); a tracked band between rules; ruled facts (Since, Find us, Open from `lib/site`, Brunch).
 3. **Statement + film:** the statement (key phrases italic and underlined) with the full lion at its foot, and the then-and-now film at 1.618 : 1; film square-cornered, muted, looping, with a pause control; reduced-motion and data-saver visitors start paused.
-4. **History ("Where it began. Camden, 1987."):** two stories set like a newspaper feature with the family's own photos (Halloween at the original shopfront; the bamboo dining room), "From one kitchen" years (1987–2026), and the then-and-now strip in full colour. Facts from maginhawagroup.co.uk/about.
+4. **History ("Where it began. Kentish Town, 1987."):** two stories set like a newspaper feature with the family's own photos (Halloween at the original shopfront; the bamboo dining room), "From one kitchen" years (1987–2026), and the then-and-now strip in full colour. Facts from maginhawagroup.co.uk/about.
 5. **Giant quote:** "Same street, same kitchen, same recipes." (from the old site).
 6. **From the kitchen:** dish names from the current menu run on in a box, linking to /menu.
 7. **Come for:** Dinner, Brunch, Karaoke, Groups; Book a table (OpenTable, new tab) and Groups and private hire.
@@ -145,7 +145,7 @@ The old Squarespace blog's 20 evergreen posts (dishes, drinks, the garden, parti
 3. **Tap targets:** nothing between a headline link and its story block (`.front`, `.story`) is clipped or translated, since that would shrink the stretched link.
 4. None for reduced motion; without scroll-driven animation support only the load entrance plays.
 
-**Open:** the Tagalog lines need a native-speaker check · the Maginhawa story page says the group began in "Camden" while Bintang is on Kentish Town Road; the headline follows the story page.
+**Open:** the Tagalog lines need a native-speaker check · the site places Bintang in Kentish Town (Camden Town is named only as nearby, e.g. "minutes from Camden Town station"); the Maginhawa story page still says the group began in "Camden".
 
 ## Site footer (17 Nov 2026; redesigned 19 Nov 2026)
 

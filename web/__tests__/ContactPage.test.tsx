@@ -10,7 +10,7 @@ describe("Contact page", () => {
   it("has one h1 with the nav label and no Tagalog subtitle under it", () => {
     render(<Contact />);
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
-    expect(screen.getByRole("heading", { level: 1 })).toHaveProperty("textContent", "Contact us — Bintang, 93 Kentish Town Road, Camden");
+    expect(screen.getByRole("heading", { level: 1 })).toHaveProperty("textContent", "Contact us — Bintang, 93 Kentish Town Road, Kentish Town");
     expect(screen.getByRole("heading", { level: 1 }).nextElementSibling?.textContent ?? "").not.toContain("Makipag-ugnayan");
   });
 

@@ -176,7 +176,7 @@ export function AboutPage() {
             The family album · <span lang="tl">Ang album ng pamilya</span>
           </p>
           <h2 id="about-history" className={`${styles.hl} ${styles.headline}`}>
-            Where it began. Camden, 1987.
+            Where it began. Kentish Town, 1987.
           </h2>
 
           <div className={styles.story}>

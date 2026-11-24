@@ -1,6 +1,6 @@
 # Bintang — Website Design Plan & Design System
 
-*London's oldest Filipino restaurant. Camden Town, since 1987.*
+*London's oldest Filipino restaurant. Kentish Town, since 1987.*
 
 ---
 
@@ -159,7 +159,7 @@ The old site's separate pages for Reservations, Large Groups, Karaoke and Privat
 
 ### Home
 1. **Hero (full bleed video, 100svh).** Trimmed loop of `bintang-hero`, muted, autoplay, playsinline. A bottom scrim carries:
-   eyebrow `CAMDEN TOWN · SINCE 1987` → hero line **"FILIPINO HOME COOKING, MADE FOR SHARING."** → buttons `Book a table` (primary) and `See the menu` (secondary, paper outline).
+   eyebrow `KENTISH TOWN · SINCE 1987` → hero line **"FILIPINO HOME COOKING, MADE FOR SHARING."** → buttons `Book a table` (primary) and `See the menu` (secondary, paper outline).
    A small pause/play control at bottom-right (accessibility requirement for autoplay video).
 2. **Intro.** One large paragraph (body-lg, max 680px): *London's oldest Filipino restaurant. Same address, same kitchen, same recipes for nearly forty years.* Link: "Our story →".
 3. **Signature dishes.** 3 dishes (Kare-kare, Adobo, plus one more) as an asymmetric image row. Dish name and one-line description. "Full menu →".

@@ -116,7 +116,7 @@ describe("About page", () => {
 
   it("tells the history with the two family-album photos", () => {
     render(<About />);
-    const history = screen.getByRole("region", { name: "Where it began. Camden, 1987." });
+    const history = screen.getByRole("region", { name: "Where it began. Kentish Town, 1987." });
     expect(within(history).getByAltText(/Halloween outside the original Bintang shopfront/)).toBeInTheDocument();
     expect(within(history).getByAltText(/old bamboo-walled dining room/)).toBeInTheDocument();
     expect(within(history).getByText(/Chef Omar Shah’s parents opened Bintang/)).toBeInTheDocument();

@@ -24,9 +24,9 @@ export const HOME_IMAGE: OgImage = {
 
 export const ogBase = { siteName: "Bintang", locale: "en_GB" } as const;
 
-export const HOME_TITLE = "Bintang | Filipino restaurant in Camden, London since 1987";
+export const HOME_TITLE = "Bintang | Filipino restaurant in Kentish Town, London since 1987";
 export const SITE_DESCRIPTION =
-  "London’s oldest Filipino restaurant, in Camden since 1987. Kare-kare, adobo and sharing plates, weekend brunch, private karaoke and a garden. Book a table.";
+  "London’s oldest Filipino restaurant, on Kentish Town Road since 1987, minutes from Camden Town station. Kare-kare, adobo, weekend brunch, karaoke and a garden.";
 
 /** Title, description, canonical and a matching Open Graph card for one page. */
 export function pageMeta(opts: {
