@@ -8,12 +8,20 @@ import {
   formatDate,
   formatLongDate,
   formatShortDate,
+  archive,
   front,
   getPost,
   posts,
   type JournalPost,
 } from "@/lib/journal";
+import archiveData from "@/lib/journal.archive.json";
 import snapshot from "@/lib/journal.snapshot.json";
+import nextConfig from "@/next.config";
+import { existsSync } from "node:fs";
+import path from "node:path";
+
+/** The posts that come from the CMS (the front page's stories), not the old-blog archive. */
+const cmsPosts = posts.filter((p) => p.kind !== "archive");
 
 const metaFor = (slug: string) =>
   generateMetadata({ params: Promise.resolve({ slug }) } as Parameters<typeof generateMetadata>[0]);
@@ -188,9 +196,9 @@ describe("lib/journal", () => {
   });
 
   it("carries every snapshot post once, with unique slugs, ISO dates and local photos", () => {
-    expect(posts).toHaveLength(snapshot.posts.length);
+    expect(cmsPosts).toHaveLength(snapshot.posts.length);
     expect(new Set(posts.map((p) => p.slug)).size).toBe(posts.length);
-    for (const p of posts) {
+    for (const p of cmsPosts) {
       expect(p.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
       expect(p.image.src).toMatch(/^\/cms\/[a-f0-9]+\.(webp|jpg)$/);
       expect(p.image.width).toBeGreaterThan(0);
@@ -199,12 +207,12 @@ describe("lib/journal", () => {
   });
 
   it("leads with the newest post with Bintang in its title", () => {
-    const newest = [...posts].sort((a, b) => b.date.localeCompare(a.date));
+    const newest = [...cmsPosts].sort((a, b) => b.date.localeCompare(a.date));
     expect(front.lead).toBe(newest.find((p) => /bintang/i.test(p.title)));
   });
 
   it("links each post to where its full story lives", () => {
-    for (const p of posts) {
+    for (const p of cmsPosts) {
       const raw = snapshot.posts.find((s) => s.slug === p.slug)!;
       if (p.kind === "press") expect(p.readMore).toEqual({ href: raw.url, text: `Read the article in ${raw.outlet}` });
       // A link back to the old blog on this domain redirects to the post itself, so it gets no Read more.
@@ -288,5 +296,70 @@ describe("app/journal/[slug]", () => {
     expect(screen.getByRole("link", { name: "See all stories" })).toHaveAttribute("href", "/journal");
     expect(screen.getByRole("link", { name: "Journal" })).toHaveAttribute("href", "/journal");
     expect(screen.getByRole("link", { name: "Book a table" })).toHaveAttribute("href", "/contact");
+  });
+});
+
+describe("the old blog archive", () => {
+  it("lists every archive post on the front page, newest first, under From the archive", () => {
+    render(<JournalPage />);
+    const section = screen.getByRole("region", { name: "From the archive" });
+    const links = within(section).getAllByRole("link");
+    expect(links.map((a) => a.getAttribute("href"))).toEqual(archive.map((p) => `/journal/${p.slug}`));
+    expect(archive.map((p) => p.date)).toEqual([...archive.map((p) => p.date)].sort().reverse());
+    // Index entries, not cards: no photos.
+    expect(section.querySelectorAll("img")).toHaveLength(0);
+  });
+
+  it("keeps the archive off the top of the page: the lead is never an archive post", () => {
+    expect(front.lead?.kind).not.toBe("archive");
+    expect(front.older.some((p) => p.kind === "archive")).toBe(false);
+  });
+
+  it("gives every archive post a body, an excerpt under 160 characters and a photo that exists", () => {
+    expect(archive.length).toBeGreaterThan(0);
+    for (const p of archive) {
+      expect(p.body?.length).toBeGreaterThan(0);
+      expect(p.excerpt.length).toBeGreaterThan(40);
+      expect(p.excerpt.length).toBeLessThanOrEqual(160);
+      expect(p.image.alt).not.toBe("");
+      expect(existsSync(path.join(process.cwd(), "public", p.image.src))).toBe(true);
+    }
+  });
+
+  it("carries no stale offers, prices or Instagram embed captions", () => {
+    const text = JSON.stringify(archiveData.posts.map((p) => p.body));
+    expect(text).not.toMatch(/A post shared by|£\d|book now|Uber Eats|Deliveroo/i);
+  });
+
+  it("renders an archive post in full: provenance note, subheads as H2, links", () => {
+    const post = archive.find((p) => p.body!.some((b) => b.t === "h") && p.body!.some((b) => b.runs.some((r) => r.href)))!;
+    render(<JournalPostArticle post={post} />);
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(post.title);
+    expect(screen.getByText(/From the Bintang blog archive, first published/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "today’s menu" })).toHaveAttribute("href", "/menu");
+    expect(screen.getAllByRole("heading", { level: 2 }).length).toBe(post.body!.filter((b) => b.t === "h").length);
+    // No "coming soon" note and no summary lede: the whole text is here.
+    expect(screen.queryByText(/Full story coming soon/)).toBeNull();
+    for (const a of screen.getAllByRole("link").filter((a) => a.getAttribute("href")?.startsWith("http"))) {
+      expect(a).toHaveAttribute("target", "_blank");
+      expect(a).toHaveAttribute("rel", "noopener");
+    }
+  });
+
+  it("301s each old blog URL to its new page, before the /blog catch-all", async () => {
+    const redirects = await nextConfig.redirects!();
+    const catchAll = redirects.findIndex((r) => r.source === "/blog/:path*");
+    for (const p of archiveData.posts) {
+      const i = redirects.findIndex((r) => r.source === p.oldPath);
+      expect(i).toBeGreaterThan(-1);
+      expect(i).toBeLessThan(catchAll);
+      expect(redirects[i]).toMatchObject({ destination: `/journal/${p.slug}`, permanent: true });
+    }
+  });
+
+  it("no longer redirects to the removed Groups and Private hire pages", async () => {
+    const redirects = await nextConfig.redirects!();
+    expect(redirects.find((r) => r.source === "/large-group-bookings")?.destination).toBe("/contact");
+    expect(redirects.find((r) => r.source === "/private-hires")?.destination).toBe("/contact");
   });
 });

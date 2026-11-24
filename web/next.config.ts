@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import archive from "./lib/journal.archive.json";
 
 /** Set by the Cloudflare preview build (open-next.config.ts), never by `npm run build`. */
 const preview = process.env.BINTANG_PREVIEW === "1";
@@ -20,14 +21,18 @@ const nextConfig: NextConfig = {
     { source: "/menus0", destination: "/menu", permanent: true },
     { source: "/menus", destination: "/menu", permanent: true },
     { source: "/reservations", destination: "/contact", permanent: true },
-    { source: "/large-group-bookings", destination: "/contact/groups", permanent: true },
+    // Groups and private hire have no pages of their own: the Contact page takes both enquiries.
+    { source: "/large-group-bookings", destination: "/contact", permanent: true },
     { source: "/karaoke", destination: "/contact/karaoke", permanent: true },
-    { source: "/private-hires", destination: "/contact/private-hire", permanent: true },
+    { source: "/private-hires", destination: "/contact", permanent: true },
     {
       source: "/blog/2023/9/11/londons-best-new-cocktail-bintangs-clarified-ube-colada",
       destination: "/journal/bintang-clarified-ube-colada",
       permanent: true,
     },
+    // The old blog's evergreen posts, ported in full (lib/journal.ts). Before the catch-all.
+    ...archive.posts.map((p) => ({ source: p.oldPath, destination: `/journal/${p.slug}`, permanent: true })),
+    // Everything else from the old blog (seasonal offers, tag and category pages).
     { source: "/blog/:path*", destination: "/journal", permanent: true },
   ],
   // The preview on workers.dev must never be indexed.

@@ -2,7 +2,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
 
 /* lib/journal builds `front` and `posts` at import time from the snapshot, so
-   these tests swap the snapshot for a fixture and re-import the module. */
+   these tests swap the snapshot for a fixture and re-import the module. The
+   old-blog archive is emptied, so they see only the CMS posts (the archive has
+   its own tests in JournalPage.test.tsx). */
 
 type Fixture = {
   kind: "ours" | "press" | "link";
@@ -28,6 +30,7 @@ const raw = (p: Fixture) => ({
 async function load(fixtures: Fixture[]) {
   vi.resetModules();
   vi.doMock("@/lib/journal.snapshot.json", () => ({ default: { posts: fixtures.map(raw) } }));
+  vi.doMock("@/lib/journal.archive.json", () => ({ default: { posts: [] } }));
   return import("@/lib/journal");
 }
 
@@ -53,6 +56,7 @@ const press = (slug: string, date: string): Fixture => ({
 afterEach(() => {
   cleanup();
   vi.doUnmock("@/lib/journal.snapshot.json");
+  vi.doUnmock("@/lib/journal.archive.json");
   vi.resetModules();
 });
 

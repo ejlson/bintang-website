@@ -8,9 +8,15 @@
  * full story rather than copying it.
  */
 import cms from "./cms.json";
+import archiveData from "./journal.archive.json";
 import snapshot from "./journal.snapshot.json";
 
-type Kind = "ours" | "press" | "link";
+type Kind = "ours" | "press" | "link" | "archive";
+
+/** A run of text in an archive post, optionally a link. */
+export type Run = { text: string; href?: string };
+/** A block of an archive post's body: a subheading, a paragraph or a list item. */
+export type Block = { t: "h" | "p" | "li"; runs: Run[] };
 
 type SnapshotPost = {
   kind: string;
@@ -39,6 +45,8 @@ export type JournalPost = {
   readMore?: { href: string; text: string };
   /** Who wrote it: the outlet for press, the sister restaurant for its stories, else Bintang. */
   author: string;
+  /** The full text, for posts ported from the old blog (the only ones this site hosts in full). */
+  body?: Block[];
 };
 
 const homes: Record<string, { name: string; url: string }> = cms.postHomes;
@@ -90,8 +98,41 @@ function frontPage(all: JournalPost[]) {
 
 export const front = frontPage(newest);
 
-/** Every post, in the order the front page shows them. */
-export const posts: JournalPost[] = front.lead ? [front.lead, ...front.older] : [];
+/**
+ * The old Squarespace blog's evergreen posts (dishes, drinks, the garden, parties),
+ * ported in full so their search rankings carry over: lib/journal.archive.json,
+ * photos in public/media/journal/archive/. Each old URL 301s to its new page
+ * (next.config.ts). Seasonal promotions were left out; their URLs go to /journal.
+ */
+type ArchivePost = {
+  slug: string;
+  oldPath: string;
+  title: string;
+  date: string;
+  excerpt: string;
+  image: JournalPost["image"];
+  body: Block[];
+};
+
+export const archivePosts = archiveData.posts as ArchivePost[];
+
+/** The archive, newest first, listed under the front page's stories. */
+export const archive: JournalPost[] = archivePosts
+  .map((p) => ({
+    slug: p.slug,
+    kind: "archive" as const,
+    title: p.title,
+    date: p.date,
+    excerpt: p.excerpt,
+    label: "From the archive",
+    image: p.image,
+    author: "Bintang",
+    body: p.body,
+  }))
+  .sort((a, b) => b.date.localeCompare(a.date));
+
+/** Every post, in the order the front page shows them: its stories, then the archive. */
+export const posts: JournalPost[] = [...(front.lead ? [front.lead, ...front.older] : []), ...archive];
 
 export function getPost(slug: string): JournalPost | undefined {
   return posts.find((p) => p.slug === slug);

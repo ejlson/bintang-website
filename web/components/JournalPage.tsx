@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { formatDate, formatLongDate, front, type JournalPost } from "@/lib/journal";
+import { archive, formatDate, formatLongDate, front, type Block, type JournalPost } from "@/lib/journal";
 import { FitTitle } from "./FitTitle";
 import { Arrow, Headline, Photo } from "./JournalParts";
 import { SiteFooter } from "./SiteFooter";
@@ -71,6 +71,33 @@ function Story({ post }: { post: JournalPost }) {
   );
 }
 
+/**
+ * The old blog's posts, set as a ruled index under the stories: date, headline,
+ * a line of summary. No photos, so twenty entries stay one quiet column.
+ */
+function Archive({ posts }: { posts: JournalPost[] }) {
+  return (
+    <section className={styles.archive} aria-labelledby="from-the-archive">
+      <h2 id="from-the-archive" className={styles.archiveTitle}>
+        From the archive
+      </h2>
+      <ul className={styles.archiveList} role="list">
+        {posts.map((p) => (
+          <li key={p.slug} className={styles.archiveItem}>
+            <time dateTime={p.date} className={styles.archiveDate}>
+              {formatDate(p.date)}
+            </time>
+            <h3 className={styles.archiveHeadline}>
+              <Headline post={p} />
+            </h3>
+            <p className={styles.archiveExcerpt}>{p.excerpt}</p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 /** The Journal index, set as a newspaper front page. */
 export function JournalPage() {
   const { lead, older } = front;
@@ -106,6 +133,8 @@ export function JournalPage() {
             )}
           </div>
         )}
+
+        {archive.length > 0 && <Archive posts={archive} />}
       </div>
 
       {/* Outside the content column, so its rules run as wide as the title's. */}
@@ -130,7 +159,61 @@ export function JournalPage() {
   );
 }
 
-/** A single post: its photo, headline and summary, and a link to the full story where it lives. */
+/** An archive post's text. Headings are H2 under the post's H1; external links open in a new tab. */
+function Body({ blocks }: { blocks: Block[] }) {
+  const out: ReactNode[] = [];
+  let items: Block[] = [];
+  const flushList = () => {
+    if (items.length) {
+      out.push(
+        <ul key={`ul${out.length}`}>
+          {items.map((b, i) => (
+            <li key={i}>
+              <Runs block={b} />
+            </li>
+          ))}
+        </ul>,
+      );
+      items = [];
+    }
+  };
+  blocks.forEach((b, i) => {
+    if (b.t === "li") return void items.push(b);
+    flushList();
+    out.push(
+      b.t === "h" ? (
+        <h2 key={i}>
+          <Runs block={b} />
+        </h2>
+      ) : (
+        <p key={i}>
+          <Runs block={b} />
+        </p>
+      ),
+    );
+  });
+  flushList();
+  return <div className={styles.prose}>{out}</div>;
+}
+
+function Runs({ block }: { block: Block }) {
+  return block.runs.map((r, i) =>
+    !r.href ? (
+      r.text
+    ) : r.href.startsWith("/") ? (
+      <Link key={i} href={r.href}>
+        {r.text}
+      </Link>
+    ) : (
+      <a key={i} href={r.href} target="_blank" rel="noopener">
+        {r.text}
+        <span className="sr-only"> (opens in a new tab)</span>
+      </a>
+    ),
+  );
+}
+
+/** A single post: its photo, headline and summary, then its full text (archive) or a link to the full story where it lives. */
 export function JournalPostArticle({ post }: { post: JournalPost }) {
   return (
     <article className={styles.postBody}>
@@ -140,17 +223,29 @@ export function JournalPostArticle({ post }: { post: JournalPost }) {
       </p>
       <h1 className={styles.postTitle}>{post.title}</h1>
       <Photo post={post} framed eager sizes="(min-width: 860px) 760px, 100vw" className={styles.postPhoto} />
-      <p className={styles.postLede}>{post.excerpt}</p>
-      {post.readMore ? (
-        <a href={post.readMore.href} className={styles.line} target="_blank" rel="noopener">
-          {post.readMore.text}
-          <span className="sr-only"> (opens in a new tab)</span>
-          <Arrow />
-        </a>
+      {post.body ? (
+        <>
+          <p className={styles.archiveNote}>
+            From the Bintang blog archive, first published {formatLongDate(post.date)}. Dishes, prices and opening
+            times may have changed since: see <Link href="/menu">today’s menu</Link>.
+          </p>
+          <Body blocks={post.body} />
+        </>
       ) : (
-        <p className={styles.postNote}>
-          Full story coming soon · <span lang="tl">Malapit na</span>
-        </p>
+        <>
+          <p className={styles.postLede}>{post.excerpt}</p>
+          {post.readMore ? (
+            <a href={post.readMore.href} className={styles.line} target="_blank" rel="noopener">
+              {post.readMore.text}
+              <span className="sr-only"> (opens in a new tab)</span>
+              <Arrow />
+            </a>
+          ) : (
+            <p className={styles.postNote}>
+              Full story coming soon · <span lang="tl">Malapit na</span>
+            </p>
+          )}
+        </>
       )}
     </article>
   );

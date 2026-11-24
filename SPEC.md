@@ -130,6 +130,14 @@ Designed on the Claude Design canvas "Bintang Website" (Menu artboard); options 
 7. **Book a table (advert and post foot):** the cinematic button without its side rules; on hover/focus the frame fills with ink from the left and the words turn newsprint, like the header's Book (0.5s; instant for reduced motion). The footer's small one fills the same way (see Buttons).
 8. **No Older entries bar:** the search box and the Show and Sort menus were removed with it. "Older entries" stays as a screen-reader heading; the section and list are `display: contents` so each card is a grid cell, with `role="list"` kept for Safari.
 
+## Journal archive (24 Nov 2026)
+
+The old Squarespace blog's 20 evergreen posts (dishes, drinks, the garden, parties, karaoke, brunch, halal) are ported in full so their search rankings carry over: text in `web/lib/journal.archive.json`, photos in `web/public/media/journal/archive/`. Seasonal promotions (Valentine's, Easter, Christmas, Eid, etc.) were not ported; their URLs, and the old tag and category pages, redirect to `/journal`.
+1. **Redirects:** each post's old `/blog/...` URL redirects permanently to `/journal/<slug>` (`next.config.ts`, before the `/blog/:path*` catch-all).
+2. **Front page:** "From the archive" sits under the stories, between 2px rules: a ruled index, two columns (one under 900px), each entry a date, headline (the one link, stretched over the entry) and one line of summary. No photos. Archive posts never lead or join the story grid.
+3. **Post page:** the photo, then an italic note ("From the Bintang blog archive, first published …; dishes, prices and opening times may have changed since: see today's menu"), then the full text: serif paragraphs, subheads as H2 in the display face, external links in a new tab.
+4. **Copy:** original wording and dates, minus stale offers (bottomless-drink price, BYOB, delivery apps, a 20% discount, booking terms), "Book now" lines and Instagram embed captions. Titles in ALL CAPS were re-cased; placeholder cover photos were swapped for a photo from the same post (the karaoke post uses the Karaoke page poster).
+
 ## Journal motion (19 Nov 2026, About's motion in CSS, no JS)
 
 1. **Load:** JOURNAL rises from a mask, the lead panel fades up and its photo wipes open, then Read the story arrives. The card beside it fades up at 0.5s, then the rows under them fade up left to right a beat apart (23 Nov: on load, not on scroll, so the first screen never shows a card half faded). The post page sets itself the same way (back link and kicker, title, photo wipe, lede).

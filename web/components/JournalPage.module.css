@@ -579,6 +579,85 @@
   justify-content: center;
 }
 
+/* ---------- From the archive ----------
+   The old blog's posts as a ruled index, like the back pages of a paper:
+   a heading between 2px rules, then entries in two columns (one on phones),
+   each a date over a headline and one line of summary, split by hairlines.
+   The headline's link covers the entry (.storyLink), so the entry is relative. */
+.archive {
+  margin: 48px 0 0;
+  font-family: var(--font-ui);
+}
+
+.archiveTitle {
+  margin: 0;
+  padding: 10px 0;
+  border-top: var(--rule);
+  border-bottom: var(--rule);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(24px, 2.4vw, 36px);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.archiveList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 48px;
+}
+
+.archiveItem {
+  position: relative;
+  padding: 16px 0 18px;
+  border-bottom: 1px solid var(--ink);
+}
+
+.archiveDate {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.archiveHeadline {
+  margin: 6px 0 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(18px, 1.4vw, 22px);
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+.archiveExcerpt {
+  margin: 6px 0 0;
+  font-size: 14px;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  overflow: hidden;
+}
+
+@media (hover: hover) {
+  .archiveItem:hover .archiveHeadline {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+  }
+}
+
+@media (max-width: 899px) {
+  .archiveList {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /* ---------- Post page ---------- */
 
 .post {
@@ -637,6 +716,56 @@
   font-family: var(--font-serif);
   font-size: 20px;
   font-style: italic;
+}
+
+/* An archive post's provenance, set small and italic over its text. */
+.archiveNote {
+  margin: 24px 0 0;
+  padding: 0 0 16px;
+  border-bottom: 1px solid var(--ink);
+  font-family: var(--font-serif);
+  font-size: 16px;
+  font-style: italic;
+  line-height: 1.45;
+}
+
+.archiveNote a,
+.prose a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+/* An archive post's full text: a readable serif measure, subheads in the display face. */
+.prose {
+  padding-bottom: 32px;
+  font-family: var(--font-serif);
+  font-size: clamp(18px, 1.5vw, 20px);
+  line-height: 1.6;
+}
+
+.prose p,
+.prose ul {
+  margin: 20px 0 0;
+}
+
+.prose ul {
+  padding-left: 1.2em;
+}
+
+.prose li + li {
+  margin-top: 8px;
+}
+
+.prose h2 {
+  margin: 40px 0 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(22px, 2.2vw, 28px);
+  line-height: 1.1;
+  text-transform: uppercase;
+  text-wrap: balance;
 }
 
 /* ---------- Not found ---------- */
