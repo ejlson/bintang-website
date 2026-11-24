@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#2d2d2d",
+  themeColor: "#000000",
 };
 
 const restaurantJsonLd = {
