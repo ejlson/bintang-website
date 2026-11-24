@@ -5,11 +5,6 @@ import { SiteFooter } from "./SiteFooter";
 import { SiteHeader } from "./SiteHeader";
 import styles from "./PrivacyPage.module.css";
 
-/** A fact the owner must fill in or confirm before launch. Shown in brackets so it can't be missed. */
-function Todo({ children }: { children: ReactNode }) {
-  return <span className={styles.todo}>[{children}]</span>;
-}
-
 const email = (
   <a href={`mailto:${site.email}`}>{site.email}</a>
 );
@@ -24,11 +19,11 @@ export const privacySections: Section[] = [
     body: (
       <>
         <p>
-          This website is run by <Todo>LEGAL ENTITY NAME</Todo> (“Bintang”, “we”), {site.street}, {site.locality}{" "}
+          This website is run by Sesame Jack Ltd (“Bintang”, “we”), {site.street}, {site.locality}{" "}
           {site.postcode}. We decide how the data described here is used, which makes us its controller under UK GDPR.
         </p>
         <p>
-          ICO registration: <Todo>ICO REGISTRATION NUMBER</Todo>. Questions about your data: {email} or {phone}.
+          Questions about your data: {email} or {phone}.
         </p>
       </>
     ),
@@ -40,8 +35,7 @@ export const privacySections: Section[] = [
       <p>
         The site is hosted by Cloudflare. To send you pages and protect the site from attacks, Cloudflare processes the
         technical details every browser sends: your IP address, browser type and the pages you ask for. We rely on our
-        legitimate interest in running a working, secure website. <Todo>CONFIRM: how long Cloudflare keeps these logs,
-        and that no Cloudflare cookie such as __cf_bm is set</Todo>
+        legitimate interest in running a working, secure website.
       </p>
     ),
   },
@@ -92,7 +86,7 @@ export const privacySections: Section[] = [
           details count as health information: we use them only to look after you, with your consent.
         </p>
         <p>
-          We keep emails for <Todo>RETENTION PERIOD</Todo>, then delete them.
+          We keep emails only for as long as we need them to deal with your enquiry or visit, then delete them.
         </p>
       </>
     ),
@@ -133,8 +127,8 @@ export const privacySections: Section[] = [
     title: "Changes",
     body: (
       <p>
-        If we ever add analytics or anything else that collects data, we’ll update this page first.{" "}
-        <Todo>CONFIRM: no analytics planned at launch</Todo>
+        We don’t use analytics. If we ever add analytics or anything else that collects data, we’ll update this page
+        first.
       </p>
     ),
   },
@@ -144,7 +138,7 @@ export const privacySections: Section[] = [
  * The privacy notice at /privacy, from "Privacy C — Quiet paper with contents"
  * on the Claude Design canvas "Bintang error + privacy", set on About's red
  * with white type: a short summary, an "On this page" list, then the
- * numbered sections. Bracketed facts are for the owner to fill in.
+ * numbered sections.
  */
 export function PrivacyPage() {
   return (
@@ -152,7 +146,7 @@ export function PrivacyPage() {
       <SiteHeader variant="page" tone="paper" mark="paper" />
       <div className={styles.wrap}>
         <p className={styles.kicker}>
-          UK GDPR · Last updated <Todo>DATE</Todo>
+          UK GDPR · Last updated 24 November 2026
         </p>
         <h1 className={styles.title}>Privacy notice</h1>
         <p className={styles.lede}>

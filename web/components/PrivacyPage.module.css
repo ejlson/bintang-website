@@ -132,11 +132,3 @@
   font-size: 12px;
   letter-spacing: 0.08em;
 }
-
-/* Facts still to fill in: a dashed box so they can't slip through to launch. */
-.todo {
-  padding: 0 4px;
-  outline: 1px dashed currentColor;
-  outline-offset: 1px;
-  white-space: normal;
-}

@@ -49,12 +49,13 @@ describe("Privacy page", () => {
     expect(booking).toHaveAccessibleName(expect.stringContaining("opens in a new tab"));
   });
 
-  it("shows every unverified fact as a bracketed placeholder, not an invented value", () => {
+  it("names the operator and its date, with no placeholders left", () => {
     render(<Privacy />);
     const main = screen.getByRole("main");
-    for (const p of ["[LEGAL ENTITY NAME]", "[ICO REGISTRATION NUMBER]", "[RETENTION PERIOD]", "[DATE]"]) {
-      expect(main).toHaveTextContent(p);
-    }
+    expect(main).toHaveTextContent("Sesame Jack Ltd");
+    expect(main).toHaveTextContent("Last updated 24 November 2026");
+    expect(main).toHaveTextContent("We don’t use analytics");
+    expect(main.textContent).not.toMatch(/\[[A-Z :]+\]|CONFIRM/);
   });
 
   it("sets its canonical and Open Graph card with pageMeta", () => {
