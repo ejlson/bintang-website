@@ -29,7 +29,7 @@ describe("Karaoke page", () => {
   it("has one KARAOKE title", () => {
     render(<Karaoke />);
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
-    expect(screen.getByRole("heading", { level: 1, name: "Karaoke" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: /^Karaoke — private karaoke room/ })).toBeInTheDocument();
   });
 
   it("marks Karaoke as the current page", () => {

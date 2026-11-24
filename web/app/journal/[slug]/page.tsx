@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { JournalPostArticle, JournalPostShell } from "@/components/JournalPage";
 import { SettleOnReveal } from "@/components/PageTransition";
 import { getPost, posts } from "@/lib/journal";
+import { articleJsonLd, breadcrumbJsonLd, jsonLdHtml, ogBase } from "@/lib/seo";
 
 // Every post is prerendered. Unknown slugs hit notFound() below (dynamicParams
 // isn't allowed with cacheComponents). Because that runs inside Suspense after
@@ -18,11 +19,12 @@ export async function generateMetadata(props: PageProps<"/journal/[slug]">): Pro
   return {
     title: post.title,
     description: post.excerpt,
+    alternates: { canonical: `/journal/${post.slug}` },
     // Metadata merges shallowly, so restate the layout's site-wide OG fields.
     openGraph: {
+      ...ogBase,
       type: "article",
-      siteName: "Bintang",
-      locale: "en_GB",
+      url: `/journal/${post.slug}`,
       title: post.title,
       description: post.excerpt,
       publishedTime: post.date,
@@ -34,7 +36,17 @@ export async function generateMetadata(props: PageProps<"/journal/[slug]">): Pro
 async function Post({ params }: Pick<PageProps<"/journal/[slug]">, "params">) {
   const post = getPost((await params).slug);
   if (!post) notFound();
-  return <JournalPostArticle post={post} />;
+  const article = articleJsonLd(post);
+  const crumbs = breadcrumbJsonLd([
+    ["Journal", "/journal"],
+    [post.title, `/journal/${post.slug}`],
+  ]);
+  return (
+    <>
+      <JournalPostArticle post={post} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLdHtml(article ? [article, crumbs] : crumbs)} />
+    </>
+  );
 }
 
 // params are read inside Suspense so the shell (header, back link) prerenders

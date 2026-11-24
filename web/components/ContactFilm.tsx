@@ -6,7 +6,7 @@ import { useSaveData } from "@/lib/useSaveData";
 import styles from "./ContactPage.module.css";
 
 export const CONTACT_FILM = "/media/hero-loop-portrait.mp4";
-export const CONTACT_FILM_POSTER = "/media/hero-poster-portrait.jpg";
+export const CONTACT_FILM_POSTER = "/media/hero-poster-portrait.webp";
 
 /** The column the film sits in is hidden at 900px and below (ContactPage.module.css). */
 const SHOWN = "(min-width: 901px)";

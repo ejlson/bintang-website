@@ -6,7 +6,7 @@ import { useSaveData } from "@/lib/useSaveData";
 import styles from "./AboutPage.module.css";
 
 export const ABOUT_FILM = "/media/about/film.mp4";
-export const ABOUT_FILM_POSTER = "/media/about/film-poster.jpg";
+export const ABOUT_FILM_POSTER = "/media/about/film-poster.webp";
 
 /**
  * The then-and-now film: muted, looping, portrait. Like the Home hero and the

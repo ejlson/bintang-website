@@ -50,6 +50,7 @@ export function KaraokePage() {
             <SiteHeader variant="overlay" tone="yellow" mark="yellow" currentHref="/contact/karaoke" />
             <h1 className={styles.title}>
               <FitTitle text="Karaoke" />
+              <span className="sr-only"> — private karaoke room at Bintang, Camden</span>
             </h1>
           </div>
 

@@ -22,7 +22,7 @@ afterEach(() => {
 describe("MenuPage", () => {
   it("renders the H1 and four tabs in order, À la carte selected by default", () => {
     render(<MenuPage />);
-    expect(screen.getByRole("heading", { level: 1, name: "Menu" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: /^Menu\s*— Bintang/ })).toBeInTheDocument();
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
     expect(screen.getByRole("tablist", { name: "Choose a menu" })).toBeInTheDocument();
     expect(tabs().map((t) => t.textContent)).toEqual(["À la carte", "Brunch", "Desserts", "Karaoke"]);
@@ -38,8 +38,9 @@ describe("MenuPage", () => {
 
   it("app/menu/page renders MenuPage with title metadata", () => {
     render(<MenuRoute />);
-    expect(screen.getByRole("heading", { level: 1, name: "Menu" })).toBeInTheDocument();
-    expect(metadata.title).toBe("Menu");
+    expect(screen.getByRole("heading", { level: 1, name: /^Menu\s*— Bintang/ })).toBeInTheDocument();
+    expect(metadata.title).toBe("Filipino menu & weekend brunch in Camden");
+    expect(metadata.alternates?.canonical).toBe("/menu");
   });
 
   it("marks the Menu link in the SiteHeader as current and only that one", () => {

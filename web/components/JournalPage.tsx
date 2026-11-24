@@ -52,7 +52,8 @@ function Story({ post }: { post: JournalPost }) {
     <li className={styles.story}>
       <Photo
         post={post}
-        sizes="(min-width: 1600px) 370px, (min-width: 1100px) 24vw, (min-width: 600px) 48vw, 100vw"
+        // Two to a row below 1100px, phones included (JournalPage.module.css).
+        sizes="(min-width: 1600px) 370px, (min-width: 1100px) 24vw, 48vw"
       />
       <h3 className={styles.storyTitle}>
         <Headline post={post} />
@@ -81,6 +82,7 @@ export function JournalPage() {
         {/* Sized to match GALLERY: as wide as its ink and as tall as its capitals
             (JOURNAL is wider, so its letters are squished a little less). */}
         <FitTitle text="Journal" squish={0.95} />
+        <span className="sr-only"> — news and stories from Bintang</span>
       </h1>
 
       <div className={styles.wrap}>

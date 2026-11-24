@@ -37,6 +37,8 @@ export type JournalPost = {
   image: { src: string; width: number; height: number; alt: string };
   /** Where the full story lives, if it lives somewhere else. */
   readMore?: { href: string; text: string };
+  /** Who wrote it: the outlet for press, the sister restaurant for its stories, else Bintang. */
+  author: string;
 };
 
 const homes: Record<string, { name: string; url: string }> = cms.postHomes;
@@ -50,7 +52,12 @@ function shape(p: SnapshotPost): JournalPost {
     kind === "press"
       ? { href: p.url!, text: `Read the article in ${p.outlet}` }
       : kind === "link"
-        ? { href: p.url!, text: "Read the full story" }
+        ? // The old Squarespace blog on this domain is gone: its URLs redirect to the
+          // Journal or (for this post) to the post itself (next.config.ts), so they
+          // can't be the "full story".
+          /^https?:\/\/(www\.)?bintangrestaurant\.co\.uk\/blog\//.test(p.url!)
+          ? undefined
+          : { href: p.url!, text: "Read the full story" }
         : home
           ? { href: `${home.url}/blog/${p.slug}`, text: `Read the full story on ${home.name}’s journal` }
           : undefined;
@@ -63,6 +70,7 @@ function shape(p: SnapshotPost): JournalPost {
     label,
     image: p.image,
     ...(readMore ? { readMore } : {}),
+    author: kind === "press" ? p.outlet! : kind === "link" ? "Bintang" : (home?.name ?? "Bintang"),
   };
 }
 

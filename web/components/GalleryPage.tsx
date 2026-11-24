@@ -85,6 +85,7 @@ export function GalleryPage() {
                   fill
                   sizes={`(width >= 768px) ${t.w * 17}vw, ${t.pw * 50}vw`}
                   loading={i < ABOVE_FOLD ? "eager" : "lazy"}
+                  fetchPriority={i === 0 ? "high" : undefined}
                 />
                 {p.video && <LoopVideo src={p.video} className={styles.clip} />}
                 <span className={styles.tileCap} aria-hidden="true">

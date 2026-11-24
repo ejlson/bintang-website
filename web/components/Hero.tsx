@@ -130,7 +130,7 @@ export function Hero() {
         <video
           ref={thumbRef}
           src="/media/about-thumb.mp4"
-          poster="/media/about-thumb-poster.jpg"
+          poster="/media/about-thumb-poster.webp"
           muted
           loop
           playsInline

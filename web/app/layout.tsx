@@ -2,28 +2,31 @@ import type { Metadata, Viewport } from "next";
 import { HistoryWipe } from "@/components/PageTransition";
 import { SmoothScroll } from "@/components/SmoothScroll";
 import { INTRO_SCRIPT } from "@/lib/homeIntro";
+import { BOOKING_URL } from "@/lib/nav";
+import { HOME_IMAGE, HOME_TITLE, jsonLdHtml, ogBase, SITE_DESCRIPTION, SITE_URL } from "@/lib/seo";
 import { hours, site, socials } from "@/lib/site";
 import "lenis/dist/lenis.css";
 import "./globals.css";
 
-const description =
-  "London’s oldest Filipino restaurant. Filipino home cooking made for sharing, private karaoke and a garden on Kentish Town Road, Camden — since 1987.";
+const description = SITE_DESCRIPTION;
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.bintangrestaurant.co.uk"),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "Bintang — Filipino restaurant in Camden since 1987",
+    default: HOME_TITLE,
     template: "%s · Bintang",
   },
   description,
+  // No canonical here, or every page would inherit "/". Pages set their own (lib/seo pageMeta).
   openGraph: {
+    ...ogBase,
     type: "website",
-    siteName: "Bintang",
-    locale: "en_GB",
-    title: "Bintang — Filipino restaurant in Camden since 1987",
+    // No url here: pages without their own openGraph would share as the home page.
+    title: HOME_TITLE,
     description,
-    images: [{ url: "/media/hero-poster.jpg", width: 1920, height: 1080, alt: "The Bintang garden at golden hour" }],
+    images: [HOME_IMAGE],
   },
+  twitter: { card: "summary_large_image" },
 };
 
 export const viewport: Viewport = {
@@ -33,12 +36,21 @@ export const viewport: Viewport = {
 const restaurantJsonLd = {
   "@context": "https://schema.org",
   "@type": "Restaurant",
+  "@id": `${SITE_URL}/#restaurant`,
   name: "Bintang",
   description,
-  url: "https://www.bintangrestaurant.co.uk",
-  telephone: "+44 20 7267 2197",
+  url: SITE_URL,
+  telephone: site.phoneIntl,
   email: site.email,
+  image: [
+    `${SITE_URL}/media/hero-poster.jpg`,
+    `${SITE_URL}/media/gallery/garden.jpg`,
+    `${SITE_URL}/media/about/history-bamboo-dining-room.jpg`,
+  ],
   servesCuisine: ["Filipino", "Asian"],
+  menu: `${SITE_URL}/menu`,
+  hasMenu: { "@id": `${SITE_URL}/menu#menu` },
+  acceptsReservations: BOOKING_URL,
   foundingDate: "1987",
   sameAs: socials.map((s) => s.url),
   address: {
@@ -51,6 +63,16 @@ const restaurantJsonLd = {
   openingHoursSpecification: hours
     .filter((h) => h.opens)
     .map((h) => ({ "@type": "OpeningHoursSpecification", dayOfWeek: h.days, opens: h.opens, closes: h.closes })),
+};
+
+const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "@id": `${SITE_URL}/#website`,
+  url: SITE_URL,
+  name: "Bintang",
+  inLanguage: "en-GB",
+  publisher: { "@id": `${SITE_URL}/#restaurant` },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -73,10 +95,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         {children}
         {/* The soft dark fade at the edges of the screen, on every page (globals.css). */}
         <div className="vignette" aria-hidden="true" />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(restaurantJsonLd).replace(/</g, "\\u003c") }}
-        />
+        <script type="application/ld+json" dangerouslySetInnerHTML={jsonLdHtml([restaurantJsonLd, websiteJsonLd])} />
       </body>
     </html>
   );

@@ -114,6 +114,7 @@ export function AboutPage() {
         <div className={styles.masthead}>
           <h1 className={styles.title}>
             <FitTitle text="About us" />
+            <span className="sr-only"> — Bintang, London’s oldest Filipino restaurant</span>
           </h1>
         </div>
 

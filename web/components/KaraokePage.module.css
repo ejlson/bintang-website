@@ -119,13 +119,13 @@
   position: relative;
   height: 100%;
   overflow: hidden;
-  background: #0e0b0a url("/media/karaoke/karaoke-poster.jpg") center / cover no-repeat;
+  background: #0e0b0a url("/media/karaoke/karaoke-poster.webp") center / cover no-repeat;
   color: var(--paper);
 }
 
 @media (max-aspect-ratio: 1/1) {
   .hero {
-    background-image: url("/media/karaoke/karaoke-poster-portrait.jpg");
+    background-image: url("/media/karaoke/karaoke-poster-portrait.webp");
   }
 }
 

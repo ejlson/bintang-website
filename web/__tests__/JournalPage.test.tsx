@@ -25,13 +25,13 @@ const postLinks = () =>
 describe("JournalPage", () => {
   it("renders a single H1 named Journal", () => {
     render(<JournalPage />);
-    expect(screen.getByRole("heading", { level: 1, name: "Journal" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: /^Journal — news/ })).toBeInTheDocument();
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
   });
 
   it("sizes the JOURNAL title like GALLERY: full width, outside the content column, squished 0.95", () => {
     render(<JournalPage />);
-    const h1 = screen.getByRole("heading", { level: 1, name: "Journal" });
+    const h1 = screen.getByRole("heading", { level: 1, name: /^Journal — news/ });
     expect(h1.querySelector("svg text")).toHaveAttribute("transform", "scale(1 0.95)");
     // Not inside the content column, so it spans the screen like the Gallery title.
     expect(h1.closest(".wrap")).toBeNull();
@@ -167,8 +167,9 @@ describe("JournalPage", () => {
 
   it("app/journal/page renders JournalPage with title and description metadata", () => {
     render(<JournalRoute />);
-    expect(screen.getByRole("heading", { level: 1, name: "Journal" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: /^Journal — news/ })).toBeInTheDocument();
     expect(metadata.title).toBe("Journal");
+    expect(metadata.alternates?.canonical).toBe("/journal");
     expect(metadata.description).toEqual(expect.any(String));
   });
 });
@@ -206,7 +207,9 @@ describe("lib/journal", () => {
     for (const p of posts) {
       const raw = snapshot.posts.find((s) => s.slug === p.slug)!;
       if (p.kind === "press") expect(p.readMore).toEqual({ href: raw.url, text: `Read the article in ${raw.outlet}` });
-      if (p.kind === "link") expect(p.readMore?.href).toBe(raw.url);
+      // A link back to the old blog on this domain redirects to the post itself, so it gets no Read more.
+      if (p.kind === "link")
+        expect(p.readMore?.href).toBe(/bintangrestaurant\.co\.uk\/blog\//.test(raw.url!) ? undefined : raw.url);
       if (p.kind === "ours" && raw.restaurants.includes("bunso"))
         expect(p.readMore?.href).toBe(`https://www.bybunso.com/blog/${p.slug}`);
       if (p.readMore) expect(p.readMore.href).toMatch(/^https:\/\//);

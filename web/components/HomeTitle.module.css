@@ -280,7 +280,7 @@
   left: 16px;
   right: 16px;
   bottom: 5vh;
-  font-size: clamp(10px, 0.95vw, 14px);
+  font-size: clamp(12px, 0.95vw, 14px);
   line-height: 1.25;
   letter-spacing: 0.04em;
 }
@@ -340,8 +340,9 @@
     font-size: 13px;
   }
 
+  /* 12px: Lighthouse flags type under 12px as illegible on phones. */
   .billing {
-    font-size: 10px;
+    font-size: 12px;
   }
 }
 

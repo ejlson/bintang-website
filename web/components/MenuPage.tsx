@@ -222,6 +222,7 @@ export function MenuPage() {
           <span ref={titleRef} className={styles.titleText}>
             <MenuTitle />
           </span>
+          <span className="sr-only"> — Bintang Filipino restaurant, Camden</span>
         </h1>
       </div>
 

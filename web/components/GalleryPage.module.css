@@ -13,6 +13,12 @@
   font-family: var(--font-serif);
 }
 
+/* The brand red is 4.1:1 on this black, under the 4.5:1 WCAG AA needs for the
+   footer's small type; a touch lighter red passes (4.9:1). */
+.page > footer {
+  color: #e4444c;
+}
+
 /* The title: GALLERY across the page in red Aquavit Black, squashed like the
    old field title. Sticky at the top of the screen and under the grid, so the
    photos scroll up over it (and it shows through the gaps). */

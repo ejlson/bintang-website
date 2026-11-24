@@ -49,6 +49,7 @@ export function ContactPage() {
           <span className={styles.titleMask}>
             <FitTitle text="Contact us" />
           </span>
+          <span className="sr-only"> — Bintang, 93 Kentish Town Road, Camden</span>
         </h1>
 
         <div className={styles.wrap}>

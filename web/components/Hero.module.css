@@ -4,13 +4,13 @@
   height: 100svh;
   min-height: 640px;
   overflow: hidden;
-  background: var(--ink) url("/media/hero-poster.jpg") center / cover no-repeat;
+  background: var(--ink) url("/media/hero-poster.webp") center / cover no-repeat;
   color: var(--paper);
 }
 
 @media (max-aspect-ratio: 1/1) {
   .hero {
-    background-image: url("/media/hero-poster-portrait.jpg");
+    background-image: url("/media/hero-poster-portrait.webp");
   }
 }
 

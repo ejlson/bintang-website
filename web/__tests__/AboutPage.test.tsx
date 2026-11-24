@@ -25,7 +25,7 @@ describe("About page", () => {
   it("has one ABOUT US title and the statement with its key phrases", () => {
     render(<About />);
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
-    expect(screen.getByRole("heading", { level: 1, name: "About us" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: /^About us — Bintang, London’s oldest Filipino restaurant$/ })).toBeInTheDocument();
     const keys = screen.getAllByText(/./, { selector: "em" }).map((e) => e.textContent);
     expect(keys).toEqual(["London’s oldest Filipino restaurant", "Kentish Town Road", "Filipino", "Asian influences"]);
   });

@@ -140,7 +140,7 @@ describe("Hero", () => {
     );
     expect(markupUrls).toHaveLength(4);
     const cssUrls = Array.from(heroCss().matchAll(/url\(\s*["']?([^"')]+)["']?\s*\)/g), (m) => m[1]);
-    expect(cssUrls).toEqual(expect.arrayContaining(["/media/hero-poster.jpg", "/media/hero-poster-portrait.jpg"]));
+    expect(cssUrls).toEqual(expect.arrayContaining(["/media/hero-poster.webp", "/media/hero-poster-portrait.webp"]));
     for (const u of [...markupUrls, ...cssUrls]) expect(existsSync(join(process.cwd(), "public", u)), u).toBe(true);
   });
 
@@ -148,12 +148,12 @@ describe("Hero", () => {
     const css = heroCss();
     const block = css.slice(css.indexOf(`@media ${PORTRAIT_QUERY}`));
     expect(block).not.toBe(css); // the query is present
-    expect(block.slice(0, block.indexOf("}"))).toContain('url("/media/hero-poster-portrait.jpg")');
+    expect(block.slice(0, block.indexOf("}"))).toContain('url("/media/hero-poster-portrait.webp")');
   });
 
   it("gives the thumbnail video its own poster", () => {
     render(<Hero />);
-    expect(thumbVideo()).toHaveAttribute("poster", "/media/about-thumb-poster.jpg");
+    expect(thumbVideo()).toHaveAttribute("poster", "/media/about-thumb-poster.webp");
     expect(thumbVideo()).toHaveAttribute("src", "/media/about-thumb.mp4");
   });
 

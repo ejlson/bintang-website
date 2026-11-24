@@ -1,12 +1,29 @@
 "use client";
 
-import { Yuji_Boku } from "next/font/google";
-
 /**
- * Sound-word lettering face for the Sakuga VFX core. Only drawn on a canvas,
- * so it isn't preloaded; the core asks for it when it starts.
+ * Sound-word lettering face for the Sakuga VFX core: Yuji Boku (OFL), Latin
+ * subset only, self-hosted. It's only drawn on a canvas and every word is
+ * plain Latin, so it's registered here when the core starts rather than via
+ * next/font, whose CSS carried ~120 @font-face rules for the whole CJK set
+ * in the stylesheet every page waits on.
  */
-const sfxFont = Yuji_Boku({ weight: "400", subsets: ["latin"], display: "swap", preload: false });
+const SFX_FAMILY = "Yuji Boku";
+const SFX_LATIN_RANGE =
+  "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD";
+
+function registerSfxFont() {
+  if (typeof FontFace === "undefined" || !document.fonts) return;
+  try {
+    const face = new FontFace(SFX_FAMILY, 'url("/fonts/yuji-boku-latin.woff2") format("woff2")', {
+      weight: "400",
+      style: "normal",
+      unicodeRange: SFX_LATIN_RANGE,
+    });
+    document.fonts.add(face);
+  } catch {
+    // The core falls back to drawing nothing until a face is ready; effects are optional.
+  }
+}
 
 type Opts = Record<string, unknown>;
 type Fx = (x: number, y: number, opts?: Opts) => void;
@@ -46,7 +63,8 @@ export function loadSakuga(): Promise<SakugaFX | null> {
   if (typeof window === "undefined") return Promise.resolve(null);
   if (window.SakugaFX) return Promise.resolve(window.SakugaFX);
   loading ??= (async () => {
-    window.BINTANG_SFX_FONT = sfxFont.style.fontFamily;
+    registerSfxFont();
+    window.BINTANG_SFX_FONT = `"${SFX_FAMILY}"`;
     try {
       await import("./vendor/sakuga-core.js");
       return window.SakugaFX ?? null;
