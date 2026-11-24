@@ -1,18 +1,35 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type KeyboardEvent } from "react";
-import { menus, type MenuId, type MenuItem, type MenuSheet } from "@/lib/menu";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type KeyboardEvent,
+} from "react";
+import {
+  menus,
+  type Menu,
+  type MenuId,
+  type MenuItem,
+  type MenuSheet,
+} from "@/lib/menu";
+import { PrintedSheetViewer } from "./PrintedSheetViewer";
 import { SiteFooter } from "./SiteFooter";
 import { SiteHeader } from "./SiteHeader";
 import { jumpTo } from "./SmoothScroll";
 import styles from "./MenuPage.module.css";
 
-const ids = menus.map((m) => m.id);
-const isMenuId = (v: string): v is MenuId => (ids as string[]).includes(v);
+/** The menus to show now: seasonal ones drop out once their date has passed. */
+const inSeason = (now: number) =>
+  menus.filter((m) => m.until === undefined || now < m.until);
 
 // useLayoutEffect warns during server render; it only matters in the browser.
-const useIsoLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
+const useIsoLayoutEffect =
+  typeof window === "undefined" ? useEffect : useLayoutEffect;
 
 function Item({ item }: { item: MenuItem }) {
   return (
@@ -28,22 +45,91 @@ function Item({ item }: { item: MenuItem }) {
 }
 
 function Sheet({ sheet }: { sheet: MenuSheet }) {
+  const { image } = sheet;
+  // The printed page full screen; focus goes back to the page that opened it.
+  const [viewing, setViewing] = useState(false);
+  const openerRef = useRef<HTMLButtonElement>(null);
+  const closeViewer = useCallback(() => {
+    setViewing(false);
+    openerRef.current?.focus();
+  }, []);
   return (
     <article className={styles.sheet} aria-label={sheet.label}>
       <h2 className={styles.band}>{sheet.label}</h2>
+      {image ? (
+        <>
+          <button
+            ref={openerRef}
+            type="button"
+            className={styles.printedOpen}
+            aria-haspopup="dialog"
+            onClick={() => setViewing(true)}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element -- a static printed page, already sized and compressed */}
+            <img
+              className={styles.printed}
+              src={image.src}
+              alt={image.alt}
+              width={image.width}
+              height={image.height}
+              loading="lazy"
+              decoding="async"
+            />{" "}
+            <span className={styles.printedHint}>View full screen</span>
+          </button>
+          {image.pdf && (
+            <a
+              className={styles.printedPdf}
+              href={image.pdf}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Open the PDF <span className="sr-only">(opens in a new tab)</span>
+            </a>
+          )}
+          {viewing && (
+            <PrintedSheetViewer
+              label={sheet.label}
+              image={image}
+              onClose={closeViewer}
+            />
+          )}
+          <details className={styles.asText}>
+            <summary className={styles.asTextSummary}>
+              Read this menu as text
+            </summary>
+            <SheetBody sheet={sheet} />
+          </details>
+        </>
+      ) : (
+        <SheetBody sheet={sheet} />
+      )}
+    </article>
+  );
+}
 
+function SheetBody({ sheet }: { sheet: MenuSheet }) {
+  return (
+    <>
       <div className={styles.columns}>
         {sheet.sections.map((s) => (
-          <section key={s.title} className={s.boxed ? `${styles.section} ${styles.boxed}` : styles.section}>
+          <section
+            key={s.title}
+            className={
+              s.boxed ? `${styles.section} ${styles.boxed}` : styles.section
+            }
+          >
             <h3 className={styles.heading}>{s.title}</h3>
             {s.sub && <p className={styles.sub}>{s.sub}</p>}
             {s.intro && <p className={styles.intro}>{s.intro}</p>}
             {s.colHead && <p className={styles.colHead}>{s.colHead}</p>}
-            <ul className={styles.list}>
-              {s.items.map((it) => (
-                <Item key={it.name} item={it} />
-              ))}
-            </ul>
+            {s.items.length > 0 && (
+              <ul className={styles.list}>
+                {s.items.map((it) => (
+                  <Item key={it.name} item={it} />
+                ))}
+              </ul>
+            )}
             {s.foot && <p className={styles.intro}>{s.foot}</p>}
           </section>
         ))}
@@ -51,7 +137,9 @@ function Sheet({ sheet }: { sheet: MenuSheet }) {
 
       {sheet.wide?.map((w) => (
         <section key={w.title} className={styles.feature}>
-          <h3 className={`${styles.heading} ${styles.featureHeading}`}>{w.title}</h3>
+          <h3 className={`${styles.heading} ${styles.featureHeading}`}>
+            {w.title}
+          </h3>
           {w.lead && <p className={styles.lead}>{w.lead}</p>}
           <ul className={styles.featureList}>
             {w.items.map((it) => (
@@ -72,16 +160,20 @@ function Sheet({ sheet }: { sheet: MenuSheet }) {
       {sheet.legal && (
         <div className={styles.legal}>
           <p>
-            <b>All meat is halal certified</b> · V vegetarian · VE vegan · PN peanuts · GF gluten free · Prices in £
+            <b>All meat is halal certified</b> · V vegetarian · VE vegan · PN
+            peanuts · GF gluten free · Prices in £
           </p>
           <p>
-            Food may contain or come into contact with allergens. Please tell a member of staff about any allergies or
-            dietary requirements before ordering.
+            Food may contain or come into contact with allergens. Please tell a
+            member of staff about any allergies or dietary requirements before
+            ordering.
           </p>
-          <p>A discretionary 12.5% service charge will be added to your bill.</p>
+          <p>
+            A discretionary 12.5% service charge will be added to your bill.
+          </p>
         </div>
       )}
-    </article>
+    </>
   );
 }
 
@@ -92,7 +184,12 @@ function Sheet({ sheet }: { sheet: MenuSheet }) {
  */
 function MenuTitle() {
   return (
-    <svg className={styles.titleSvg} viewBox="0 22 1000 224" role="img" aria-label="Menu">
+    <svg
+      className={styles.titleSvg}
+      viewBox="0 22 1000 224"
+      role="img"
+      aria-label="Menu"
+    >
       <text
         className={styles.titleWord}
         transform="translate(0 238) scale(1 0.85)"
@@ -106,10 +203,14 @@ function MenuTitle() {
   );
 }
 
-/** The Menu page: À la carte, Brunch, Desserts and Karaoke as tabs, one accent colour each. */
+/** The Menu page: À la carte, Brunch, Desserts, Karaoke and (in season) Christmas as tabs, one accent colour each. */
 export function MenuPage() {
   const [active, setActive] = useState<MenuId>("carte");
-  const menu = menus.find((m) => m.id === active) ?? menus[0];
+  // Every menu on the server (pages are prerendered); out-of-season ones are
+  // dropped in the layout effect below, before the first paint.
+  const [shown, setShown] = useState<Menu[]>(menus);
+  const ids = shown.map((m) => m.id);
+  const menu = shown.find((m) => m.id === active) ?? shown[0];
 
   // Colour fades are switched on only after the first paint (see .page[data-ready]).
   const [ready, setReady] = useState(false);
@@ -117,9 +218,12 @@ export function MenuPage() {
   // Deep links: /menu#brunch opens the Brunch tab, on load and on later hash
   // changes. A layout effect so the right menu shows before the first paint.
   useIsoLayoutEffect(() => {
+    const live = inSeason(Date.now());
+    setShown(live);
     const sync = () => {
       const fromHash = window.location.hash.slice(1);
-      if (isMenuId(fromHash)) setActive(fromHash);
+      const match = live.find((m) => m.id === fromHash);
+      if (match) setActive(match.id);
     };
     sync();
     // Two frames: the first paints the deep-linked colours with no transition,
@@ -150,7 +254,8 @@ export function MenuPage() {
       html.style.scrollPaddingTop = `${Math.max(0, bar.offsetHeight - fade)}px`;
     };
     update();
-    const ro = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(update);
+    const ro =
+      typeof ResizeObserver === "undefined" ? null : new ResizeObserver(update);
     ro?.observe(bar);
     return () => {
       ro?.disconnect();
@@ -166,7 +271,10 @@ export function MenuPage() {
     const panel = panelRef.current;
     if (!bar || !panel) return;
     const fade = parseFloat(getComputedStyle(bar).paddingBottom) || 0;
-    const target = panel.getBoundingClientRect().top + window.scrollY - (bar.offsetHeight - fade);
+    const target =
+      panel.getBoundingClientRect().top +
+      window.scrollY -
+      (bar.offsetHeight - fade);
     if (window.scrollY > target) jumpTo(target);
   };
 
@@ -177,7 +285,8 @@ export function MenuPage() {
   useIsoLayoutEffect(() => {
     const el = titleRef.current;
     if (!el) return;
-    const measure = () => setTitleWidth(Math.round(el.getBoundingClientRect().width) || null);
+    const measure = () =>
+      setTitleWidth(Math.round(el.getBoundingClientRect().width) || null);
     measure();
     if (typeof ResizeObserver === "undefined") return;
     const ro = new ResizeObserver(measure);
@@ -189,11 +298,15 @@ export function MenuPage() {
   const onTabKey = (e: KeyboardEvent<HTMLButtonElement>) => {
     const i = ids.indexOf(active);
     const next =
-      e.key === "ArrowRight" ? ids[(i + 1) % ids.length]
-      : e.key === "ArrowLeft" ? ids[(i - 1 + ids.length) % ids.length]
-      : e.key === "Home" ? ids[0]
-      : e.key === "End" ? ids[ids.length - 1]
-      : null;
+      e.key === "ArrowRight"
+        ? ids[(i + 1) % ids.length]
+        : e.key === "ArrowLeft"
+          ? ids[(i - 1 + ids.length) % ids.length]
+          : e.key === "Home"
+            ? ids[0]
+            : e.key === "End"
+              ? ids[ids.length - 1]
+              : null;
     if (!next) return;
     e.preventDefault();
     select(next);
@@ -210,19 +323,32 @@ export function MenuPage() {
           "--bg": menu.background,
           // Cream on Karaoke's red is only ~3.9:1, so its tabs aren't dimmed (SPEC › Buttons).
           // …and its Book fills cream on hover, so the word turns ink, not red (~3.9:1).
-          ...(menu.id === "karaoke" && { "--tab-dim": "100%", "--menu-book-on": "var(--ink)" }),
+          ...(menu.id === "karaoke" && {
+            "--tab-dim": "100%",
+            "--menu-book-on": "var(--ink)",
+          }),
         } as CSSProperties
       }
     >
       {/* Text colour comes from --acc (see .page > header); only the lion swaps, to white on red Karaoke like About. */}
-      <SiteHeader variant="page" tone="ink" mark={menu.id === "karaoke" ? "paper" : "ink"} currentHref="/menu" />
+      <SiteHeader
+        variant="page"
+        tone="ink"
+        mark={
+          menu.id === "karaoke" || menu.id === "christmas" ? "paper" : "ink"
+        }
+        currentHref="/menu"
+      />
 
       <div className={styles.titleWrap}>
         <h1 className={styles.title}>
           <span ref={titleRef} className={styles.titleText}>
             <MenuTitle />
           </span>
-          <span className="sr-only"> — Bintang Filipino restaurant, Kentish Town</span>
+          <span className="sr-only">
+            {" "}
+            — Bintang Filipino restaurant, Kentish Town
+          </span>
         </h1>
       </div>
 
@@ -235,7 +361,7 @@ export function MenuPage() {
             className={styles.tabs}
             style={titleWidth ? { width: titleWidth } : undefined}
           >
-            {menus.map((m) => (
+            {shown.map((m) => (
               <button
                 key={m.id}
                 ref={(el) => {
@@ -265,6 +391,7 @@ export function MenuPage() {
           aria-labelledby={`tab-${menu.id}`}
           tabIndex={0}
           className={styles.panel}
+          data-printed={menu.sheets.some((sh) => sh.image) || undefined}
         >
           {menu.sheets.map((sh) => (
             <Sheet key={sh.label} sheet={sh} />

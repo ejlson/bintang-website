@@ -6,7 +6,11 @@ import { act as reactAct } from "react";
 import { renderToString } from "react-dom/server";
 import { hydrateRoot, type Root } from "react-dom/client";
 import { HERO_LANDSCAPE, HERO_PORTRAIT, Hero, PORTRAIT_QUERY } from "@/components/Hero";
+import { CHRISTMAS_ENDS } from "@/lib/promo";
 import { fireMediaChange, mediaListeners, motion } from "../vitest.setup";
+
+/** After the Christmas 2026 promotion: the About thumbnail is back in the corner. */
+const AFTER_CHRISTMAS = new Date("2027-01-02T12:00:00Z");
 
 const play = HTMLMediaElement.prototype.play as unknown as ReturnType<typeof vi.fn>;
 const pause = HTMLMediaElement.prototype.pause as unknown as ReturnType<typeof vi.fn>;
@@ -55,6 +59,9 @@ beforeEach(() => {
   vi.useFakeTimers({
     toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval", "requestAnimationFrame", "cancelAnimationFrame", "performance", "Date"],
   });
+  // The thumbnail tests below describe Home outside the Christmas promotion
+  // (see "Christmas 2026 promotion" for the corner mini that replaces it).
+  vi.setSystemTime(AFTER_CHRISTMAS);
   play.mockClear();
   pause.mockClear();
   // Hero renders HomeTitle, which records the intro on <html> and in sessionStorage.
@@ -115,16 +122,20 @@ describe("Hero", () => {
     expect(v.querySelector('source[src*="720"]')).toBeNull();
   });
 
-  it("ships the muted attribute in the server HTML for both videos (autoplay needs it before hydration)", () => {
+  it("ships the muted attribute in the server HTML for the hero video (autoplay needs it before hydration)", () => {
     // React's client renderer only sets the `muted` property, which setPlaying() also
     // does; the server HTML is where the JSX `muted` prop becomes a real attribute.
+    // The thumbnail isn't in the server HTML at all: whether it or the Christmas
+    // mini shows is decided from the visitor's clock after hydration.
     const html = serverMarkup();
     const videos = Array.from(html.querySelectorAll("video"));
-    expect(videos).toHaveLength(2);
+    expect(videos).toHaveLength(1);
+    expect(videos[0]).toHaveAttribute("data-testid", "hero-video");
     for (const v of videos) {
       expect(v).toHaveAttribute("muted");
       expect(v.defaultMuted).toBe(true);
     }
+    expect(html.querySelector('a[href="/about"]')).toBeNull();
   });
 
   it("links the thumbnail to /about", () => {
@@ -525,5 +536,100 @@ describe("Hero hydration", () => {
     expect(container.querySelector("button")).toHaveAttribute("aria-pressed", "false");
     expect(container.querySelector('[data-testid="subtitles"]')).toBeNull();
     expect(container.querySelector('[data-testid="home-title"]')).toHaveAttribute("aria-hidden", "true");
+  });
+});
+
+describe("Hero: Christmas 2026 promotion", () => {
+  const mini = () => screen.queryByRole("button", { name: "Christmas at Bintang: see the offer" });
+  const thumbLink = () => screen.queryByRole("link", { name: "Watch our story" });
+
+  it("shows the Christmas corner mini instead of the About thumbnail while live", () => {
+    vi.setSystemTime(CHRISTMAS_ENDS - 1); // 23:59:59.999 on 31 Dec 2026 (GMT)
+    render(<Hero />);
+    expect(mini()).toBeInTheDocument();
+    // It keeps the thumbnail's intro behaviour.
+    expect(mini()).toHaveClass("hud");
+    expect(thumbLink()).toBeNull();
+    // Only the hero film: no thumbnail video while the promo is live.
+    expect(document.querySelectorAll("video")).toHaveLength(1);
+    expect(play.mock.contexts).toEqual([heroVideo()]);
+  });
+
+  it("brings the About thumbnail back from midnight on 1 January 2027", () => {
+    vi.setSystemTime(CHRISTMAS_ENDS);
+    render(<Hero />);
+    expect(mini()).toBeNull();
+    expect(thumbLink()).toHaveAttribute("href", "/about");
+    expect(play.mock.contexts).toContain(thumbVideo());
+  });
+
+  it("puts neither the mini nor the thumbnail in the server HTML, live or not", () => {
+    for (const now of [CHRISTMAS_ENDS - 1, CHRISTMAS_ENDS]) {
+      vi.setSystemTime(now);
+      const html = serverMarkup();
+      expect(html.querySelector('a[href="/about"]')).toBeNull();
+      expect(html.querySelector('[aria-haspopup="dialog"]')).toBeNull();
+    }
+  });
+
+  it("hydrates without a mismatch and then shows the mini while live", async () => {
+    vi.setSystemTime(new Date("2026-12-01T12:00:00Z"));
+    const container = document.createElement("div");
+    container.innerHTML = renderToString(<Hero />);
+    document.body.appendChild(container);
+    const onRecoverableError = vi.fn();
+    let root: Root | undefined;
+    try {
+      await reactAct(async () => {
+        root = hydrateRoot(container, <Hero />, { onRecoverableError });
+      });
+      expect(onRecoverableError).not.toHaveBeenCalled();
+      expect(container.querySelector('[aria-haspopup="dialog"]')).toHaveAccessibleName(
+        "Christmas at Bintang: see the offer",
+      );
+      expect(container.querySelector('a[href="/about"]')).toBeNull();
+    } finally {
+      reactAct(() => root?.unmount());
+      container.remove();
+    }
+  });
+});
+
+describe("Hero: the Christmas mini follows the film's paused state (data-still)", () => {
+  const mini = () => screen.getByRole("button", { name: "Christmas at Bintang: see the offer" });
+  beforeEach(() => {
+    vi.setSystemTime(CHRISTMAS_ENDS - 1);
+  });
+
+  it("sways while the film plays, and stills when the visitor presses pause (and back)", () => {
+    render(<Hero />);
+    expect(mini()).not.toHaveAttribute("data-still");
+    fireEvent.click(pauseButton());
+    expect(mini()).toHaveAttribute("data-still", "true");
+    fireEvent.click(pauseButton());
+    expect(mini()).not.toHaveAttribute("data-still");
+  });
+
+  it("starts still for a reduced-motion visitor", () => {
+    motion.reduce = true;
+    render(<Hero />);
+    expect(mini()).toHaveAttribute("data-still", "true");
+  });
+
+  it("starts still for a data-saver visitor", () => {
+    stubConnection(true);
+    try {
+      render(<Hero />);
+      expect(mini()).toHaveAttribute("data-still", "true");
+    } finally {
+      unstubConnection();
+    }
+  });
+
+  it("stills when the browser refuses playback", async () => {
+    play.mockReturnValueOnce(Promise.reject(new DOMException("blocked", "NotAllowedError")));
+    render(<Hero />);
+    await flush();
+    expect(mini()).toHaveAttribute("data-still", "true");
   });
 });

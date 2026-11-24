@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { menus, menusFrom, SHEETS, type MenuSnapshot } from "@/lib/menu";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+import { CHRISTMAS_MENU, CHRISTMAS_PDF, menus, menusFrom, SHEETS, type MenuSnapshot } from "@/lib/menu";
+import { CHRISTMAS_ENDS } from "@/lib/promo";
 import cms from "@/lib/cms.json";
 import live from "@/lib/menu.snapshot.json";
 /* The snapshot as it was the day the menus moved into the CMS (2026-11-23),
@@ -17,9 +20,10 @@ describe("lib/menu (CMS adapter)", () => {
     expect(menusFrom(snap)).toStrictEqual(before);
   });
 
-  it("builds the live menus from the live snapshot", () => {
-    expect(menus).toStrictEqual(menusFrom(live as MenuSnapshot));
-    expect(menus.map((m) => m.id)).toEqual(["carte", "brunch", "desserts", "karaoke"]);
+  it("builds the live menus from the live snapshot, then adds the seasonal Christmas menu last", () => {
+    expect(menus).toStrictEqual([...menusFrom(live as MenuSnapshot), CHRISTMAS_MENU]);
+    expect(menusFrom(live as MenuSnapshot).map((m) => m.id)).toEqual(["carte", "brunch", "desserts", "karaoke"]);
+    expect(menus.map((m) => m.id)).toEqual(["carte", "brunch", "desserts", "karaoke", "christmas"]);
   });
 
   it("lists the same printed sheets as the pull script checks against (cms.json)", () => {
@@ -82,5 +86,52 @@ describe("lib/menu (CMS adapter)", () => {
     const stray = clone();
     carte(stray).sections[0].part = "Snacks";
     expect(() => menusFrom(stray)).toThrow(/unknown part "Snacks"/);
+  });
+});
+
+describe("lib/menu: the Christmas 2026 menu (kept in code)", () => {
+  it("is a pine-green, cream-text tab that ends with the promotion", () => {
+    expect(CHRISTMAS_MENU).toMatchObject({
+      id: "christmas",
+      label: "Christmas",
+      accent: "#EDE9E9",
+      background: "#1D3A26",
+      until: CHRISTMAS_ENDS,
+    });
+  });
+
+  it("only the seasonal menu has an end date; the CMS menus never expire", () => {
+    expect(menus.filter((m) => m.until !== undefined)).toEqual([CHRISTMAS_MENU]);
+  });
+
+  it("shows the two printed sheets as pictures that exist in public/, with alt text pointing to the text version", () => {
+    expect(CHRISTMAS_MENU.sheets.map((s) => s.label)).toEqual(["Group set menu · £47", "Sharing set menu · £42"]);
+    expect(CHRISTMAS_MENU.sheets.map((s) => s.image?.src)).toEqual([
+      "/media/promo/christmas-menu-group.webp",
+      "/media/promo/christmas-menu-sharing.webp",
+    ]);
+    for (const s of CHRISTMAS_MENU.sheets) {
+      const img = s.image!;
+      expect(existsSync(join(process.cwd(), "public", img.src)), img.src).toBe(true);
+      expect([img.width, img.height]).toEqual([1654, 2339]);
+      expect(img.alt).toMatch(/^The printed .+ The full menu follows as text\.$/);
+      expect(s.legal).toBe(true);
+      expect(s.sections.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("no CMS menu has a printed image (only the seasonal sheets do)", () => {
+    for (const m of menusFrom(live as MenuSnapshot)) for (const s of m.sheets) expect(s.image).toBeUndefined();
+  });
+});
+
+describe("lib/menu: the Christmas PDF", () => {
+  it("exists in public/ and each printed sheet points at its own page of it", () => {
+    expect(CHRISTMAS_PDF).toBe("/media/promo/bintang-christmas-menus.pdf");
+    expect(existsSync(join(process.cwd(), "public", CHRISTMAS_PDF))).toBe(true);
+    expect(CHRISTMAS_MENU.sheets.map((s) => [s.label, s.image?.pdf])).toEqual([
+      ["Group set menu · £47", `${CHRISTMAS_PDF}#page=1`],
+      ["Sharing set menu · £42", `${CHRISTMAS_PDF}#page=2`],
+    ]);
   });
 });

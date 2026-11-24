@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { useChristmasLive } from "@/lib/useChristmasLive";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 import { useSaveData } from "@/lib/useSaveData";
+import { ChristmasPromo } from "./ChristmasPromo";
 import { HomeTitle, introClasses } from "./HomeTitle";
 import styles from "./Hero.module.css";
 
@@ -17,7 +19,11 @@ export const PORTRAIT_QUERY = "(max-aspect-ratio: 1/1)";
  * (autoplay policy, Low Power Mode, missing/unsupported file), `onBlocked` is
  * called so the controls show the true state.
  */
-function setPlaying(video: HTMLVideoElement | null, playing: boolean, onBlocked: () => void) {
+function setPlaying(
+  video: HTMLVideoElement | null,
+  playing: boolean,
+  onBlocked: () => void,
+) {
   if (!video) return;
   // Autoplay policies require the element to be muted before play().
   video.muted = true;
@@ -45,6 +51,11 @@ export function Hero() {
   const [userPaused, setUserPaused] = useState<boolean | null>(null);
   const paused = userPaused ?? prefersStill;
 
+  // Christmas 2026: the promo's corner mini takes the About thumbnail's place.
+  // Decided from the visitor's clock after hydration (null until then, so
+  // neither shows rather than one flashing in and swapping out).
+  const christmas = useChristmasLive();
+
   const heroRef = useRef<HTMLVideoElement>(null);
   const thumbRef = useRef<HTMLVideoElement>(null);
   // Latest paused state for the rotation handler, which subscribes once.
@@ -60,7 +71,8 @@ export function Hero() {
     const onBlocked = () => setUserPaused(true);
     setPlaying(heroRef.current, !paused, onBlocked);
     setPlaying(thumbRef.current, !paused, onBlocked);
-  }, [paused, userPaused, preferenceKnown]);
+    // `christmas` too: the thumbnail mounts only once it's known to be needed.
+  }, [paused, userPaused, preferenceKnown, christmas]);
 
   // <source media> is only evaluated once, so swap files when a phone rotates.
   useEffect(() => {
@@ -85,7 +97,8 @@ export function Hero() {
   return (
     <section className={styles.hero} aria-labelledby="home-title">
       <h1 id="home-title" className="sr-only">
-        Welcome to Bintang — London’s oldest Filipino restaurant, Kentish Town since 1987
+        Welcome to Bintang — London’s oldest Filipino restaurant, Kentish Town
+        since 1987
       </h1>
 
       {/* No poster attribute: the video is transparent until it has a frame,
@@ -126,19 +139,29 @@ export function Hero() {
         )}
       </button>
 
-      <Link href="/about" className={`${styles.thumb} ${introClasses.hud}`} aria-label="Watch our story">
-        <video
-          ref={thumbRef}
-          src="/media/about-thumb.mp4"
-          poster="/media/about-thumb-poster.webp"
-          muted
-          loop
-          playsInline
-          preload={paused ? "none" : "metadata"}
-          aria-hidden="true"
-          tabIndex={-1}
-        />
-      </Link>
+      {christmas && (
+        <ChristmasPromo hudClassName={introClasses.hud} still={paused} />
+      )}
+
+      {christmas === false && (
+        <Link
+          href="/about"
+          className={`${styles.thumb} ${introClasses.hud}`}
+          aria-label="Watch our story"
+        >
+          <video
+            ref={thumbRef}
+            src="/media/about-thumb.mp4"
+            poster="/media/about-thumb-poster.webp"
+            muted
+            loop
+            playsInline
+            preload={paused ? "none" : "metadata"}
+            aria-hidden="true"
+            tabIndex={-1}
+          />
+        </Link>
+      )}
 
       <HomeTitle />
     </section>
