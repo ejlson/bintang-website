@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -237,6 +239,29 @@ describe("SiteHeader mobile overlay", () => {
     await user.click(toggle());
     unmount();
     expect(document.body.style.overflow).toBe("");
+  });
+});
+
+describe("SiteHeader overlay placement", () => {
+  it("renders the open menu on <body>, outside the header, so page stacking contexts can't cover it", async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <div style={{ position: "relative", zIndex: 1 }}>
+        <SiteHeader />
+      </div>,
+    );
+    await user.click(toggle());
+    const dialog = screen.getByRole("dialog");
+    expect(dialog.parentElement).toBe(document.body);
+    expect(container).not.toContainElement(dialog);
+    expect(toggle().getAttribute("aria-controls")).toBe(dialog.id);
+  });
+
+  it("only colours a row on hover where the pointer can really hover (no sticky tap hover on phones)", () => {
+    const css = readFileSync(join(process.cwd(), "components", "SiteHeader.module.css"), "utf8");
+    const bare = css.replace(/@media \(hover: hover\) \{[\s\S]*?\n\}/g, "");
+    expect(bare).not.toMatch(/\.overlayList \.link:hover/);
+    expect(css).toMatch(/@media \(hover: hover\) \{\s*\.overlayList \.link:hover/);
   });
 });
 

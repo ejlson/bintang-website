@@ -290,14 +290,17 @@
 }
 
 @media (max-width: 599px) {
+  /* Older entries two to a row on phones (card type sizes are set at the
+     end of the file, after the card rules they override). */
   .stories {
-    --cols: 1;
+    --cols: 2;
+    column-gap: 16px;
   }
 
-  /* The panel runs to the screen's edges on phones. */
+  /* The panel sits inside the page gutter on phones, with newsprint showing
+     round it, and room inside so the words and photo don't press the sides. */
   .front {
-    margin-inline: calc(-1 * var(--gutter));
-    padding-inline: var(--gutter);
+    padding: 24px 20px;
   }
 }
 
@@ -812,4 +815,28 @@
 @keyframes float {
   from { transform: translateY(calc(-1 * var(--float, 40px))); }
   to { transform: translateY(var(--float, 40px)); }
+}
+
+/* Phones: the older entries sit two to a row, so their type steps down to
+   fit the narrow column. After the card rules so these win. */
+@media (max-width: 599px) {
+  /* Ragged right: justified, two or three words a line leave wide gaps. */
+  .storyTitle {
+    font-size: 17px;
+    text-align: left;
+  }
+
+  .storyLabel {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+  }
+
+  .storyExcerpt {
+    font-size: 13px;
+  }
+
+  .storyMore {
+    gap: 8px;
+    font-size: 12px;
+  }
 }

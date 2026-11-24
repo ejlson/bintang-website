@@ -294,6 +294,10 @@
   -webkit-backdrop-filter: blur(6px) saturate(1.1);
   backdrop-filter: blur(6px) saturate(1.1);
   color: var(--paper);
+  /* Portalled to <body>, so it doesn't inherit the header's type. */
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.2;
   --book-line: var(--paper);
   --book-on: var(--ink);
   animation: veil-in 0.4s var(--ease) both;
@@ -404,9 +408,17 @@
   content: none;
 }
 
-.overlayList .link[aria-current="page"],
-.overlayList .link:hover {
+.overlayList .link[aria-current="page"] {
   color: var(--yellow);
+}
+
+/* Hover only where a pointer really hovers: phones keep :hover on whatever
+   sat under the last tap, which left a row (often Contact us, where the
+   thumb lands) yellow every time the menu opened. */
+@media (hover: hover) {
+  .overlayList .link:hover {
+    color: var(--yellow);
+  }
 }
 
 /* Address and phone left; the socials and a filled Book right. Neither

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useId, useRef, useState, type CSSProperties } from "react";
+import { createPortal } from "react-dom";
 import { allLinks, bookLinks, exploreLinks, type NavLink } from "@/lib/nav";
 import { site, socials } from "@/lib/site";
 import { SOCIAL_ICON_PATHS } from "@/lib/socialIcons";
@@ -191,65 +192,70 @@ export function SiteHeader({ variant = "overlay", tone = "paper", mark = "red", 
         </button>
       </div>
 
-      {(open || leaving) && (
-        <div
-          key={openCount}
-          ref={dialogRef}
-          id={dialogId}
-          className={`${styles.overlay} ${open ? "" : styles.leaving}`}
-          data-lenis-prevent
-          role={open ? "dialog" : undefined}
-          aria-modal={open ? "true" : undefined}
-          aria-label={open ? "Site menu" : undefined}
-          aria-hidden={open ? undefined : "true"}
-          inert={!open}
-        >
-          <div className={styles.overlayBar}>
-            {/* eslint-disable-next-line @next/next/no-img-element -- small vector mark, no optimisation needed */}
-            <img className={styles.overlayMark} src={MARK_SRC.paper} alt="" width={53} height={52} />
-            <button type="button" className={styles.close} onClick={() => close()}>
-              <span className={styles.sr}>Close menu · Isara</span>
-              <span className={styles.cross} aria-hidden="true" />
-            </button>
-          </div>
-          <nav aria-label="All pages" className={styles.overlayList}>
-            {allLinks.map((l, i) => (
-              <NavItem
-                key={l.href}
-                link={l}
-                index={i}
-                current={l.href === currentHref}
-                // Same-page link: no navigation happens, so hand focus back explicitly.
-                onClick={l.href === currentHref ? () => close() : () => hide()}
-              />
-            ))}
-          </nav>
-          <div className={styles.overlayFoot}>
-            <p className={styles.overlayInfo}>
-              <a href={site.mapUrl} target="_blank" rel="noopener noreferrer">
-                {site.street}
-                <span className={styles.sr}>, {site.postcode} (map, opens in a new tab)</span>
-              </a>
-              <a href={`tel:${site.phoneIntl}`}>{site.phone}</a>
-            </p>
-            <div className={styles.overlayEnd}>
-              <ul aria-label="Follow Bintang" className={styles.socials}>
-                {socials.map((s) => (
-                  <li key={s.name}>
-                    <a href={s.url} target="_blank" rel="noopener noreferrer" className={styles.social}>
-                      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
-                        <path d={SOCIAL_ICON_PATHS[s.name]} fill="currentColor" />
-                      </svg>
-                      <span className={styles.sr}>{s.name} (opens in a new tab)</span>
-                    </a>
-                  </li>
-                ))}
-              </ul>
-              <BookButton />
+      {/* Rendered on <body>, not inside the header: pages put the header in
+          stacking contexts of their own (Karaoke's sticky bar is z-index 3
+          under a z-index 4 footer), which would trap the menu beneath them. */}
+      {(open || leaving) &&
+        createPortal(
+          <div
+            key={openCount}
+            ref={dialogRef}
+            id={dialogId}
+            className={`${styles.overlay} ${open ? "" : styles.leaving}`}
+            data-lenis-prevent
+            role={open ? "dialog" : undefined}
+            aria-modal={open ? "true" : undefined}
+            aria-label={open ? "Site menu" : undefined}
+            aria-hidden={open ? undefined : "true"}
+            inert={!open}
+          >
+            <div className={styles.overlayBar}>
+              {/* eslint-disable-next-line @next/next/no-img-element -- small vector mark, no optimisation needed */}
+              <img className={styles.overlayMark} src={MARK_SRC.paper} alt="" width={53} height={52} />
+              <button type="button" className={styles.close} onClick={() => close()}>
+                <span className={styles.sr}>Close menu · Isara</span>
+                <span className={styles.cross} aria-hidden="true" />
+              </button>
             </div>
-          </div>
-        </div>
-      )}
+            <nav aria-label="All pages" className={styles.overlayList}>
+              {allLinks.map((l, i) => (
+                <NavItem
+                  key={l.href}
+                  link={l}
+                  index={i}
+                  current={l.href === currentHref}
+                  // Same-page link: no navigation happens, so hand focus back explicitly.
+                  onClick={l.href === currentHref ? () => close() : () => hide()}
+                />
+              ))}
+            </nav>
+            <div className={styles.overlayFoot}>
+              <p className={styles.overlayInfo}>
+                <a href={site.mapUrl} target="_blank" rel="noopener noreferrer">
+                  {site.street}
+                  <span className={styles.sr}>, {site.postcode} (map, opens in a new tab)</span>
+                </a>
+                <a href={`tel:${site.phoneIntl}`}>{site.phone}</a>
+              </p>
+              <div className={styles.overlayEnd}>
+                <ul aria-label="Follow Bintang" className={styles.socials}>
+                  {socials.map((s) => (
+                    <li key={s.name}>
+                      <a href={s.url} target="_blank" rel="noopener noreferrer" className={styles.social}>
+                        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+                          <path d={SOCIAL_ICON_PATHS[s.name]} fill="currentColor" />
+                        </svg>
+                        <span className={styles.sr}>{s.name} (opens in a new tab)</span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+                <BookButton />
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
     </header>
   );
 }

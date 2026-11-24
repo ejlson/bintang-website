@@ -1087,7 +1087,7 @@
    own height, so short labels and tall photos arrive in step. Two-across grids stagger by
    column (the right-hand item a beat behind), not by position in a four-across row. The
    film and lion sit below the fold here, so they reveal on scroll like everything else
-   instead of playing unseen on load. */
+   instead of playing unseen on load. Nothing floats (parallax) on phones. */
 
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) and (width < 600px) {
@@ -1130,9 +1130,14 @@
       animation-range: cover 0px cover 240px, cover 0% cover 100%;
     }
 
+    /* No parallax on phones. In one narrow column every layer sits close to its
+       neighbour, so a float reads as the gap opening and closing, not as depth: the
+       quote's caption gap swung from 11px to 36px, and the lion overlapped the film
+       then pulled 48px away from it. Both keep their reveal and hold their place. */
     .qt {
-      --float: 12px;
-      animation-range: cover 0px cover 200px, cover 0% cover 100%;
+      animation: rise linear both;
+      animation-timeline: view();
+      animation-range: cover 0px cover 200px;
     }
 
     .filmFrame {
@@ -1147,11 +1152,16 @@
       animation-range: cover 48px cover 248px;
     }
 
+    /* The lion fades in where it stands: a slide up from below would cross the film. */
     .lion {
-      --float: -16px;
-      animation: fadeUp linear both, float linear both;
-      animation-timeline: view(), view();
-      animation-range: cover 0px cover 200px, cover 0% cover 100%;
+      animation: fade linear both;
+      animation-timeline: view();
+      animation-range: cover 0px cover 200px;
     }
   }
+}
+
+@keyframes fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
